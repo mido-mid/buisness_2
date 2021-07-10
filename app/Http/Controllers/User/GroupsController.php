@@ -145,41 +145,61 @@ class GroupsController extends Controller
         //
     }
 
-    public function enterGroup(Request $request,$flag) {
+    public function enterGroup(Request $request) {
+            $group_id = $request->group_id;
+            $flag = $request->flag;
 
-        $group_id = $request->group_id;
+            $user = auth()->user();
 
-        $user = auth()->user();
+            $group = Group::find($group_id);
 
-        $group = Group::find(2);
+            if ($flag == 0) {
+                if ($group->privacy == 1) {
+                    DB::table('group_members')->insert([
+                        'group_id' => $group_id,
+                        'user_id' => $user->id,
+                        'state' => 2,
+                        'isAdmin'=>0
 
-        if($flag == 0) {
+                    ]);
 
-            if ($group->privacy == 1) {
-
-                DB::table('group_members')->insert([
-                    'group_id' => 2,
-                    'user_id' => 2,
-                    'state' => 2
-                ]);
-
-//                return $this->returnSuccessMessage('your request has been sent', 200);
+                    return $this->returnSuccessMessage('your request has been sent', 200);
+                } else {
+                    DB::table('group_members')->insert([
+                        'group_id' => $group_id,
+                        'user_id' => $user->id,
+                        'state' => 1,
+                        'isAdmin'=>0
+                    ]);
+                    return $this->returnSuccessMessage('you have entered the group successfully', 200);
+                }
             } else {
-                DB::table('group_members')->insert([
-                    'group_id' => $group_id,
-                    'user_id' => $user->id,
-                    'state' => 1
-                ]);
-
-//                return $this->returnSuccessMessage('you have entered the group successfully', 200);
+                $user_id = auth()->user()->id;
+                $current_group = DB::table('group_members')->where('group_id',$group_id)->where('user_id',$user_id)->first();
+                $current_group_id = $current_group->id;
+                if($this->isGroupAdmin($current_group_id) == 1){
+                    if($this->groupAdmins($group_id) > 1 ){
+                        $current_group = DB::table('group_members')->find($current_group_id);
+                        $current_group->delete();
+                        return $this->returnSuccessMessageWithStatus('Done Successfully',200,true);
+                    }else{
+                        return $this->returnSuccessMessageWithStatus('group must have at least one admin',200,false);
+                    }
+                }else{
+                    $current_group = DB::table('group_members')->find($current_group_id);
+                    $current_group->delete();
+                    return $this->returnSuccessMessageWithStatus('Done Successfully',200,true);
+                }
+                #endregion
             }
         }
-        else{
-            $user_group = DB::table('group_members')->where('group_id',2)->where('user_id',1)->first();
 
-            DB::table('group_members')->delete($user_group->id);
-
-//            return $this->returnSuccessMessage('you have exit this group', 200);
-        }
+    public function isGroupAdmin($member_id){
+        $group_member =  DB::table('group_members')->find($member_id);
+        return $group_member->isAdmin;
+    }
+    public function groupAdmins($group_id){
+        $group_admins =  DB::table('group_members')->where('group_id',$group_id)->count();
+        return $group_admins;
     }
 }

@@ -31,164 +31,157 @@
         <link href="{{ asset('css/styles/style-mar.css') }}" rel="stylesheet">
     @endif
 </head>
-<body style="background-color: white;">
-<div id="app">
-    <nav class="navbar navbar-expand-lg">
-        <a class="navbar-brand" href="#">Business</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavDropdown"
-                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavDropdown">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="#">
-                        تواصل معنا<i class="fas fa-headset navbar-icon"></i>
-                    </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
-                       data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        اللغة <i class="fas fa-language navbar-icon"></i>
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
-                        @foreach(LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
-                            <a class="dropdown-item"
-                               href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}"> {{ $properties['native'] }}
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark ez-navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand p-2" href="{{route('welcome')}}">Business</a>
+            <div class="right-side d-flex flex-row">
+                <a class="d-none d-lg-block mr-4" href="#"><i class="fas fa-headset p"></i> Support</a>
+                <a class="dropdown-toggle d-none d-lg-block" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+                   aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-language"></i> Language
+                </a>
+                <ul class="dropdown-menu rounded-5" aria-labelledby="navbarDropdown">
+                    @foreach(LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
+                        <li>
+                            <a href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}"> {{ $properties['native'] }}
                                 <span class="sr-only">(current)</span>
                             </a>
-                        @endforeach
+                        </li>
+                    @endforeach
+                    <li>
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                             @csrf
                         </form>
-                        <a class="dropdown-item dropdown-link" onclick="event.preventDefault();
-                          document.getElementById('logout-form').submit();" href="{{ route('logout') }}"><i class="fas fa-sign-out-alt mr-2"></i>logout</a>
-                    </div>
+                        <a onclick="event.preventDefault();
+                              document.getElementById('logout-form').submit();" href="{{ route('logout') }}"><span>logout</span></a>
+                    </li>
+                </ul>
+                <button class="navbar-toggler" type="button" onclick="openSidenav()">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    <div class="w3-sidebar w3-bar-block" id="sideNavbar">
+        <div class="d-flex flex-row-reverse justify-content-between">
+            <div class="w-25 d-flex flex-row-reverse">
+                <button class="close-sidebar btn btn-danger p-3 m-3" onclick="closeSidenav()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <ul class="w-75 navbar-nav me-auto mb-2 mb-lg-0 p-3">
+                <li>
+                    <a href="profile.html"><img class="profile-figure"
+                                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                alt="My Profile Pic" />
+                        <span>{{ \Str::limit(auth()->user()->name, 10) }}</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="{{route('home')}}}"><i class="fas fa-home"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{route('service_categories')}}"><i class="fas fa-hand-holding-usd"></i> Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#"><i class="fas fa-users"></i> Groups</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#"><i class="fas fa-truck"></i> Delivery</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#"><i class="far fa-copy"></i> Pages</a>
+                </li>
+                <li class="nav-item" style="display: flex; align-items: center">
+                    <a class="nav-link active" href="#"><i class="fas fa-bell"></i> Notifications</a>
+                    <span class="badge bg-warning text-dark">2</span>
+                </li>
+                <li class="nav-item" style="display: flex; align-items: center">
+                    <a class="nav-link active" href="#"><i class="fas fa-comment-dots"></i> Messages</a>
+                    <span class="badge bg-warning text-dark">3</span>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{{route('savedposts')}}}"><i class="fas fa-bookmark"></i> Saved Posts</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="#"><i class="fas fa-headset"></i> Support</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
+                       aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-language"></i> Language
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        @foreach(LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
+                            <li>
+                                <a href="{{ LaravelLocalization::getLocalizedURL($localeCode, null, [], true) }}"> {{ $properties['native'] }}
+                                    <span class="sr-only">(current)</span>
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
                 </li>
             </ul>
         </div>
-    </nav>
-    <main>
-        <div class="container-fluid">
-            <div class="ez-body row">
-                <div class="col-lg-2 d-none d-lg-block">
-                    <div class="sticky-top">
-                        <div class="side-navigation d-flex align-items-start flex-column">
-                            <div class="mb-auto w-100">
-                                <h2 class="side-navigation_header text-center py-5 px-3">business</h2>
-                                <div class="side-navigation_user px-3">
-                                    <a href="#">
-                                        <img src="{{asset('assets/images/user.jpeg')}}" alt="user-name" class="img-fluid user-img">
-                                        <span class="user-name">احمد ممدوح</span>
-                                    </a>
-                                </div>
-                                <div class="side-navigation_list py-5">
-                                    <ul class="list-group list-unstyled">
-                                        <li class="list-item px-4">
-                                            <a href="{{route('home')}}" class="list-link">
-                                                <i class="fas fa-home list-icon"></i> الرئيسية
-                                            </a>
-                                        </li>
-                                        <li class="list-item px-4">
-                                            <a href="{{route('service_categories')}}" class="list-link">
-                                                <i class="fas fa-hand-holding-usd list-icon"></i> الخدمات
-                                            </a>
-                                        </li>
-                                        <li class="list-item px-4">
-                                            <a href="#" class="list-link">
-                                                <i class="fas fa-users list-icon"></i> المجموعات
-                                            </a>
-                                        </li>
-                                        <li class="list-item px-4">
-                                            <a href="{{route('usercompanies.index')}}" class="list-link">
-                                                <i class="fas fa-truck list-icon"></i> الشحن
-                                            </a>
-                                        </li>
-                                        <li class="list-item px-4">
-                                            <a href="#" class="list-link">
-                                                <i class="fas fa-copy list-icon"></i> الصفحات
-                                            </a>
-                                        </li>
-                                        <li class="list-item px-4 d-flex justify-content-between">
-                                            <a href="{{route('notifications')}}" class="list-link">
-                                                <i class="fas fa-bell list-icon"></i> الاشعارات
-                                            </a>
-                                            <span class="d-inline-block notifications-count">3</span>
-                                        </li>
-                                        <li class="list-item px-4 d-flex justify-content-between">
-                                            <a href="#" class="list-link">
-                                                <i class="fas fa-comment-dots list-icon"></i> الرسائل
-                                            </a>
-                                            <span class="d-inline-block messages-count">3</span>
-                                        </li>
-                                        <li class="list-item px-4">
-                                            <a href="{{route('savedposts')}}}" class="list-link">
-                                                <i class="fas fa-bookmark list-icon"></i> المنشورات المحفوظة
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @yield('content')
-            </div>
-        </div>
-    </main>
-</div>
+    </div>
+    <section class="container-fluid ez-main">
+        <section class="ez-body row">
+            <section id="ez-body__left-sidebar" class="col-lg-2 ez-sidebar">
+                <ul id="left-sidebar__items">
+                    <li class="mt-2">
+                        <a href="profile.html"><img class="profile-figure"
+                                                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                    alt="My Profile Pic" />
+                            <span>{{ \Str::limit(auth()->user()->name, 10) }}</span></a>
+                    </li>
+                    <li>
+                        <a aria-current="page" href="{{route('home')}}"><i class="fas fa-home p"></i> Home</a>
+                    </li>
+                    <li>
+                        <a href="{{route('service_categories')}}"><i class="fas fa-hand-holding-usd p"></i> Services</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fas fa-users p"></i> Groups</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fas fa-truck p"></i> Delivery</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="far fa-copy p"></i> Pages</a>
+                    </li>
+                    <li style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              ">
+                        <a href="#"><i class="fas fa-bell p"></i> Notifications</a><span class="badge bg-warning text-dark">2</span>
+                    </li>
+                    <li style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+              ">
+                        <a href="#"><i class="fas fa-comment-dots p"></i> Messages</a>
+                        <span class="badge bg-warning text-dark">3</span>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fas fa-bookmark p"></i> Saved Posts</a>
+                    </li>
+                </ul>
+            </section>
 
+            @yield('content')
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+        </section>
+    </section>
+
     <script src="{{ asset('js/app.js') }}"></script>
-    <script src="{{ asset('js') }}/index.js"></script>
-    <script src="{{ asset('assets') }}/libs/jquery/jquery.min.js"></script>
+    <script src="{{ asset('js/index.js') }}"></script>
+    <script src="{{ asset('js/script.js') }}"></script>
     <script src="{{ asset('assets') }}/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
-    <!-- BOOTSTRAP WITH POPPER -->
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-            integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-            crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
-            integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
-            crossorigin="anonymous"></script>
+    <script src="{{ asset('assets') }}/libs/jquery/jquery.min.js"></script>
     <!-- FONT AWESOME -->
     <script src="https://kit.fontawesome.com/5d2df7d4f7.js"></script>
-    <script>
-        $(".toggle-password").click(function() {
-            var input = $($(this).attr("toggle"));
-            if (input.attr("type") == "password") {
-                $(this).toggleClass("fa-eye-slash fa-eye");
-                input.attr("type", "text");
-            } else {
-                $(this).toggleClass("fa-eye fa-eye-slash ");
-                input.attr("type", "password");
-            }
-        });
-    </script>
 
-    <script>
-        $(function() {
-            $('.selectpicker').selectpicker();
-        });
-    </script>
-
-    <script>
-        const phoneInputField = document.querySelector("#phone");
-        const phoneInput = window.intlTelInput(phoneInputField, {
-            utilsScript:
-                "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-        });
-    </script>
-{{--    <script src="{{ mix('js/app.js') }}"></script>--}}
-    @auth
-        <script>
-            window.user = @json(
-            [
-                'user'=> auth()->user()->load('notifications'),
-            ]
-            );
-        </script>
-    @endauth
 </body>
 </html>

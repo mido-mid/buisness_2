@@ -17,14 +17,17 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
     Route::get('/', function () {
         return view('welcome');
-    });
+    })->name('welcome');
 
     Auth::routes(['verify' => true]);
 
 
     Route::group(['middleware' => ['auth','verified']],function() {
 
-        Route::get('/home', 'User\MainController@index')->name('home');
+        Route::get('home', 'User\MainController@index')->name('home');
+        Route::post('joingroup', 'User\GroupsController@index')->name('join_group');
+        Route::post('likepage', 'User\PagesController@index')->name('like_page');
+        Route::post('addfriend/{user_id}/{type}', 'User\FriendshipController@friendship')->name('addfriend');
         Route::resource('posts', 'User\PostController');
         Route::resource('comments', 'User\CommentController');
         Route::get('comments', 'User\CommentController@store');
@@ -42,7 +45,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
             $user->unreadNotifications->markAsRead();
             return response(['message'=>'done', 'notifications'=>$user->notifications]);
         })->name('read');
-        Route::get('profile', 'User\ProfileController@edit')->name('profile');
+        Route::get('profile/{user_id}', 'User\ProfileController@edit')->name('profile');
         Route::put('profile', 'User\ProfileController@update')->name('profileupdate');
         Route::put('profile/password', 'User\ProfileController@password')->name('profilepassword');
     });

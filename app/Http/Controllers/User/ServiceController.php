@@ -26,6 +26,7 @@ class ServiceController extends Controller
     public function index($category_id = null)
     {
         //
+        $categories = Category::where('type','service')->get();
         if($category_id != null) {
 
             $services = Post::where('postTypeId', 1)->where('categoryId',$category_id)->get();
@@ -45,7 +46,7 @@ class ServiceController extends Controller
                 }
             }
         }
-        return view('User.services.show',compact('services'));
+        return view('User.services.show',compact('services','categories'));
     }
 
     /**
@@ -133,24 +134,24 @@ class ServiceController extends Controller
         return view('User.services.index',compact('categories'));
     }
 
-    public function follow(Request $request) {
-
-        $followerId = $request->followerId;
-        $followingId = $request->followingId;
-
-        $following = DB::table('following')->insert([
-            'followerId' => $followerId,
-            'followingId' => $followingId
-        ]);
-
-        return $this->returnSuccessMessage('you are now following this user','');
-    }
-
-    public function postLikes($postId){
-        $reacts = React::get();
-        foreach ($reacts as $react){
-            $likes  []= [$react->name => Likes::where('postId',$postId)->where('reactId',$react->id)->get()];
-        }
-        return $likes;
-    }
+//    public function follow(Request $request) {
+//
+//        $followerId = $request->followerId;
+//        $followingId = $request->followingId;
+//
+//        $following = DB::table('following')->insert([
+//            'followerId' => $followerId,
+//            'followingId' => $followingId
+//        ]);
+//
+//        return $this->returnSuccessMessage('you are now following this user','');
+//    }
+//
+//    public function postLikes($postId){
+//        $reacts = React::get();
+//        foreach ($reacts as $react){
+//            $likes  []= [$react->name => Likes::where('postId',$postId)->where('reactId',$react->id)->get()];
+//        }
+//        return $likes;
+//    }
 }

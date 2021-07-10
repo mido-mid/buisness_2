@@ -140,29 +140,28 @@ class PagesController extends Controller
         //
     }
 
-    public function likePage(Request $request,$flag) {
+    public function likePage(Request $request) {
 
         $page_id = $request->page_id;
-
         $user = auth()->user();
+        $flag = $request->flag;
 
-        $page = Page::find(2);
-
-        if($flag == 0) {
-
+        if ($flag == 0) {
             DB::table('user_pages')->insert([
                 'page_id' => $page_id,
                 'user_id' => $user->id,
+                'isAdmin' => 0
             ]);
 
-//          return $this->returnSuccessMessage('you have entered the group successfully', 200);
-        }
-        else{
-            $user_page = DB::table('user_pages')->where('page_id',2)->where('user_id',1)->first();
+            return $this->returnSuccessMessage('you have liked this page', 200);
+        } else {
+            $user_page = DB::table('user_pages')->where('page_id', $page_id)->where('user_id', $user->id)->get();
+            foreach ($user_page as $upage) {
+                DB::table('user_pages')->delete($upage->id);
+            }
 
-            DB::table('user_pages')->delete($user_page->id);
-
-//            return $this->returnSuccessMessage('you have exit this group', 200);
+            return $this->returnSuccessMessage('you have unliked this page', 200);
         }
     }
+
 }

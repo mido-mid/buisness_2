@@ -1,12 +1,12 @@
 @extends('layouts.auth')
 
 @section('content')
-    <div class="container-fluid row">
+    <div class="container-fluid row" style="margin-top: 45px">
 
         <!--left-->
         <div class="margin col-lg-4 col-md-4 col-sm-12 login-data">
             <div class="img">
-                <img src="" alt="Add image" width="100%" height="100%">
+                <img src="{{asset('assets')}}/images/login.jpg" alt="Add image" width="100%" height="100%">
             </div>
 
             <div class="login-title row" style="margin-bottom: 25px">
