@@ -33,7 +33,11 @@ class ServiceController extends Controller
             if (count($services) > 0) {
                 foreach ($services as $service) {
                     $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
+                    $publisher = User::find($service->publisherId);
+                    $follow = DB::table('following')->Where('followerId',2)->first();
                     $service->media = $media;
+                    $service->publisher = $publisher;
+                    $service->follow = $follow  ? 'true' : 'false';
                 }
             }
         }
@@ -42,11 +46,16 @@ class ServiceController extends Controller
             if (count($services) > 0) {
                 foreach ($services as $service) {
                     $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
+                    $publisher = User::find($service->publisherId);
+                    $follow = DB::table('following')->Where('followerId',2)->first();
                     $service->media = $media;
+                    $service->publisher = $publisher;
+                    $service->follow = $follow  ? 'true' : 'false';
                 }
             }
         }
-        return view('User.services.show',compact('services','categories'));
+
+        return view('User.services.show',compact('services','categories','category_id'));
     }
 
     /**

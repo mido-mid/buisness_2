@@ -1,27 +1,27 @@
 .ez-body #ez-body__left-sidebar,
 .ez-body #ez-body__right-sidebar {
-  text-align: right;
+    text-align: right;
 }
 
 .ez-body #ez-body__center-content .search-bar input {
-  text-align: right;
+    text-align: right;
 }
 
 .ez-body #ez-body__center-content .add-post input {
-  text-align: right;
+    text-align: right;
 }
 
 .container-fluid {
-  padding: 0;
+    padding: 0;
 }
 
 .container-fluid .row {
-  margin: 0;
+    margin: 0;
 }
 
 .container-fluid .row #ez-body__center-content .profile-center-content {
-  padding-left: 0;
-  padding-right: 15px;
+    padding-left: 0;
+    padding-right: 15px;
 }
 /*# sourceMappingURL=style-rtl.css.map */
 

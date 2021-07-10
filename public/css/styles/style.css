@@ -4,8 +4,8 @@ body {
 
 .ez-navbar {
     background-color: #fcbc22;
-    border-bottom-left-radius: 10px;
-    border-bottom-right-radius: 10px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
 }
 
 .ez-navbar .navbar-brand {
@@ -48,8 +48,8 @@ body {
 }
 
 #sideNavbar .close-sidebar {
-    height: 8vh;
-    width: 10vw;
+    height: 7vh;
+    width: 7vh;
 }
 
 #sideNavbar ul {
@@ -601,12 +601,65 @@ body {
     font-size: xx-large;
 }
 
+.ez-body #ez-body__center-content .services-controller .ez-active {
+    background-color: #fcbc22;
+    color: white;
+}
+
 .ez-body #ez-body__center-content .services-container .service {
     width: 23%;
+    border-radius: 10px;
+    border-bottom: 1px solid #f2ae2f;
 }
 
 .ez-body #ez-body__center-content .services-container .service .card-body .card-text {
     color: #f2ae2f;
+}
+
+.ez-body #ez-body__center-content .services-container .modal {
+    margin-top: 5vh;
+}
+
+.ez-body #ez-body__center-content .services-container .modal .modal-dialog {
+    max-width: 65vw;
+}
+
+.ez-body #ez-body__center-content .services-container .modal .modal-header {
+    border-bottom: 0;
+}
+
+.ez-body #ez-body__center-content .services-container .modal .modal-body h6 {
+    text-decoration: underline;
+}
+
+.ez-body #ez-body__center-content .services-container .modal .modal-body .people {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+}
+
+.ez-body #ez-body__center-content .services-container .modal .modal-body .people .people-info .profile-figure {
+    width: 50px;
+    height: 50px;
+}
+
+.ez-body #ez-body__center-content .services-container .modal .modal-body .people .people-info div p {
+    font-size: small;
+    margin-bottom: 5px;
+}
+
+.ez-body #ez-body__center-content .services-container .modal .modal-body .people button {
+    font-size: small;
+}
+
+.ez-body #ez-body__center-content .services-container .modal .modal-body .img-container img {
+    max-height: 65vh;
 }
 
 .ez-body .profile-center-content {
