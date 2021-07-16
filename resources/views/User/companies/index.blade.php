@@ -1,35 +1,37 @@
 @extends('layouts.app')
 
 @section('content')
-        <section id="ez-body__center-content" class="col-lg-10 mt-3">
-            <div class="search-bar d-flex justify-content-center">
-                <input class="w-75" type="text" placeholder="Search" />
+     <section id="ez-body__center-content" class="col-lg-8 mt-3">
+            <div class="search-bar">
+                <input type="text" placeholder="Search" />
             </div>
-            <div class="services-container d-flex flex-wrap mt-3">
-                @foreach($companies as $company)
-                    <div class="service card m-2">
-                        <img
-                            src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                            class="card-img-top"
-                            alt="..."
-                        />
-                        <div class="card-body">
-                            <p class="card-text">
-                                @if(App::getLocale() == 'ar')
-                                    {{$company->name_ar}}
-                                @else
+            @foreach($companies as $company)
+                <div class="trade-div">
+                    <div class="row">
+                        <div class="col-md-3 col-12">
+                            @if($company->image == null)
+                                <img src="{{asset('media')}}/images.png">
+                            @else
+                                <img src="{{asset('media')}}/{{$company->image}}">
+                            @endif
+                        </div>
+                        <div class="col-md-9 col-12 row">
+                            <h4 class="col-12">
+                                @if(App::getlocale() == 'en')
                                     {{$company->name_en}}
+                                @else
+                                    {{$company->name_ar}}
                                 @endif
-                            </p>
-
-                            <ul>
-                                @foreach($company->phones as $phone)
-                                    <li>{{$phone->phoneNumber}}</li>
-                                @endforeach
-                            </ul>
+                            </h4>
+                            @foreach($company->phones as $phone)
+                                <p class="col-3">{{$phone->phoneNumber}}</p>
+                                <span  class="col-3 ">
+                                  <p class="call-icon"><i class="fas fa-mobile-alt"></i> Call</p>
+                                </span>
+                            @endforeach
                         </div>
                     </div>
-                @endforeach
-            </div>
+                </div>
+            @endforeach
         </section>
 @endsection

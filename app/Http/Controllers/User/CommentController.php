@@ -11,6 +11,7 @@ use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
 {
@@ -46,39 +47,45 @@ class CommentController extends Controller
     {
         //
 
-//        $post_id = $request->post_id;
-//
-//        $post = Post::find($post_id);
+        $post_id = $request->post_id;
 
-        $post_user = User::find(3);
+        $post = Post::find($post_id);
+
+        $post_user = User::find($post->publisherId);
 
         $user = auth()->user();
 
-//        $rules = [
-//            'body' => 'required','not_regex:/([%\$#\*<>]+)/',
-//        ];
-//
-//        $this->validate($request,$rules);
+        $rules = [
+            'body' => 'required','not_regex:/([%\$#\*<>]+)/',
+        ];
+
+        $validator = Validator::make($request->all(),$rules);
+
+        if ($validator->fails()) {
+            return $this->returnValidationError(402,$validator);
+        }
 
         $comment = Comment::create([
-            'body' => 'letgo',
-            'user_id' => 4,
-            'model_id' => 17,
+            'body' => $request->body,
+            'user_id' => $user->id,
+            'model_id' => $post->id,
             'model_type' => "post",
         ]);
 
         if($comment){
-            try {
-                Notification::send($post_user, new CommentCreated($comment));
-            } catch(\Exception $e){
 
-            }
-//            return $this->returnData(['user','comment'],[$post_user->load('notifications'),$comment]);
-            return "";
+            $comment->publisher = User::find($comment->user_id);
+
+            $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
+
+            $view = view('includes.partialcomment', compact('comment'));
+
+            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+            return $sections['comment'];
         }
         else{
-//            return $this->returnError(402,'error happened');
-            return "";
+            return $this->returnError('something wrong happened',402);
         }
     }
 
@@ -132,12 +139,18 @@ class CommentController extends Controller
                 'model_type' => $request->type,
                 'comment_id' => $request->comment_id
             ]);
-//            return $this->returnData(['comment'],[$comment]);
-            return "";
+            $comment->publisher = User::find($comment->user_id);
+
+            $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
+
+            $view = view('includes.partialcomment', compact('comment'));
+
+            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+            return $sections['comment'];
         }
         else{
-//            return $this->returnError(402,'error happened');
-            return "";
+            return $this->returnError('something wrong happened',402);
         }
     }
 
@@ -155,13 +168,11 @@ class CommentController extends Controller
         if($comment)
         {
             $comment->delete();
-//            return $this->returnSuccessMessage('comment deleted',200);
-            return "";
+            return $this->returnSuccessMessage('comment deleted',200);
         }
         else
         {
-//            return $this->returnError(402,'error happened');
-            return "";
+            return $this->returnError('something wrong happened',402);
         }
     }
 }

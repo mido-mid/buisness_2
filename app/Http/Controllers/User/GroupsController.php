@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\GeneralTrait;
 use App\Models\Group;
 use App\User;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class GroupsController extends Controller
 {
+
+    use GeneralTrait;
     /**
      * Display a listing of the resource.
      *
@@ -146,6 +149,7 @@ class GroupsController extends Controller
     }
 
     public function enterGroup(Request $request) {
+
             $group_id = $request->group_id;
             $flag = $request->flag;
 
@@ -158,20 +162,20 @@ class GroupsController extends Controller
                     DB::table('group_members')->insert([
                         'group_id' => $group_id,
                         'user_id' => $user->id,
-                        'state' => 2,
+                        'stateId' => 3,
                         'isAdmin'=>0
 
                     ]);
 
-                    return $this->returnSuccessMessage('your request has been sent', 200);
+                    return $this->returnSuccessMessage('request pending');
                 } else {
                     DB::table('group_members')->insert([
                         'group_id' => $group_id,
                         'user_id' => $user->id,
-                        'state' => 1,
+                        'stateId' => 2,
                         'isAdmin'=>0
                     ]);
-                    return $this->returnSuccessMessage('you have entered the group successfully', 200);
+                    return $this->returnSuccessMessage('exit group');
                 }
             } else {
                 $user_id = auth()->user()->id;
@@ -181,14 +185,13 @@ class GroupsController extends Controller
                     if($this->groupAdmins($group_id) > 1 ){
                         $current_group = DB::table('group_members')->find($current_group_id);
                         $current_group->delete();
-                        return $this->returnSuccessMessageWithStatus('Done Successfully',200,true);
+                        return $this->returnSuccessMessage('Done Successfully');
                     }else{
-                        return $this->returnSuccessMessageWithStatus('group must have at least one admin',200,false);
+                        return $this->returnSuccessMessage('group must have at least one admin');
                     }
                 }else{
-                    $current_group = DB::table('group_members')->find($current_group_id);
-                    $current_group->delete();
-                    return $this->returnSuccessMessageWithStatus('Done Successfully',200,true);
+                    DB::table('group_members')->where('id',$current_group_id)->delete();
+                    return $this->returnSuccessMessage('join');
                 }
                 #endregion
             }

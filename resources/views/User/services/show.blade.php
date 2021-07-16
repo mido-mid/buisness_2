@@ -6,22 +6,15 @@
             <input class="w-75" type="text" placeholder="Search" />
         </div>
         <div class="services-controller m-3 text-center">
-
-            <button
-                class="btn btn-light rounded-5 filter-button @if($category_id == null) ez-active @endif"
-            >
-                    All
-            </button>
+            <a class="btn btn-light rounded-5 filter-button @if($category_id == null) ez-active @endif" href="{{route('services')}}"> All </a>
             @foreach($categories as $category)
-                <button
-                    class="btn btn-light rounded-5 filter-button @if($category_id == $category->id) ez-active @endif"
-                >
-                    @if(App::getlocale() == 'en')
-                        {{$category->name_en }}
-                    @else
-                        {{$category->name_ar }}
-                    @endif
-                </button>
+                    <a class="btn btn-light rounded-5 filter-button @if($category_id == $category->id) ez-active @endif" href="{{route('services',$category->id)}}">
+                        @if(App::getlocale() == 'en')
+                            {{$category->name_en }}
+                        @else
+                            {{$category->name_ar }}
+                        @endif
+                    </a>
             @endforeach
         </div>
         <div class="services-container d-flex flex-wrap mt-3">
@@ -90,20 +83,37 @@
                                             <div class="d-flex justify-content-between">
                                                 <div class="people mt-2 w-100">
                                                     <div class="people-info d-flex">
-                                                        <img
-                                                            class="profile-figure rounded-circle"
-                                                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                                                            alt="User Profile Pic"
-                                                        />
-                                                        <div
-                                                            class="
-                                  d-flex
-                                  flex-column
-                                  align-items-center
-                                  justify-content-center
-                                  pl-2
-                                "
-                                                        >
+                                                        @if($service->publisher->personal_image == null)
+                                                            <img
+                                                                class="profile-figure rounded-circle"
+                                                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                                alt="User Profile Pic"
+                                                            />
+                                                            <div
+                                                                class="
+                                                                        d-flex
+                                                                      flex-column
+                                                                      align-items-center
+                                                                      justify-content-center
+                                                                      pl-2
+                                                                    "
+                                                            >
+                                                        @else
+                                                            <img
+                                                                class="profile-figure rounded-circle"
+                                                                src="{{asset('media')}}/{{$service->publisher->personal_image}}"
+                                                                alt="User Profile Pic"
+                                                            />
+                                                            <div
+                                                                class="
+                                                                d-flex
+                                                              flex-column
+                                                              align-items-center
+                                                              justify-content-center
+                                                              pl-2
+                                                            "
+                                                            >
+                                                        @endif
                                                             <p><b>{{$service->publisher->name}}</b></p>
                                                         </div>
                                                     </div>
@@ -118,7 +128,7 @@
                                                 </div>
                                             </div>
                                             <button class="btn btn-warning text-white mt-3 w-100">
-                                                Contact The Creatoer
+                                                Contact The Creator
                                             </button>
                                         </div>
                                     </div>

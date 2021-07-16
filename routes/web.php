@@ -25,10 +25,12 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::group(['middleware' => ['auth','verified']],function() {
 
         Route::get('home', 'User\MainController@index')->name('home');
-        Route::post('joingroup', 'User\GroupsController@index')->name('join_group');
-        Route::post('likepage', 'User\PagesController@index')->name('like_page');
-        Route::post('addfriend/{user_id}/{type}', 'User\FriendshipController@friendship')->name('addfriend');
+        Route::post('joingroup', 'User\GroupsController@enterGroup')->name('join_group');
+        Route::post('likepage', 'User\PagesController@likePage')->name('like_page');
+        Route::post('addfriend', 'User\FriendshipController@friendship')->name('addfriend');
+        Route::post('savepost', 'User\PostController@savePost')->name('savepost');
         Route::resource('posts', 'User\PostController');
+        Route::post('sponsor', 'User\PostController@sponsor')->name('sponsor');
         Route::resource('comments', 'User\CommentController');
         Route::get('comments', 'User\CommentController@store');
         Route::resource('likes', 'User\LikeController');
@@ -36,7 +38,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::resource('stories', 'User\StoryController');
         Route::resource('groups', 'User\GroupsController');
         Route::resource('pages', 'User\PagesController');
-        Route::resource('usercompanies', 'User\CompaniesController');
+        Route::resource('companies', 'User\CompaniesController');
         Route::get('saved_posts', 'User\PostController@savedPosts')->name('savedposts');
         Route::get('/notifications','User\NotificationsController@index')->name('notifications');
         Route::get('services/categories', 'User\ServiceController@getCategories')->name('service_categories');

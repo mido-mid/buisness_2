@@ -87,7 +87,7 @@
                     <a class="nav-link active" href="#"><i class="fas fa-users"></i> Groups</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="#"><i class="fas fa-truck"></i> Delivery</a>
+                    <a class="nav-link active" href="{{route('companies.index')}}"><i class="fas fa-truck"></i> Delivery</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="#"><i class="far fa-copy"></i> Pages</a>
@@ -144,7 +144,7 @@
                         <a href="#"><i class="fas fa-users p"></i> Groups</a>
                     </li>
                     <li>
-                        <a href="#"><i class="fas fa-truck p"></i> Delivery</a>
+                        <a href="{{route('companies.index')}}"><i class="fas fa-truck p"></i> Delivery</a>
                     </li>
                     <li>
                         <a href="#"><i class="far fa-copy p"></i> Pages</a>
@@ -175,12 +175,14 @@
         </section>
     </section>
 
+
+    <script src="{{ asset('assets') }}/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('assets') }}/libs/jquery/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('js/index.js') }}"></script>
     <script src="{{ asset('js/vue.js') }}"></script>
     <script src="{{ asset('js/script.js') }}"></script>
-    <script src="{{ asset('assets') }}/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('assets') }}/libs/jquery/jquery.min.js"></script>
     <!-- FONT AWESOME -->
     <script src="https://kit.fontawesome.com/5d2df7d4f7.js"></script>
 

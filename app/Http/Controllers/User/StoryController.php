@@ -3,13 +3,16 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\GeneralTrait;
 use App\Models\Media;
 use App\Models\Story;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class StoryController extends Controller
 {
+    use GeneralTrait;
     /**
      * Display a listing of the resource.
      *
@@ -40,20 +43,48 @@ class StoryController extends Controller
     {
         //
         $user = auth()->user();
+        $cover_file_to_store = null;
         $rules = [
-            'body' => 'required','not_regex:/([%\$#\*<>]+)/',
+            'body' => ['required','not_regex:/([%\$#\*<>]+)/'],
             'privacy_id' => 'required|integer',
+            'cover_image' => 'nullable|mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png|max:100040',
             'media' => 'nullable',
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png|max:100040',
         ];
 
-        $this->validate($request,$rules);
+        $validator = Validator::make($request->all(),$rules);
 
-        if($request->hasFile('images')){
+        if ($validator->fails()) {
+            return response()->json([
+                'msg' => $validator->errors()->first()
+            ],402);
+        }
+
+
+        if($request->hasFile('cover_image')){
+
+            $file = $request->file('cover_image');
+
+            $fileextension = $file->getClientOriginalExtension();
+
+            $filename = $file->getClientOriginalName();
+
+            $cover_file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
+
+            $file->move('media', $cover_file_to_store);
+        }
+
+        $story = Story::create([
+            'body' => $request->body,
+            'cover_image' => $cover_file_to_store,
+            'privacyId' => $request->privacy_id,
+            'publisherId' => $user->id,
+        ]);
+
+
+        if($request->hasFile('media')){
 
             $image_ext = ['jpg', 'png', 'jpeg'];
-
-            $video_ext = ['mpeg', 'ogg', 'mp4', 'webm', '3gp', 'mov', 'flv', 'avi', 'wmv', 'ts'];
 
             $files = $request->file('media');
 
@@ -74,24 +105,18 @@ class StoryController extends Controller
                     Media::create([
                         'filename' => $file_to_store,
                         'mediaType' => $mediaType,
-                        'model_id' => $request->model_id,
+                        'model_id' => $story->id,
                         'model_type' => "story"
                     ]);
                 }
             }
         }
 
-        $story = Story::create([
-            'body' => $request->body,
-            'privacyId' => $request->privacy_id,
-            'publisherId' => $user->id,
-        ]);
-
         if($story){
-            return redirect()->route('home')->withStatus('story successfully created');
+            return $this->returnData(['story','msg'],[$story,"story successfully created"]);
         }
         else{
-            return redirect()->route('home')->withStatus('something wrong happened');
+            return $this->returnError('something wrong happened',402);
         }
     }
 

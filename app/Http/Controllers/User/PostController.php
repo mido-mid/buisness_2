@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\GeneralTrait;
 use App\Models\Comment;
 use App\Models\Group;
 use App\models\Likes;
@@ -11,11 +12,15 @@ use App\Models\Page;
 use App\Models\Post;
 use App\User;
 use Carbon\Carbon;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
 {
+
+    use GeneralTrait;
     /**
      * Display a listing of the resource.
      *
@@ -47,20 +52,24 @@ class PostController extends Controller
         //
         $user = auth()->user();
         $rules = [
-            'body' => 'required','not_regex:/([%\$#\*<>]+)/',
+            'body' => ['required'],
             'privacy_id' => 'required|integer',
             'media' => 'nullable',
-            'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png|max:100040',
+            'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif|max:100040',
             'category_id' => 'required|integer'
         ];
 
-        $this->validate($request,$rules);
+        $validator = Validator::make($request->all(),$rules);
 
-        if($request->hasFile('images')){
+        if ($validator->fails()) {
+            return response()->json([
+                'msg' => $validator->errors()->first()
+            ],402);
+        }
 
-            $image_ext = ['jpg', 'png', 'jpeg'];
+        if($request->hasFile('media')){
 
-            $video_ext = ['mpeg', 'ogg', 'mp4', 'webm', '3gp', 'mov', 'flv', 'avi', 'wmv', 'ts'];
+            $image_ext = ['jpg', 'png', 'jpeg','svg','gif'];
 
             $files = $request->file('media');
 
@@ -89,11 +98,10 @@ class PostController extends Controller
         }
 
         $post = Post::create([
-            'title' => $request->title,
             'body' => $request->body,
             'privacyId' => $request->privacy_id,
-            'postTypeId' => 1,
-            'stateId' => 1,
+            'postTypeId' => 2,
+            'stateId' => 2,
             'publisherId' => $user->id,
             'categoryId' => $request->category_id,
             'group_id' => $request->group_id,
@@ -101,11 +109,67 @@ class PostController extends Controller
             'post_id' => $request->post_id
         ]);
 
+        $privacy = DB::table('privacy_type')->get();
+
+        $categories = DB::table('categories')->where('type','post')->get();
+
+        $times = DB::table('sponsored_time')->get();
+
+        $reaches = DB::table('sponsored_reach')->get();
+
+        $ages = DB::table('sponsored_ages')->get();
+
+        $reacts = DB::table('reacts')->get();
+
+        $post->publisher = User::find($post->publisherId);
+        $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
+        $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
+        $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
+
+        $post->comments = $comments;
+        $post->likes = $likes;
+        $post->type = $post->post_id != null ? 'share' : 'post';
+
+        if ($post->type == 'share'){
+            $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
+            if($shared_post->post_id != null) {
+                $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
+            }
+            else{
+                $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
+            }
+        }else{
+            $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
+        }
+
+        $post->comments->count = count($comments);
+        $post->likes->count = count($likes);
+        $post->shares = count($shares);
+
+        $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
+
+        if($post->liked){
+            $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
+        }
+
+        $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
+
+        if($post->comments->count > 0) {
+            foreach ($post->comments as $comment) {
+                $comment->publisher = User::find($comment->user_id);
+                $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
+            }
+        }
+
         if($post){
-            return redirect()->route('posts.index')->withStatus('post successfully created');
+            $view = view('includes.partialpost', compact('post','privacy','categories','times','ages','reaches','reacts'));
+
+            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+            return $sections['post'];
         }
         else{
-            return redirect()->route('posts.index')->withStatus('something wrong happened');
+            return $this->returnError('something wrong happened',402);
         }
     }
 
@@ -146,24 +210,26 @@ class PostController extends Controller
         $user = auth()->user();
 
         $rules = [
-            'title' => 'required','min:5','not_regex:/([%\$#\*<>]+)/',
-            'body' => 'required','min:10','not_regex:/([%\$#\*<>]+)/',
+            'body' => ['required'],
             'privacy_id' => 'required|integer',
             'media' => 'nullable',
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png|max:100040',
             'category_id' => 'required|integer'
         ];
 
-        $this->validate($request,$rules);
+        $validator = Validator::make($request->all(),$rules);
+
+        if ($validator->fails()) {
+            return $this->returnValidationError(402,$validator);
+        }
 
         if($post){
 
             $post->update([
-                'title' => $request->title,
                 'body' => $request->body,
                 'privacyId' => $request->privacy_id,
-                'postTypeId' => 1,
-                'stateId' => 1,
+                'postTypeId' => 2,
+                'stateId' => 2,
                 'publisherId' => $user->id,
                 'categoryId' => $request->category_id,
                 'group_id' => $request->group_id,
@@ -171,11 +237,9 @@ class PostController extends Controller
                 'post_id' => $request->post_id
             ]);
 
-            if($request->hasFile('images')){
+            if($request->hasFile('media')){
 
-                $image_ext = ['jpg', 'png', 'jpeg'];
-
-                $video_ext = ['mpeg', 'ogg', 'mp4', 'webm', '3gp', 'mov', 'flv', 'avi', 'wmv', 'ts'];
+                $image_ext = ['jpg', 'png', 'jpeg','svg','gif'];
 
                 $files = $request->file('media');
 
@@ -231,11 +295,67 @@ class PostController extends Controller
                 }
             }
 
-            return redirect()->route('posts.index')->withStatus('post successfully created');
+            $privacy = DB::table('privacy_type')->get();
+
+            $categories = DB::table('categories')->where('type','post')->get();
+
+            $times = DB::table('sponsored_time')->get();
+
+            $reaches = DB::table('sponsored_reach')->get();
+
+            $ages = DB::table('sponsored_ages')->get();
+
+            $reacts = DB::table('reacts')->get();
+
+            $post->publisher = User::find($post->publisherId);
+            $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
+            $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
+            $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
+
+            $post->comments = $comments;
+            $post->likes = $likes;
+            $post->type = $post->post_id != null ? 'share' : 'post';
+
+            if ($post->type == 'share'){
+                $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
+                if($shared_post->post_id != null) {
+                    $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
+                }
+                else{
+                    $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
+                }
+            }else{
+                $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
+            }
+
+            $post->comments->count = count($comments);
+            $post->likes->count = count($likes);
+            $post->shares = count($shares);
+
+            $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
+
+            if($post->liked){
+                $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
+            }
+
+            $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
+
+            if($post->comments->count > 0) {
+                foreach ($post->comments as $comment) {
+                    $comment->publisher = User::find($comment->user_id);
+                    $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
+                }
+            }
+
+            $view = view('includes.partialpost', compact('post','privacy','categories','times','ages','reaches','reacts'));
+
+            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+            return $sections['post'];
         }
 
        else{
-           return redirect()->route('posts.index')->withStatus('something wrong happened');
+           return $this->returnError('something wrong happened',402);
        }
     }
 
@@ -253,20 +373,20 @@ class PostController extends Controller
 
         if($post)
         {
-            $post_media = DB::table('media')->where('postId',$post->id)->get();
+            $post_media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
 
             foreach ($post_media as $media){
-                $media->delete();
+                DB::table('media')->where('id',$media->id)->delete();
                 unlink('media/' . $media->filename);
             }
 
             $post->delete();
 
-            return redirect()->route('posts.index')->withStatus('post successfully created');
+            return $this->returnSuccessMessage('post successfully deleted');
         }
         else
         {
-            return redirect()->route('posts.index')->withStatus('something wrong happened');
+            return $this->returnError('something wrong happened',402);
         }
     }
 
@@ -326,7 +446,7 @@ class PostController extends Controller
                 'user_id' => $user->id,
             ]);
 
-            return $this->returnSuccessMessage('you have saved this post', 200);
+            return $this->returnSuccessMessage('saved');
         }
         else{
 
@@ -334,7 +454,7 @@ class PostController extends Controller
 
             DB::table('saved_posts')->delete($user_post->id);
 
-            return $this->returnSuccessMessage('you have unsaved this post', 200);
+            return $this->returnSuccessMessage('save post');
         }
     }
 

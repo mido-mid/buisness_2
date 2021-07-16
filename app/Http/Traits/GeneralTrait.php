@@ -13,16 +13,14 @@ trait GeneralTrait
 
         public function returnError($msg , $errNum)
         {
-            return response([
+            return response()->json([
                 'status' => false,
-                'code'=> $errNum,
                 'msg' => $msg
-                ], $errNum)
-            ->header('Content-Type', 'text/json');
+            ],$errNum);
         }
 
 
-        public function returnSuccessMessage($msg , $errNum)
+        public function returnSuccessMessage($msg , $errNum = null)
         {
             return [
             'status' => true,

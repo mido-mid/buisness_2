@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\GeneralTrait;
 use App\Models\Group;
 use App\Models\Page;
 use App\Models\Post;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class PagesController extends Controller
 {
+
+    use GeneralTrait;
     /**
      * Display a listing of the resource.
      *
@@ -153,14 +156,14 @@ class PagesController extends Controller
                 'isAdmin' => 0
             ]);
 
-            return $this->returnSuccessMessage('you have liked this page', 200);
+            return $this->returnSuccessMessage('unlike');
         } else {
             $user_page = DB::table('user_pages')->where('page_id', $page_id)->where('user_id', $user->id)->get();
             foreach ($user_page as $upage) {
                 DB::table('user_pages')->delete($upage->id);
             }
 
-            return $this->returnSuccessMessage('you have unliked this page', 200);
+            return $this->returnSuccessMessage('like', 200);
         }
     }
 

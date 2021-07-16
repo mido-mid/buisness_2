@@ -1,150 +1,405 @@
-$(function() {
 
-    fetchRecords();
+let savePostSubmit = (id) => {
 
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    $.ajax({
+        url: $('#save-post-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("save-post-form-" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#save-post-' + id).text(data.msg);
+            if(data.msg == "saved"){
+                $('#save-post-flag-' + id).attr('value',1);
+            }
+            else{
+                $('#save-post-flag-' + id).attr('value',0);
+            }
+
+        },
+    });
+}
+
+let addFriendSubmit = (id) => {
+
+    $.ajax({
+        url: $('#friend-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("friend-form-" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#friend-btn-' + id).text(data.msg);
+            $('#request-type-' + id).attr('value','removeFriendRequest')
+        },
+    });
+}
+
+
+let joinGroupSubmit = (id) => {
+
+    $.ajax({
+        url: $('#join-group-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("join-group-form-" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            console.log(data.msg);
+            $('#join-btn-' + id).text(data.msg);
+            $('#join-flag-' + id).attr('value',1)
+        },
+        error: function (data) {
+            console.log(data);
         }
     });
+}
 
-    $("#friend_btn").on('click', function (e) {
 
-        e.preventDefault();
-        var el = $(this);
+let likePageSubmit = (id) => {
 
-        $.ajax({
-            url: el.attr('href'),
-            type: 'POST',
-            data: { value: el.attr('data-id')},
-            cache: false,
-            processData: false,
-            contentType: false,
-            success: function (data) {
-                $('#friend_btn').text(data.message);
-            },
-        });
+    $.ajax({
+        url: $('#like-page-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("like-page-form-" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#like-page-btn-' + id).text(data.msg);
+            $('#like-page-flag-' + id).attr('value',1)
+        },
     });
+}
 
-    $("#friend-form").on('submit', function (e) {
 
-        e.preventDefault();
+let addPostSubmit = () => {
 
-        $.ajax({
-            url: "addfriend",
-            type: 'POST',
-            data: new FormData(this),
-            dataType: 'JSON',
-            cache: false,
-            processData: false,
-            contentType: false,
-            success: function (data) {
-                $('#friend_btn').text(data.message);
-            },
-        });
-
+    $.ajax({
+        url: $('#add-post-form').attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("add-post-form")),
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            var div = document.getElementById('addedpost');
+            $('#add-post-modal').modal('hide');
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text("post created successfully");
+            div.innerHTML = data + div.innerHTML;
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message').css('display','block');
+            $('#error-status').text(errormsg.msg);
+        }
     });
+}
 
+let editPostSubmit = (id) => {
 
-    $("#join_btn").on('click', function (e) {
-        e.preventDefault();
-
-        $("#join-form").submit();
+    $.ajax({
+        url: $('#edit-post-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("edit-post-form-" + id)),
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            var div = document.getElementById('post-' + id);
+            $('#edit-post-modal-'+ id).modal('hide');
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text("post edited successfully");
+            div.classList.remove('post-container','bg-white','mt-3','p-3');
+            div.innerHTML = data;
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message-' + id).css('display','block');
+            $('#error-status-' + id).text(errormsg.msg);
+        }
     });
+}
 
-    $("#join-form").on('submit', function (e) {
 
-        e.preventDefault();
+let deletePostSubmit = (id) => {
 
-        $.ajax({
-            url: "/joingroup",
-            type: 'POST',
-            data: new FormData(this),
-            dataType: 'JSON',
-            cache: false,
-            processData: false,
-            contentType: false,
-            success: function (data) {
-                console.log('sdfsf')
-                $('#friend').text('request sent');
-                // $('#message').attr('hidden','false');
-                // $('#uploaded_image').html(data.uploaded_image);
-            },
-        });
-
+    $.ajax({
+        url: $('#delete-post-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("delete-post-form-" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text(data.msg);
+            $('#post-' + id).css('display','none')
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message-' + id).css('display','block');
+            $('#error-status-' + id).text(errormsg.msg);
+        }
     });
+}
 
-    $("#like_btn").on('click', function (e) {
-        e.preventDefault();
+let addCommentSubmit = (id) => {
 
-        $("#like-form").submit();
-    });
-
-    $("#like-form").on('submit', function (e) {
-
-        e.preventDefault();
-
-        $.ajax({
-            url: "/likepage",
-            type: 'POST',
-            data: new FormData(this),
-            dataType: 'JSON',
-            cache: false,
-            processData: false,
-            contentType: false,
-            success: function (data) {
-                console.log('sdfsf')
-                $('#friend').text('request sent');
-                // $('#message').attr('hidden','false');
-                // $('#uploaded_image').html(data.uploaded_image);
-            },
-        });
-
-    });
-
-    function fetchRecords() {
-        $.ajax({
-            url: 'home',
-            type: 'get',
-            dataType: 'json',
-            success: function (response) {
-
-                var len = 0;
-                $('#userTable tbody tr:not(:first)').empty(); // Empty <tbody>
-                if (response['data'] != null) {
-                    len = response['data'].length;
-                }
-
-                if (len > 0) {
-                    for (var i = 0; i < len; i++) {
-
-                        var id = response['data'][i].id;
-                        var username = response['data'][i].username;
-                        var name = response['data'][i].name;
-                        var email = response['data'][i].email;
-
-                        var tr_str = "<tr>" +
-                            "<td align='center'><input type='text' value='" + username + "' id='username_" + id + "' disabled></td>" +
-                            "<td align='center'><input type='text' value='" + name + "' id='name_" + id + "'></td>" +
-                            "<td align='center'><input type='email' value='" + email + "' id='email_" + id + "'></td>" +
-                            "<td align='center'><input type='button' value='Update' class='update' data-id='" + id + "' ><input type='button' value='Delete' class='delete' data-id='" + id + "' ></td>" +
-                            "</tr>";
-
-                        $("#userTable tbody").append(tr_str);
-
-                    }
-                } else {
-                    var tr_str = "<tr class='norecord'>" +
-                        "<td align='center' colspan='4'>No record found.</td>" +
-                        "</tr>";
-
-                    $("#userTable tbody").append(tr_str);
-                }
-
+    $.ajax({
+        url: $('#add-comment-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("add-comment-form-" + id)),
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            var div = document.getElementById('added-comment-' + id);
+            if(parseInt($('#comment-count-' + id).text()) > 0) {
+                $('#comment-count-' + id).text(parseInt($('#comment-count-' + id).text()) + 1);
             }
-        });
+            else {
+                $('#comment-count-' + id).text("1");
+            }
+            div.innerHTML = div.innerHTML + data;
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            console.log(errormsg.msg)
+        }
+    });
+}
+
+let editCommentSubmit = (comment_id) => {
+
+    $.ajax({
+        url: $('#edit-comment-form-' + comment_id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("edit-comment-form-" + comment_id)),
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            var div = document.getElementById('added-comment-' + id);
+            div.innerHTML = data;
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            console.log(errormsg.msg)
+        }
+    });
+}
+
+let deleteCommentSubmit = (id) => {
+
+    $.ajax({
+        url: $('#delete-comment-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("delete-comment-form-" + id)),
+        dataType: "JSON",
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text(data.msg);
+            $('#comment-' + id).css('display','none')
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message-' + id).css('display','block');
+            $('#error-status-' + id).text(errormsg.msg);
+        }
+    });
+}
+
+let reportCommentSubmit = (comment_id) => {
+
+    $.ajax({
+        url: $('#report-comment-form-' + comment_id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("report-comment-form-" + id)),
+        dataType: "JSON",
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text(data.msg);
+            $('#comment-' + id).css('display','none')
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message-' + id).css('display','block');
+            $('#error-status-' + id).text(errormsg.msg);
+        }
+    });
+}
+
+
+
+let sharePostSubmit = (id) => {
+
+    $.ajax({
+        url: $('#share-post-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("share-post-form-" + id)),
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            var div = document.getElementById('addedpost');
+            $('#share-post-modal-' + id).modal('hide');
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text("post shared to your timeline");
+            div.innerHTML = data + div.innerHTML;
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message-' + id).css('display','block');
+            $('#error-status-' + id).text(errormsg.msg);
+        }
+    });
+}
+
+let likePostSubmit = (post_id,react_id) => {
+
+    // Here we are getting the reaction which is tapped by using the data-reaction attribute defined in main page
+    var data_reaction = $("#react-" + react_id).attr("data-reaction");
+    // Sending Ajax request in handler page to perform the database operations
+    $.ajax({
+        type: "POST",
+        url: $('#like-form-' + post_id + '-' + react_id).attr('action'),
+        data: new FormData(document.getElementById("like-form-" + post_id + "-" + react_id)),
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            // // This code will run after the Ajax is successful
+            // if(response.update == false){
+            //     $("#like-details-" + post_id).html("You"+$("#like-details-" + post_id).text());
+            // }
+            // $("#reaction-btn-emo-" + post_id).css('display','inline-block');
+            // $("#like-stat-" + post_id).css('display','block');
+            // $("#reaction-btn-emo-" + post_id).removeClass().addClass('reaction-btn-emo').addClass('like-btn-' + data_reaction);
+            // $("#reaction-btn-text-" + post_id).text(data_reaction).removeClass().addClass('reaction-btn-text').addClass('reaction-btn-text-' + data_reaction).addClass("active");
+            //
+            // if (data_reaction == "like")
+            //     $("#like-emo-" + post_id).html('<span class="like-btn-like"></span>');
+            // else
+            //     $("#like-emo-" + post_id).html('<span class="like-btn-like"></span><span class="like-btn-' + data_reaction + '"></span>');
+
+            var div = document.getElementById('reaction-container-' + post_id);
+            div.innerHTML = response;
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            console.log(errormsg);
+        }
+    })
+}
+
+
+let unlikePostSubmit = (post_id,react_id) => {
+
+    if ($('#reaction-btn-text-' + post_id).hasClass("active")) {
+            // Sending Ajax request in handler page to perform the database operations
+        $.ajax({
+            type: "POST",
+            url: $('#unlike-form-' + post_id + '-' + react_id).attr('action'),
+            data: new FormData(document.getElementById("unlike-form-" + post_id + "-" + react_id)),
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                var div = document.getElementById('reaction-container-' + post_id);
+                div.innerHTML = response;
+            },
+            error: function (data) {
+                var errormsg = $.parseJSON(data.responseText);
+                console.log(errormsg);
+            }
+        })
     }
+}
 
-});
 
 
+
+let addStorySubmit = () => {
+
+    $.ajax({
+        url: $('#add-story-form').attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("add-story-form")),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            console.log(data.msg);
+            $('#add-story-modal').hide();
+            $('#success-message').css('display','block');
+            $('#success-status').text(data.msg);
+
+        },
+        error: function (data) {
+            console.log('dsff');
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message-story').css('display','block');
+            $('#error-status-story').text(errormsg.msg);
+        }
+    });
+}
+
+
+// $(document).ready(function () {
+//     $(".emoji").on("click", function () {
+//         // Here we are getting the reaction which is tapped by using the data-reaction attribute defined in main page
+//         var data_reaction = $(this).attr("data-reaction");
+//         // Sending Ajax request in handler page to perform the database operations
+//         $.ajax({
+//             type: "POST",
+//             url: "php/like.php",
+//             data: "data_reaction=" + data_reaction,
+//             success: function (response) {
+//                 // This code will run after the Ajax is successful
+//                 $(".like-details").html("You, Knowband and 10k others");
+//                 $(".reaction-btn-emo").removeClass().addClass('reaction-btn-emo').addClass('like-btn-' + data_reaction.toLowerCase());
+//                 $(".reaction-btn-text").text(data_reaction).removeClass().addClass('reaction-btn-text').addClass('reaction-btn-text-' + data_reaction.toLowerCase()).addClass("active");
+//
+//                 if (data_reaction == "Like")
+//                     $(".like-emo").html('<span class="like-btn-like"></span>');
+//                 else
+//                     $(".like-emo").html('<span class="like-btn-like"></span><span class="like-btn-' + data_reaction.toLowerCase() + '"></span>');
+//             }
+//         })
+//     });
+//
+//     $(".reaction-btn-text").on("click", function () { // undo like click
+//         if ($(this).hasClass("active")) {
+//             // Sending Ajax request in handler page to perform the database operations
+//             $.ajax({
+//                 type: "POST",
+//                 url: "php/undo_like.php",
+//                 data: "",
+//                 success: function (response) {
+//                     // Handle when the Ajax is successful
+//                     $(".reaction-btn-text").text("Like").removeClass().addClass('reaction-btn-text');
+//                     $(".reaction-btn-emo").removeClass().addClass('reaction-btn-emo').addClass("like-btn-default");
+//                     $(".like-emo").html('<span class="like-btn-like"></span>');
+//                     $(".like-details").html("Knowband and 1k others");
+//                 }
+//             })
+//         }
+//     })
+// });

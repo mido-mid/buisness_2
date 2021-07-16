@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\GeneralTrait;
 use App\Models\Following;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -11,13 +12,15 @@ class FriendshipController extends Controller
 {
     //
 
-    public function friendship(Request $request,$user_id , $type)
+    use GeneralTrait;
+
+    public function friendship(Request $request)
     {
-        $requestType = $type;
+        $requestType = $request->requestType;
         switch ($requestType) {
             case 'addFriendRequest':
                 $senderId = auth()->user()->id;
-                $receiverId = $user_id;
+                $receiverId = $request->receiverId;
                 $state = 3;
                 $friendRequest = DB::table('friendships')->insert([
                     'senderId' => $senderId,
@@ -28,14 +31,25 @@ class FriendshipController extends Controller
                 //Receiver is the following
                 $follower = $senderId;
                 $following = $receiverId;
-                $followingRequest = DB::table('following')->insert([
-                    'followerId' => $follower,
-                    'followingId' => $following,
-                ]);
-                $msg = 'You have sent your request successfully';
-                return response()->json([
-                   "message" => "request sent"
-                ]);
+
+                $followedBefore = DB::table('following')->where('followerId',$follower)
+                    ->where('followingId',$following)->exists();
+
+                if(!$followedBefore) {
+                    $followingRequest = DB::table('following')->insert([
+                        'followerId' => $follower,
+                        'followingId' => $following,
+                    ]);
+                }
+                return $this->returnSuccessMessage('remove request');
+
+            case 'removeFriendRequest':
+                $senderId = auth()->user()->id;
+                $receiverId = $request->receiverId;
+                $friendRequest = DB::table('friendships')->where('senderId',$senderId)
+                    ->where('receiverId',$receiverId)->delete();
+                return $this->returnSuccessMessage('add friend');
+
             case 'acceptFriendRequest':
                 $friendshipId = $request->friendshipId;
                 $friendshipRecord = Friendship::find($friendshipId);
