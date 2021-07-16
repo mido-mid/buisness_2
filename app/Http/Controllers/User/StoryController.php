@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\GeneralTrait;
 use App\Models\Media;
 use App\Models\Story;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -84,7 +85,7 @@ class StoryController extends Controller
 
         if($request->hasFile('media')){
 
-            $image_ext = ['jpg', 'png', 'jpeg'];
+            $image_ext = ['jpg', 'png', 'jpeg','JPG'];
 
             $files = $request->file('media');
 
@@ -113,7 +114,33 @@ class StoryController extends Controller
         }
 
         if($story){
-            return $this->returnData(['story','msg'],[$story,"story successfully created"]);
+            $story->publisher = User::find($story->publisherId);
+            $story->media = DB::table('media')->where('model_id',$story->id)->where('model_type','story')->first();
+            $view = view('includes.partialstory', compact('story'));
+
+            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+            return $sections['story'];
+        }
+        else{
+            return $this->returnError('something wrong happened',402);
+        }
+    }
+
+
+    public function viewStory(Request $request)
+    {
+        //
+        $user = auth()->user();
+
+        $story = DB::table('stories_views')->insert([
+            'story_id' => $request->story_id,
+            'user_id' => $user->id,
+        ]);
+
+
+        if($story){
+            return $this->returnSuccessMessage('success');
         }
         else{
             return $this->returnError('something wrong happened',402);
@@ -233,11 +260,17 @@ class StoryController extends Controller
                 }
             }
 
-            return redirect()->route('home')->withStatus('story successfully updated');
+            $story->publisher = User::find($story->publisherId);
+            $story->media = DB::table('media')->where('model_id',$story->id)->where('model_type','story')->first();
+            $view = view('includes.partialstory', compact('story'));
+
+            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+            return $sections['story'];
         }
 
         else{
-            return redirect()->route('home')->withStatus('something wrong happened');
+            return $this->returnError('something wrong happened',402);
         }
     }
 
@@ -263,11 +296,11 @@ class StoryController extends Controller
 
             $story->delete();
 
-            return redirect()->route('home')->withStatus('story successfully deleted');
+            return $this->returnSuccessMessage('post successfully deleted');
         }
         else
         {
-            return redirect()->route('home')->withStatus('something wrong happened');
+            return $this->returnError('something wrong happened',402);
         }
     }
 }

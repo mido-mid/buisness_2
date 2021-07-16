@@ -8,9 +8,10 @@ class Report extends Model
 {
     protected $table = 'reports';
     protected $fillable = [
-           'sourceId',
+           'model_id',
            'body',
-           'stateId'
+           'stateId',
+            'model_type'
     ];
 
     public function post()

@@ -31,11 +31,13 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::post('savepost', 'User\PostController@savePost')->name('savepost');
         Route::resource('posts', 'User\PostController');
         Route::post('sponsor', 'User\PostController@sponsor')->name('sponsor');
+        Route::post('report', 'User\MainController@report')->name('reports.store');
         Route::resource('comments', 'User\CommentController');
         Route::get('comments', 'User\CommentController@store');
         Route::resource('likes', 'User\LikeController');
         Route::resource('shares', 'User\ShareController');
         Route::resource('stories', 'User\StoryController');
+        Route::post('viewstory', 'User\StoryController@viewStory')->name('story.view');
         Route::resource('groups', 'User\GroupsController');
         Route::resource('pages', 'User\PagesController');
         Route::resource('companies', 'User\CompaniesController');

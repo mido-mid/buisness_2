@@ -6,14 +6,14 @@
             <input type="text" placeholder="Search" />
         </div>
         <div class="stories d-flex mt-2" id="story">
-            <div class="my-story story" data-toggle="modal" data-target="#storyModal">
+            <div class="my-story story" data-toggle="modal" data-target="#add-story-modal">
                 <img
                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
                     alt="Story Pic" />
                 <i class="far fa-plus-square"></i>
             </div>
             <div class="add-story-modal">
-                <div class="modal fade" id="storyModal" tabindex="-1" aria-hidden="true">
+                <div class="modal fade" id="add-story-modal" tabindex="-1" aria-hidden="true">
                     <div class="modal-dialog" style="margin-top: 22vh">
                         <div class="modal-content">
                             <div class="modal-header d-flex justify-content-between">
@@ -76,10 +76,25 @@
                     </div>
                 </div>
             </div>
+            <div id="addedstory">
+
+
+            </div>
             @foreach($stories as $story)
-                <div class="story" data-toggle="modal" data-target="#showStoryModal-{{$story->id}}">
-                    <img
-                        src="{{asset('media')}}/{{$story->cover_image}}" />
+                <div onclick="addStoryViews({{$story->id}})" class="story" data-toggle="modal" data-target="#showStoryModal-{{$story->id}}" id="story-{{$story->id}}">
+                    @if($story->cover_image != null)
+                        <img
+                            src="{{asset('media')}}/{{$story->cover_image}}" />
+                    @else
+                        <img
+                            src="{{asset('media')}}/story_cover_image.jpg" />
+                    @endif
+
+                        <form id="view-story-form-{{$story->id}}" action="{{ route('story.view') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                            @csrf
+                            <input type="hidden" name="story_id" value="{{$story->id}}">
+                        </form>
+
                 </div>
                 <div class="show-story-modal">
                     <div class="modal fade" id="showStoryModal-{{$story->id}}" tabindex="-1" aria-hidden="true">
@@ -573,7 +588,7 @@
                                 </div>
                             @endif
                         </div>
-                        <div class="comments" onclick="toggleComments(1)"><i class="far fa-comment ml-3"></i>
+                        <div class="comments" onclick="toggleComments({{$post->id}})"><i class="far fa-comment ml-3"></i>
                                 <span id="comment-count-{{$post->id}}">
                                     @if($post->comments->count > 0)
                                         {{$post->comments->count}}
@@ -684,9 +699,9 @@
                             @endif
                         </div>
                     </div>
-                    <div class="post-comment-list post-comment-list-1 mt-2">
+                    <div class="post-comment-list post-comment-list-{{$post->id}} mt-2">
                         <div class="hide-commnet-list d-flex flex-row-reverse">
-                            <span onclick="toggleComments(1)"><i class="fas fa-chevron-up"></i> Hide</span>
+                            <span onclick="toggleComments({{$post->id}})"><i class="fas fa-chevron-up"></i> Hide</span>
                         </div>
                         @if($post->comments)
                             @foreach($post->comments as $comment)
@@ -759,6 +774,10 @@
                                                                           <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
                                                                                     placeholder="Start Typing..." >{{$comment->body}}</textarea>
                                                                     </div>
+
+                                                                    <div class="post-desc d-flex justify-content-center mt-2">
+                                                                        <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs"/>
+                                                                    </div>
                                                                     <!-- Add Post Btn -->
                                                                     <div class="post-add-btn d-flex justify-content-center mt-4">
                                                                         <button type="button" onclick="editCommentSubmit({{$comment->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
@@ -791,17 +810,19 @@
                                                                         </button>
                                                                     </div>
                                                                 </div>
-                                                                <form action="{{route('comments.update',$comment->id)}}" id="edit-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
+                                                                <form action="{{route('reports.store')}}" id="report-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
 
-                                                                @csrf
-                                                                @method('put')
+                                                                    @csrf
 
-                                                                <!-- Post Desc -->
+                                                                    <!-- Post Desc -->
                                                                     <div class="post-desc d-flex justify-content-center mt-2">
                                                                           <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
                                                                                     placeholder="Start Typing..." ></textarea>
                                                                     </div>
                                                                     <!-- Add Post Btn -->
+                                                                    <input type="hidden" name="model_id" value="{{$comment->id}}">
+                                                                    <input type="hidden" name="model_type" value="comment">
+
                                                                     <div class="post-add-btn d-flex justify-content-center mt-4">
                                                                         <button type="button" onclick="reportCommentSubmit({{$comment->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
                                                                             Report

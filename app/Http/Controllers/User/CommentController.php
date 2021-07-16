@@ -70,6 +70,7 @@ class CommentController extends Controller
             'user_id' => $user->id,
             'model_id' => $post->id,
             'model_type' => "post",
+            'comment_id' => $request->comment_id
         ]);
 
         if($comment){
@@ -78,7 +79,7 @@ class CommentController extends Controller
 
             $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
 
-            $view = view('includes.partialcomment', compact('comment'));
+            $view = view('includes.partialcomment', compact('comment','post'));
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
@@ -136,14 +137,14 @@ class CommentController extends Controller
                 'body' => $request->body,
                 'user_id' => $user->id,
                 'model_id' => $request->post_id,
-                'model_type' => $request->type,
+                'model_type' => "post",
                 'comment_id' => $request->comment_id
             ]);
             $comment->publisher = User::find($comment->user_id);
 
             $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
 
-            $view = view('includes.partialcomment', compact('comment'));
+            $view = view('includes.partialcomment', compact('comment','post'));
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 

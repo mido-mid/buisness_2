@@ -7,10 +7,12 @@ use App\Http\Traits\GeneralTrait;
 use App\Models\Group;
 use App\Models\Page;
 use App\Models\Post;
+use App\Models\Report;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class MainController extends Controller
 {
@@ -376,6 +378,51 @@ class MainController extends Controller
         }
 
         return $expected_pages;
+    }
+
+    public function report(Request $request){
+
+        $post_id = $request->post_id;
+
+        $post = Post::find($post_id);
+
+        $post_user = User::find($post->publisherId);
+
+        $user = auth()->user();
+
+        $rules = [
+            'body' => 'required','not_regex:/([%\$#\*<>]+)/',
+        ];
+
+        $validator = Validator::make($request->all(),$rules);
+
+        if ($validator->fails()) {
+            return $this->returnValidationError(402,$validator);
+        }
+
+        $comment = Report::create([
+            'body' => $request->body,
+            'user_id' => $user->id,
+            'stateId' => 3,
+            'model_id' => $request->model_id,
+            'model_type' => $request->model_type,
+        ]);
+
+        if($comment){
+
+            $comment->publisher = User::find($comment->user_id);
+
+            $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
+
+            $view = view('includes.partialcomment', compact('comment','post'));
+
+            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+            return $sections['comment'];
+        }
+        else{
+            return $this->returnError('something wrong happened',402);
+        }
     }
 
 

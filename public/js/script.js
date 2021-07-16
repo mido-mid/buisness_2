@@ -210,9 +210,15 @@ let deleteCommentSubmit = (id) => {
         processData: false,
         contentType: false,
         success: function (data) {
+            $('#comment-' + id).css('display','none');
+            if(parseInt($('#comment-count-' + id).text()) > 0) {
+                $('#comment-count-' + id).text(parseInt($('#comment-count-' + id).text()) - 1);
+            }
+            else {
+                $('#comment-count-' + id).text("1");
+            }
             $('#success-modal').modal('show');
             $('#success-modal-message').text(data.msg);
-            $('#comment-' + id).css('display','none')
         },
         error: function (data) {
             var errormsg = $.parseJSON(data.responseText);
@@ -341,19 +347,18 @@ let addStorySubmit = () => {
         url: $('#add-story-form').attr('action'),
         type: 'POST',
         data: new FormData(document.getElementById("add-story-form")),
-        dataType: 'JSON',
         cache: false,
         processData: false,
         contentType: false,
         success: function (data) {
-            console.log(data.msg);
-            $('#add-story-modal').hide();
-            $('#success-message').css('display','block');
-            $('#success-status').text(data.msg);
+            var div = document.getElementById('addedstory');
+            $('#add-story-modal').modal('hide');
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text("story added successfully");
+            div.innerHTML = data + div.innerHTML;
 
         },
         error: function (data) {
-            console.log('dsff');
             var errormsg = $.parseJSON(data.responseText);
             $('#error-message-story').css('display','block');
             $('#error-status-story').text(errormsg.msg);
@@ -362,44 +367,46 @@ let addStorySubmit = () => {
 }
 
 
-// $(document).ready(function () {
-//     $(".emoji").on("click", function () {
-//         // Here we are getting the reaction which is tapped by using the data-reaction attribute defined in main page
-//         var data_reaction = $(this).attr("data-reaction");
-//         // Sending Ajax request in handler page to perform the database operations
-//         $.ajax({
-//             type: "POST",
-//             url: "php/like.php",
-//             data: "data_reaction=" + data_reaction,
-//             success: function (response) {
-//                 // This code will run after the Ajax is successful
-//                 $(".like-details").html("You, Knowband and 10k others");
-//                 $(".reaction-btn-emo").removeClass().addClass('reaction-btn-emo').addClass('like-btn-' + data_reaction.toLowerCase());
-//                 $(".reaction-btn-text").text(data_reaction).removeClass().addClass('reaction-btn-text').addClass('reaction-btn-text-' + data_reaction.toLowerCase()).addClass("active");
-//
-//                 if (data_reaction == "Like")
-//                     $(".like-emo").html('<span class="like-btn-like"></span>');
-//                 else
-//                     $(".like-emo").html('<span class="like-btn-like"></span><span class="like-btn-' + data_reaction.toLowerCase() + '"></span>');
-//             }
-//         })
-//     });
-//
-//     $(".reaction-btn-text").on("click", function () { // undo like click
-//         if ($(this).hasClass("active")) {
-//             // Sending Ajax request in handler page to perform the database operations
-//             $.ajax({
-//                 type: "POST",
-//                 url: "php/undo_like.php",
-//                 data: "",
-//                 success: function (response) {
-//                     // Handle when the Ajax is successful
-//                     $(".reaction-btn-text").text("Like").removeClass().addClass('reaction-btn-text');
-//                     $(".reaction-btn-emo").removeClass().addClass('reaction-btn-emo').addClass("like-btn-default");
-//                     $(".like-emo").html('<span class="like-btn-like"></span>');
-//                     $(".like-details").html("Knowband and 1k others");
-//                 }
-//             })
-//         }
-//     })
-// });
+let deleteStorySubmit = (id) => {
+
+    $.ajax({
+        url: $('#delete-story-form' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("delete-story-form" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text(data.msg);
+            $('#story-' + id).css('display','none')
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message-' + id).css('display','block');
+            $('#error-status-' + id).text(errormsg.msg);
+        }
+    });
+}
+
+
+let addStoryViews = (id) => {
+
+    $.ajax({
+        url: $('#view-story-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("view-story-form-" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            console.log(data.msg);
+        },
+        error: function (data) {
+            console.log('dsff');
+        }
+    });
+}
+
