@@ -76,12 +76,12 @@
                     </div>
                 </div>
             </div>
-            <div id="addedstory">
+            <div id="addedstory" style="display: none">
 
 
             </div>
             @foreach($stories as $story)
-                <div onclick="addStoryViews({{$story->id}})" class="story" data-toggle="modal" data-target="#showStoryModal-{{$story->id}}" id="story-{{$story->id}}">
+                <div onclick="addStoryViews({{$story->id}})" class="story" data-toggle="modal" data-target="#show-story-modal-{{$story->id}}" id="story-{{$story->id}}">
                     @if($story->cover_image != null)
                         <img
                             src="{{asset('media')}}/{{$story->cover_image}}" />
@@ -97,9 +97,21 @@
 
                 </div>
                 <div class="show-story-modal">
-                    <div class="modal fade" id="showStoryModal-{{$story->id}}" tabindex="-1" aria-hidden="true">
+                    <div class="modal fade" id="show-story-modal-{{$story->id}}" tabindex="-1" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
+                                <div class="modal-header d-flex justify-content-between">
+                                    <span></span>
+                                    @if($story->publisher->id == auth()->user()->id)
+                                        <button onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$story->id}}) : ''">
+                                            Delete</button>
+                                        <form action="{{ route('stories.destroy', $story->id) }}" id="delete-story-form-{{$story->id}}" method="post">
+                                            @csrf
+                                            @method('delete')
+                                            <!-- ajax-->
+                                        </form>
+                                    @endif
+                                </div>
                                 <div class="modal-body">
                                     <!-- If Content Img -->
                                     <!-- <div class="story-content-img">
@@ -159,6 +171,28 @@
                                         @endif
 
                                     @endif
+
+                                    @if($story->publisher->id == auth()->user()->id)
+                                        <button data-toggle="modal" data-target="#story-viewers-modal-{{$story->id}}">story views : {{count($story->viewers)}}</button>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="show-story-modal">
+                    <div class="modal fade" id="story-viewers-modal-{{$story->id}}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header d-flex justify-content-between">
+                                    <span></span>
+                                    <h5 class="modal-title" id="exampleModalLabel">Story Viewers</h5>
+                                </div>
+                                <div class="modal-body">
+                                    @foreach($story->viewers as $viewer)
+                                        {{$viewer->name}}
+                                    @endforeach
                                 </div>
                             </div>
                         </div>
@@ -240,19 +274,7 @@
                             <form action="{{route('posts.store')}}" method="POST" class="container" id="add-post-form" enctype="multipart/form-data">
 
                                @csrf
-                                <!-- Select Post Type -->
-{{--                                <div class="post-type d-flex justify-content-between align-items-center m-auto w-75">--}}
-{{--                                    <div>Post As:</div>--}}
-{{--                                    <div class="d-flex align-items-center">--}}
-{{--                                        <input type="radio" name="post-type" value="post" id="post-type-post" checked />--}}
-{{--                                        <span class="pl-2">Post</span>--}}
-{{--                                    </div>--}}
-{{--                                    <div class="d-flex align-items-center">--}}
-{{--                                        <input class="m-0" type="radio" name="post-type" value="service" id="post-type-service" />--}}
-{{--                                        <span class="pl-2">Service</span>--}}
-{{--                                    </div>--}}
-{{--                                </div>--}}
-                                <!-- Select post Privacy -->
+
                                 <div class="post-privacy d-flex justify-content-between align-items-center m-auto w-75">
                                     <label for="cars">Choose Post Privacy:</label>
                                     <select id="post-privacy" name="privacy_id">
@@ -277,29 +299,24 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                {{--                                <div id="post-type-service-content" class="d-none">--}}
-{{--                                    <!-- Select Service Category -->--}}
-{{--                                    <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">--}}
-{{--                                        <label for="cars">Choose A Category:</label>--}}
-{{--                                        <select id="post-category" name="categoryId">--}}
-{{--                                            @foreach($categories as $category)--}}
-{{--                                                @if(App::getlocale() == 'en')--}}
-{{--                                                    <option value="{{$category->id}}">{{$category->name_en}}</option>--}}
-{{--                                                @else--}}
-{{--                                                    <option value="{{$category->id}}">{{$category->name_ar}}</option>--}}
-{{--                                                @endif--}}
-{{--                                            @endforeach--}}
-{{--                                        </select>--}}
-{{--                                    </div>--}}
-{{--                                    <!-- Select Service Price -->--}}
-{{--                                    <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">--}}
-{{--                                        <input class="w-100 border" type="number" placeholder="Service Price $" />--}}
-{{--                                    </div>--}}
-{{--                                </div>--}}
-                                <!-- Post Desc -->
+
+                               <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
+                                   <label>Tag friends:</label>
+                                   <select style="width: 200px" class="js-example-basic-multiple" id="post-tags" name="tags[]" multiple="multiple">
+                                       @foreach($friends_info as $friend)
+                                           <option value="{{$friend->id}}">{{$friend->name}}</option>
+                                       @endforeach
+                                   </select>
+                               </div>
+
                                 <div class="post-desc d-flex justify-content-center mt-2">
-                                    <textarea class="w-75 p-2" name="body" id="post-text" cols="200" rows="4"
+                                    <textarea class="w-75 p-2" name="body" onkeypress="if ($('#post-text').val() == '@') { $('#user-friends').css('display','block');}" id="post-text" cols="200" rows="4"
                                     placeholder="Post Description..."></textarea>
+                                    <ul id="user-friends" class="mention-box" style="display: none">
+                                        @foreach($friends_info as $friend)
+                                            <li class="mention-names" onclick="$('#post-text').text($('#post-text').text() + '@' + {{$friend->name}})">{{$friend->name}}</li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                                 <!-- Post Images -->
                                 <div class="post-desc d-flex justify-content-center mt-2">
@@ -337,7 +354,20 @@
                         </div>
                     @endif
                     <div class="owner-name pl-3">
-                        <a href="{{route('profile',$post->publisher->id)}}"><b>{{$post->publisher->name}}</b></a><br>
+                        <a href="{{route('profile',$post->publisher->id)}}"><b>
+                                {{$post->publisher->name}}
+                            </b></a><br>
+                        <a data-toggle="modal" data-target="#show-tag-modal-{{$post->id}}"><b>
+                                @if($post->tags != null )
+                                    with
+                                    @if($post->tagged == true)
+                                        you and {{count($post->tags_info) - 1}}
+                                    @else
+                                        {{count($post->tags_info)}}
+                                    @endif
+                                    others
+                                @endif
+                            </b></a><br>
                         <span>{{date('d/m/Y',strtotime($post->created_at))}}</span>
                     </div>
                     <!-- Post options -->
@@ -365,13 +395,81 @@
                                 @method('delete')
                                 <!-- ajax-->
                                 <li data-toggle="modal" data-target="#edit-post-modal-{{$post->id}}">Edit</li>
-                                <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''" class="last-li">
+                                <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
                                     Delete</li>
                             </form>
+                            <li data-toggle="modal" data-target="#report-post-modal-{{$post->id}}" class="last-li">Report</li>
                         </ul>
                     </div>
                     <div class="post-option ml-auto pr-3" onclick="toggleOptions({{$post->id}})">
                         <i class="fas fa-ellipsis-v"></i>
+                    </div>
+                </div>
+
+                @if($post->tags != null)
+
+                    <div class="post-edit-modal">
+                        <div class="modal fade" id="show-tag-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog" style="margin-top: 22vh">
+                                <div class="modal-content">
+                                    <div class="modal-header d-flex justify-content-between">
+                                        <span></span>
+                                        <h5 class="modal-title" id="exampleModalLabel">Tagged Users</h5>
+                                        <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        @foreach($post->tags_info as $tag)
+                                            {{$tag->name}} </br>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                <div class="post-edit-modal">
+                    <div class="modal fade" id="report-post-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog" style="margin-top: 22vh">
+                            <div class="modal-content">
+                                <div class="modal-header d-flex justify-content-between">
+                                    <span></span>
+                                    <h5 class="modal-title" id="exampleModalLabel">Report Comment</h5>
+                                    <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="col-12" id="error-message-{{$post->id}}" style="display: none">
+                                        <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$post->id}}" role="alert">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <form action="{{route('reports.store')}}" id="report-post-form-{{$post->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                                    @csrf
+
+                                    <!-- Post Desc -->
+                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                                                    placeholder="Start Typing..." ></textarea>
+                                        </div>
+                                        <!-- Add Post Btn -->
+                                        <input type="hidden" name="model_id" value="{{$post->id}}">
+                                        <input type="hidden" name="model_type" value="post">
+
+                                        <div class="post-add-btn d-flex justify-content-center mt-4">
+                                            <button type="button" onclick="reportPostSubmit({{$post->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                                Report
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="post-desc mt-3">
@@ -737,13 +835,15 @@
                                         <ul class="options">
                                             <li data-toggle="modal" data-target="#report-comment-modal-{{$comment->id}}">
                                                 Report this comment</li>
-                                            <li data-toggle="modal" data-target="#edit-comment-modal-{{$comment->id}}">Edit</li>
-                                            <li onclick="confirm('{{ __("Are you sure you want to delete this comment ?") }}') ? deleteCommentSubmit({{$comment->id}}) : ''" >Delete</li>
-                                            <form action="{{ route('comments.destroy', $comment->id) }}" id="delete-comment-form-{{$comment->id}}" method="POST">
-                                                @csrf
-                                                @method('delete')
-                                                <!-- ajax-->
-                                            </form>
+                                            @if($comment->publisher->id == auth()->user()->id)
+                                                <li data-toggle="modal" data-target="#edit-comment-modal-{{$comment->id}}">Edit</li>
+                                                <li onclick="confirm('{{ __("Are you sure you want to delete this comment ?") }}') ? deleteCommentSubmit({{$comment->id}},{{$post->id}}) : ''" >Delete</li>
+                                                <form action="{{ route('comments.destroy', $comment->id) }}" id="delete-comment-form-{{$comment->id}}" method="POST">
+                                                    @csrf
+                                                    @method('delete')
+                                                    <!-- ajax-->
+                                                </form>
+                                            @endif
 
                                             <div class="post-edit-modal">
                                                 <div class="modal fade" id="edit-comment-modal-{{$comment->id}}" tabindex="-1" aria-hidden="true">
@@ -775,6 +875,8 @@
                                                                                     placeholder="Start Typing..." >{{$comment->body}}</textarea>
                                                                     </div>
 
+                                                                    <input type="hidden" name="model_id" value="{{$post->id}}">
+
                                                                     <div class="post-desc d-flex justify-content-center mt-2">
                                                                         <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs"/>
                                                                     </div>
@@ -803,8 +905,8 @@
                                                                 </button>
                                                             </div>
                                                             <div class="modal-body">
-                                                                <div class="col-12" id="error-message-{{$post->id}}" style="display: none">
-                                                                    <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$post->id}}" role="alert">
+                                                                <div class="col-12" id="error-message-{{$comment->id}}" style="display: none">
+                                                                    <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$comment->id}}" role="alert">
                                                                         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                                                             <span aria-hidden="true">&times;</span>
                                                                         </button>
@@ -840,11 +942,6 @@
                                         <i class="fas fa-ellipsis-v" onclick="toggleCommentOptions({{$comment->id}})"></i>
                                     </div>
                                 </div>
-                                @if(count($post->comments) > 1)
-                                    <hr class="m-0" />
-                                @endif
-                            <!-- if there is multi comments then take uncomment hr -->
-    {{--                        <hr class="m-0" /> --}}
                             @endforeach
                             <div id="added-comment-{{$post->id}}">
 

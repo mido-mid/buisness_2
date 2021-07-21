@@ -13,7 +13,20 @@
             </div>
         @endif
         <div class="owner-name pl-3">
-            <a href="{{route('profile',$post->publisher->id)}}"><b>{{$post->publisher->name}}</b></a><br>
+            <a href="{{route('profile',$post->publisher->id)}}"><b>
+                    {{$post->publisher->name}}
+                </b></a><br>
+            <a data-toggle="modal" data-target="#show-tag-modal-{{$post->id}}"><b>
+                    @if($post->tags != null )
+                        with
+                        @if($post->tagged == true)
+                            you and {{count($post->tags_info) - 1}}
+                        @else
+                            {{count($post->tags_info)}}
+                        @endif
+                        others
+                    @endif
+                </b></a><br>
             <span>{{date('d/m/Y',strtotime($post->created_at))}}</span>
         </div>
         <!-- Post options -->
@@ -41,13 +54,81 @@
                 @method('delete')
                 <!-- ajax-->
                     <li data-toggle="modal" data-target="#edit-post-modal-{{$post->id}}">Edit</li>
-                    <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''" class="last-li">
+                    <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
                         Delete</li>
                 </form>
+                <li data-toggle="modal" data-target="#report-post-modal-{{$post->id}}" class="last-li">Report</li>
             </ul>
         </div>
         <div class="post-option ml-auto pr-3" onclick="toggleOptions({{$post->id}})">
             <i class="fas fa-ellipsis-v"></i>
+        </div>
+    </div>
+
+    @if($post->tags != null)
+
+        <div class="post-edit-modal">
+            <div class="modal fade" id="show-tag-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog" style="margin-top: 22vh">
+                    <div class="modal-content">
+                        <div class="modal-header d-flex justify-content-between">
+                            <span></span>
+                            <h5 class="modal-title" id="exampleModalLabel">Tagged Users</h5>
+                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            @foreach($post->tags_info as $tag)
+                            {{$tag->name}} </br>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+    <div class="post-edit-modal">
+        <div class="modal fade" id="report-post-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog" style="margin-top: 22vh">
+                <div class="modal-content">
+                    <div class="modal-header d-flex justify-content-between">
+                        <span></span>
+                        <h5 class="modal-title" id="exampleModalLabel">Report Comment</h5>
+                        <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="col-12" id="error-message-{{$post->id}}" style="display: none">
+                            <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$post->id}}" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </div>
+                        <form action="{{route('reports.store')}}" id="report-post-form-{{$post->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                        @csrf
+
+                        <!-- Post Desc -->
+                            <div class="post-desc d-flex justify-content-center mt-2">
+                                                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                                                    placeholder="Start Typing..." ></textarea>
+                            </div>
+                            <!-- Add Post Btn -->
+                            <input type="hidden" name="model_id" value="{{$post->id}}">
+                            <input type="hidden" name="model_type" value="post">
+
+                            <div class="post-add-btn d-flex justify-content-center mt-4">
+                                <button type="button" onclick="reportPostSubmit({{$post->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                    Report
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="post-desc mt-3">
@@ -224,53 +305,52 @@
                         </div>
                     </div>
                 @else
-
                     <div class="reaction-container" id="reaction-container-{{$post->id}}">
                         <!-- container div for reaction system -->
                         <span class="reaction-btn">
-                                            <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$post->id}}" style="display: none"></span>
+                                        <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$post->id}}" style="display: none"></span>
                             <!-- Default like button emotion-->
-                                            <span class="reaction-btn-text" id="reaction-btn-text-{{$post->id}}">
-                                                <div><i class="far fa-thumbs-up"></i>
-                                                    @if($post->likes->count > 0)
-                                                        <span>
-                                                            {{$post->likes->count}}
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            </span>
+                                        <span class="reaction-btn-text" id="reaction-btn-text-{{$post->id}}">
+                                            <div><i class="far fa-thumbs-up"></i>
+                                                @if($post->likes->count > 0)
+                                                    <span>
+                                                        {{$post->likes->count}}
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </span>
                             <!-- Default like button text,(Like, wow, sad..) default:Like  -->
-                                            <ul class="emojies-box">
-                                                @foreach($reacts as $react)
-                                                    <!-- Reaction buttons container-->
-                                                        <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likePostSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
-                                                        <form id="like-form-{{$post->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                    @csrf
-                                                    <input type="hidden" name="model_id" value="{{$post->id}}">
-                                                    <input type="hidden" name="model_type" value="post">
-                                                    <input type="hidden" name="reactId" value="{{$react->id}}">
-                                                </form>
-                                                    @endforeach
-                                            </ul>
-                                          </span>
+                                        <ul class="emojies-box">
+                                            @foreach($reacts as $react)
+                                                <!-- Reaction buttons container-->
+                                                    <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likePostSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
+                                                    <form id="like-form-{{$post->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                @csrf
+                                                <input type="hidden" name="model_id" value="{{$post->id}}">
+                                                <input type="hidden" name="model_type" value="post">
+                                                <input type="hidden" name="reactId" value="{{$react->id}}">
+                                            </form>
+                                                @endforeach
+                                        </ul>
+                                    </span>
                         <div class="like-stat" id="like-stat-{{$post->id}}" style="display: none">
                             <!-- Like statistic container-->
                             <span class="like-emo" id="like-emo-{{$post->id}}">
-                                              <!-- like emotions container -->
-                                              <span class="like-btn-like"></span>
+                                          <!-- like emotions container -->
+                                          <span class="like-btn-like"></span>
                                 <!-- given emotions like, wow, sad (default:Like) -->
-                                            </span>
+                                        </span>
                             <span class="like-details" id="like-details-{{$post->id}}">@if($post->likes->count-1 > 0) and {{$post->likes->count-1}} @if($post->likes->count-1 > 1000) k @endif others @endif</span>
                         </div>
                     </div>
                 @endif
             </div>
-            <div class="comments" onclick="toggleComments(1)"><i class="far fa-comment ml-3"></i>
-                @if($post->comments->count > 0)
-                    <span>
-                                    {{$post->comments->count}}
+            <div class="comments" onclick="toggleComments({{$post->id}})"><i class="far fa-comment ml-3"></i>
+                <span id="comment-count-{{$post->id}}">
+                                    @if($post->comments->count > 0)
+                        {{$post->comments->count}}
+                    @endif
                                 </span>
-                @endif
             </div>
             <div class="modal" id="share-post-modal-{{$post->id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
                  aria-hidden="true">
@@ -376,13 +456,13 @@
                 @endif
             </div>
         </div>
-        <div class="post-comment-list post-comment-list-1 mt-2">
+        <div class="post-comment-list post-comment-list-{{$post->id}} mt-2">
             <div class="hide-commnet-list d-flex flex-row-reverse">
-                <span onclick="toggleComments(1)"><i class="fas fa-chevron-up"></i> Hide</span>
+                <span onclick="toggleComments({{$post->id}})"><i class="fas fa-chevron-up"></i> Hide</span>
             </div>
             @if($post->comments)
                 @foreach($post->comments as $comment)
-                    <div class="comment d-flex justify-content-between">
+                    <div class="comment d-flex justify-content-between" id="comment-{{$comment->id}}">
                         <div class="comment-owner d-flex p-2">
                             @if($comment->publisher->personal_image)
                                 <div class="owner-img">
@@ -412,26 +492,127 @@
                         </div>
                         <div class="comment-options comment-options-{{$comment->id}}">
                             <ul class="options">
-                                <li>Report This Comment</li>
+                                <li data-toggle="modal" data-target="#report-comment-modal-{{$comment->id}}">
+                                    Report this comment</li>
+                                @if($comment->publisher->id == auth()->user()->id)
+                                    <li data-toggle="modal" data-target="#edit-comment-modal-{{$comment->id}}">Edit</li>
+                                    <li onclick="confirm('{{ __("Are you sure you want to delete this comment ?") }}') ? deleteCommentSubmit({{$comment->id}},{{$post->id}}) : ''" >Delete</li>
+                                    <form action="{{ route('comments.destroy', $comment->id) }}" id="delete-comment-form-{{$comment->id}}" method="POST">
+                                    @csrf
+                                    @method('delete')
+                                    <!-- ajax-->
+                                    </form>
+                                @endif
+
+                                <div class="post-edit-modal">
+                                    <div class="modal fade" id="edit-comment-modal-{{$comment->id}}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog" style="margin-top: 22vh">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex justify-content-between">
+                                                    <span></span>
+                                                    <h5 class="modal-title" id="exampleModalLabel">Edit Comment</h5>
+                                                    <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="col-12" id="error-message-{{$post->id}}" style="display: none">
+                                                        <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$post->id}}" role="alert">
+                                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <form action="{{route('comments.update',$comment->id)}}" id="edit-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                                                    @csrf
+                                                    @method('put')
+
+                                                    <!-- Post Desc -->
+                                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                                                    placeholder="Start Typing..." >{{$comment->body}}</textarea>
+                                                        </div>
+
+                                                        <input type="hidden" name="model_id" value="{{$post->id}}">
+
+                                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                            <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs"/>
+                                                        </div>
+                                                        <!-- Add Post Btn -->
+                                                        <div class="post-add-btn d-flex justify-content-center mt-4">
+                                                            <button type="button" onclick="editCommentSubmit({{$comment->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                                                Save
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="post-edit-modal">
+                                    <div class="modal fade" id="report-comment-modal-{{$comment->id}}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog" style="margin-top: 22vh">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex justify-content-between">
+                                                    <span></span>
+                                                    <h5 class="modal-title" id="exampleModalLabel">Report Comment</h5>
+                                                    <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="col-12" id="error-message-{{$comment->id}}" style="display: none">
+                                                        <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$comment->id}}" role="alert">
+                                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                                <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <form action="{{route('reports.store')}}" id="report-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                                                    @csrf
+
+                                                    <!-- Post Desc -->
+                                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                                                    placeholder="Start Typing..." ></textarea>
+                                                        </div>
+                                                        <!-- Add Post Btn -->
+                                                        <input type="hidden" name="model_id" value="{{$comment->id}}">
+                                                        <input type="hidden" name="model_type" value="comment">
+
+                                                        <div class="post-add-btn d-flex justify-content-center mt-4">
+                                                            <button type="button" onclick="reportCommentSubmit({{$comment->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                                                Report
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </ul>
                         </div>
                         <div class="comment-option ml-auto pr-3 pt-2">
                             <i class="fas fa-ellipsis-v" onclick="toggleCommentOptions({{$comment->id}})"></i>
                         </div>
                     </div>
-                    @if(count($post->comments) > 1)
-                        <hr class="m-0" />
-                    @endif
-                <!-- if there is multi comments then take uncomment hr -->
-                    {{--                        <hr class="m-0" /> --}}
                 @endforeach
+                <div id="added-comment-{{$post->id}}">
+
+                </div>
             @endif
         </div>
-        <button type="button" id="comment-submit-btn-{{$post->id}}" onclick="addCommentSubmit({{$post->id}})" hidden></button>
-        <form class="add-commnet mt-2 d-flex align-items-center" onkeypress="commentSubmitClick({{$post->id}})" id="add-comment-form-{{$post->id}}" action="{{route('comments.store')}}" method="POST" enctype="multipart/form-data">
+        <button type="button" id="comment-submit-btn-{{$post->id}}" onclick="event.preventDefault();
+            addCommentSubmit({{$post->id}})" hidden></button>
+        <form class="add-commnet mt-2 d-flex align-items-center" onkeypress="if (event.keyCode === 13) { event.preventDefault(); $('#comment-submit-btn-{{$post->id}}').click();}" id="add-comment-form-{{$post->id}}" action="{{route('comments.store')}}" method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="post_id" value="{{$post->id}}" />
-            <input class="w-100 pl-2" type="text" name="body" placeholder="Add Your Commnet" />
+            <input class="w-100 pl-2" type="text" name="body" placeholder="Add Your Comment" />
             <div class="d-flex align-items-center pr-3">
                 <i class="fas fa-paperclip" onclick="commentAttachClick({{$post->id}})"></i>
                 <input type="file" id="comment-attach-{{$post->id}}" name="img" accept="image/*" />

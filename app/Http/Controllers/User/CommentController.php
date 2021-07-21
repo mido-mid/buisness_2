@@ -51,8 +51,6 @@ class CommentController extends Controller
 
         $post = Post::find($post_id);
 
-        $post_user = User::find($post->publisherId);
-
         $user = auth()->user();
 
         $rules = [
@@ -74,6 +72,10 @@ class CommentController extends Controller
         ]);
 
         if($comment){
+
+            $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
+
+            $post->comments = $comments;
 
             $comment->publisher = User::find($comment->user_id);
 
@@ -122,6 +124,8 @@ class CommentController extends Controller
     public function update(Request $request, $comment_id)
     {
         //
+        $post = Post::find($request->model_id);
+
         $user = auth()->user();
 
         $comment = Comment::find($comment_id);
@@ -136,10 +140,15 @@ class CommentController extends Controller
             $comment->update([
                 'body' => $request->body,
                 'user_id' => $user->id,
-                'model_id' => $request->post_id,
+                'model_id' => $request->model_id,
                 'model_type' => "post",
                 'comment_id' => $request->comment_id
             ]);
+
+            $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
+
+            $post->comments = $comments;
+
             $comment->publisher = User::find($comment->user_id);
 
             $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
@@ -168,6 +177,12 @@ class CommentController extends Controller
 
         if($comment)
         {
+            $comment_media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->get();
+
+            foreach ($comment_media as $media){
+                DB::table('media')->where('id',$media->id)->delete();
+                unlink('media/' . $media->filename);
+            }
             $comment->delete();
             return $this->returnSuccessMessage('comment deleted',200);
         }

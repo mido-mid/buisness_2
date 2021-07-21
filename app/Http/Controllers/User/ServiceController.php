@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\GeneralTrait;
 use App\Models\Category;
 use App\Models\Company;
 use App\models\Likes;
@@ -14,10 +15,13 @@ use App\Models\State;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Ratchet\App;
 
 class ServiceController extends Controller
 {
+
+    use GeneralTrait;
     /**
      * Display a listing of the resource.
      *
@@ -77,6 +81,83 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         //
+        $user = auth()->user();
+        $rules = [
+            'body' => ['required'],
+            'price' => ['nullable','numeric'],
+            'media' => 'nullable',
+            'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif|max:100040',
+            'category_id' => 'required|integer'
+        ];
+
+        $validator = Validator::make($request->all(),$rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'msg' => $validator->errors()->first()
+            ],402);
+        }
+
+        if($request->hasFile('media')){
+
+            $image_ext = ['jpg', 'png', 'jpeg','svg','gif'];
+
+            $files = $request->file('media');
+
+            foreach ($files as $file) {
+
+                $fileextension = $file->getClientOriginalExtension();
+
+                if (in_array($fileextension, $image_ext)) {
+                    $mediaType = 'image';
+                } else {
+                    $mediaType = 'video';
+                }
+
+                $filename = $file->getClientOriginalName();
+                $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
+
+                if($file->move('media', $file_to_store)) {
+                    Media::create([
+                        'filename' => $file_to_store,
+                        'mediaType' => $mediaType,
+                        'model_id' => $request->model_id,
+                        'model_type' => "post"
+                    ]);
+                }
+            }
+        }
+
+        $service = Post::create([
+            'body' => $request->body,
+            'price' => $request->price,
+            'privacyId' => 1,
+            'postTypeId' => 1,
+            'stateId' => 2,
+            'publisherId' => $user->id,
+            'categoryId' => $request->category_id,
+        ]);
+
+
+
+        $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
+        $publisher = User::find($service->publisherId);
+        $follow = DB::table('following')->Where('followerId',2)->first();
+        $service->media = $media;
+        $service->publisher = $publisher;
+        $service->follow = $follow  ? 'true' : 'false';
+        $categories = Category::where('type','service')->get();
+
+        if($service){
+            $view = view('includes.partialservice', compact('service','categories'));
+
+            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+            return $sections['service'];
+        }
+        else{
+            return $this->returnError('something wrong happened',402);
+        }
     }
 
     /**
@@ -122,9 +203,116 @@ class ServiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $service_id)
     {
         //
+        $service = Post::find($service_id);
+
+        $user = auth()->user();
+
+        $rules = [
+            'body' => ['required'],
+            'price' => ['nullable','numeric'],
+            'media' => 'nullable',
+            'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif|max:100040',
+            'category_id' => 'required|integer'
+        ];
+
+        $validator = Validator::make($request->all(),$rules);
+
+        if ($validator->fails()) {
+            return $this->returnValidationError(402,$validator);
+        }
+
+        if($service){
+
+            $service->update([
+                'body' => $request->body,
+                'price' => $request->price,
+                'privacyId' => 1,
+                'postTypeId' => 1,
+                'stateId' => 2,
+                'publisherId' => $user->id,
+                'categoryId' => $request->category_id,
+            ]);
+
+            if($request->hasFile('media')){
+
+                $image_ext = ['jpg', 'png', 'jpeg','svg','gif'];
+
+                $files = $request->file('media');
+
+                foreach ($files as $file) {
+
+                    $post_media = DB::table('media')->where('model_id',$service_id)->get();
+
+                    foreach ($post_media as $media){
+                        $media->delete();
+                        unlink('media/' . $media->filename);
+                    }
+
+                    $fileextension = $file->getClientOriginalExtension();
+
+                    if (in_array($fileextension, $image_ext)) {
+                        $mediaType = 'image';
+                    } else {
+                        $mediaType = 'video';
+                    }
+
+                    $filename = $file->getClientOriginalName();
+                    $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
+
+                    if($file->move('media', $file_to_store)) {
+                        Media::create([
+                            'filename' => $file_to_store,
+                            'mediaType' => $mediaType,
+                            'model_id' => $request->model_id,
+                            'model_type' => "post"
+                        ]);
+                    }
+                }
+
+            }
+
+            if($request->has('checkedimages')){
+
+                $post_media = [];
+
+                foreach ($post_media as $media){
+                    $post_media = $media->filename;
+                }
+
+                $checkedimages = $request->input('checkedimages');
+
+                $deleted_media = array_diff($post_media, $checkedimages);
+
+                if (!empty($deleted_media)) {
+                    foreach ($deleted_media as $media) {
+                        DB::table('media')->where('filename',$media)->delete();
+                        unlink('product_images/' . $media);
+                    }
+                }
+            }
+
+            $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
+            $publisher = User::find($service->publisherId);
+            $follow = DB::table('following')->Where('followerId',2)->first();
+            $service->media = $media;
+            $service->publisher = $publisher;
+            $service->follow = $follow  ? 'true' : 'false';
+            $categories = Category::where('type','service')->get();
+
+
+            $view = view('includes.partialservice', compact('service','categories'));
+
+            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+            return $sections['service'];
+        }
+
+        else{
+            return $this->returnError('something wrong happened',402);
+        }
     }
 
     /**
@@ -133,9 +321,28 @@ class ServiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($service_id)
     {
         //
+        $service = Post::find($service_id);
+
+        if($service)
+        {
+            $service_media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get();
+
+            foreach ($service_media as $media){
+                DB::table('media')->where('id',$media->id)->delete();
+                unlink('media/' . $media->filename);
+            }
+
+            $service->delete();
+
+            return $this->returnSuccessMessage('service successfully deleted');
+        }
+        else
+        {
+            return $this->returnError('something wrong happened',402);
+        }
     }
 
     public function getCategories() {

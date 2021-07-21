@@ -91,12 +91,14 @@ let addPostSubmit = () => {
         contentType: false,
         success: function (data) {
             var div = document.getElementById('addedpost');
+            $('#addedstory').css('display','inline-block');
             $('#add-post-modal').modal('hide');
             $('#success-modal').modal('show');
             $('#success-modal-message').text("post created successfully");
             div.innerHTML = data + div.innerHTML;
         },
         error: function (data) {
+            console.log(data.responseText);
             var errormsg = $.parseJSON(data.responseText);
             $('#error-message').css('display','block');
             $('#error-status').text(errormsg.msg);
@@ -153,6 +155,30 @@ let deletePostSubmit = (id) => {
     });
 }
 
+let reportPostSubmit = (id) => {
+
+    $.ajax({
+        url: $('#report-post-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("report-post-form-" + id)),
+        dataType: "JSON",
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text(data.msg);
+            $('#post-' + id).css('display','none')
+        },
+        error: function (data) {
+            var errormsg = $.parseJSON(data.responseText);
+            console.log(errormsg);
+            $('#error-message-' + id).css('display','block');
+            $('#error-status-' + id).text(errormsg.msg);
+        }
+    });
+}
+
 let addCommentSubmit = (id) => {
 
     $.ajax({
@@ -174,51 +200,55 @@ let addCommentSubmit = (id) => {
         },
         error: function (data) {
             var errormsg = $.parseJSON(data.responseText);
-            console.log(errormsg.msg)
+            console.log(errormsg)
         }
     });
 }
 
-let editCommentSubmit = (comment_id) => {
+let editCommentSubmit = (id) => {
 
     $.ajax({
-        url: $('#edit-comment-form-' + comment_id).attr('action'),
+        url: $('#edit-comment-form-' + id).attr('action'),
         type: 'POST',
-        data: new FormData(document.getElementById("edit-comment-form-" + comment_id)),
+        data: new FormData(document.getElementById("edit-comment-form-" + id)),
         cache: false,
         processData: false,
         contentType: false,
         success: function (data) {
-            var div = document.getElementById('added-comment-' + id);
+            var div = document.getElementById('comment-' + id);
+            div.classList.remove('comment','d-flex','justify-content-between');
             div.innerHTML = data;
         },
         error: function (data) {
             var errormsg = $.parseJSON(data.responseText);
-            console.log(errormsg.msg)
+            console.log(errormsg);
         }
     });
 }
 
-let deleteCommentSubmit = (id) => {
+let deleteCommentSubmit = (comment_id,post_id) => {
 
     $.ajax({
-        url: $('#delete-comment-form-' + id).attr('action'),
+        url: $('#delete-comment-form-' + comment_id).attr('action'),
         type: 'POST',
-        data: new FormData(document.getElementById("delete-comment-form-" + id)),
+        data: new FormData(document.getElementById("delete-comment-form-" + comment_id)),
         dataType: "JSON",
         cache: false,
         processData: false,
         contentType: false,
         success: function (data) {
-            $('#comment-' + id).css('display','none');
-            if(parseInt($('#comment-count-' + id).text()) > 0) {
-                $('#comment-count-' + id).text(parseInt($('#comment-count-' + id).text()) - 1);
+            var div = document.getElementById('comment-' + comment_id);
+            if(parseInt($('#comment-count-' + post_id).text()) > 0) {
+                $('#comment-count-' + post_id).text(parseInt($('#comment-count-' + post_id).text()) - 1);
             }
             else {
-                $('#comment-count-' + id).text("1");
+                $('#comment-count-' + post_id).text("1");
             }
             $('#success-modal').modal('show');
             $('#success-modal-message').text(data.msg);
+            div.classList.remove('comment','d-flex','justify-content-between');
+            $('#comment-' + comment_id).css('display','none');
+            $('#comment-hr' + comment_id).css('display','none');
         },
         error: function (data) {
             var errormsg = $.parseJSON(data.responseText);
@@ -228,10 +258,10 @@ let deleteCommentSubmit = (id) => {
     });
 }
 
-let reportCommentSubmit = (comment_id) => {
+let reportCommentSubmit = (id) => {
 
     $.ajax({
-        url: $('#report-comment-form-' + comment_id).attr('action'),
+        url: $('#report-comment-form-' + id).attr('action'),
         type: 'POST',
         data: new FormData(document.getElementById("report-comment-form-" + id)),
         dataType: "JSON",
@@ -239,12 +269,16 @@ let reportCommentSubmit = (comment_id) => {
         processData: false,
         contentType: false,
         success: function (data) {
+            var div = document.getElementById('comment-' + id);
             $('#success-modal').modal('show');
             $('#success-modal-message').text(data.msg);
-            $('#comment-' + id).css('display','none')
+            div.classList.remove('comment','d-flex','justify-content-between');
+            $('#comment-' + id).css('display','none');
+            $('#comment-hr' + id).css('display','none');
         },
         error: function (data) {
             var errormsg = $.parseJSON(data.responseText);
+            console.log(errormsg);
             $('#error-message-' + id).css('display','block');
             $('#error-status-' + id).text(errormsg.msg);
         }
@@ -352,6 +386,7 @@ let addStorySubmit = () => {
         contentType: false,
         success: function (data) {
             var div = document.getElementById('addedstory');
+            $('#addedstory').css('display','inline-block');
             $('#add-story-modal').modal('hide');
             $('#success-modal').modal('show');
             $('#success-modal-message').text("story added successfully");
@@ -370,14 +405,14 @@ let addStorySubmit = () => {
 let deleteStorySubmit = (id) => {
 
     $.ajax({
-        url: $('#delete-story-form' + id).attr('action'),
+        url: $('#delete-story-form-' + id).attr('action'),
         type: 'POST',
-        data: new FormData(document.getElementById("delete-story-form" + id)),
-        dataType: 'JSON',
+        data: new FormData(document.getElementById("delete-story-form-" + id)),
         cache: false,
         processData: false,
         contentType: false,
         success: function (data) {
+            $('#show-story-modal-' + id).modal('hide');
             $('#success-modal').modal('show');
             $('#success-modal-message').text(data.msg);
             $('#story-' + id).css('display','none')
@@ -410,3 +445,83 @@ let addStoryViews = (id) => {
     });
 }
 
+let addServiceSubmit = () => {
+
+    $.ajax({
+        url: $('#add-service-form').attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("add-service-form")),
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            var div = document.getElementById('addedservice');
+            $('#add-service-modal').modal('hide');
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text("service created successfully");
+            div.innerHTML = data + div.innerHTML;
+            $('#added-service-div').addClass('service card m-2');
+            $('#no-service').css('display','none');
+        },
+        error: function (data) {
+            console.log(data.responseText);
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message').css('display','block');
+            $('#error-status').text(errormsg.msg);
+        }
+    });
+}
+
+let editServiceSubmit = (id) => {
+
+    $.ajax({
+        url: $('#edit-service-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("edit-service-form-" + id)),
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#edit-service-modal-'+ id).modal('hide');
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text("service edited successfully");
+            $('.service-id-' + id).html(data);
+        },
+        error: function (data) {
+            console.log(data.responseText);
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message-' + id).css('display','block');
+            $('#error-status-' + id).text(errormsg.msg);
+        }
+    });
+}
+
+
+let deleteServiceSubmit = (id) => {
+
+    $.ajax({
+        url: $('#delete-service-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("delete-service-form-" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#service-modal-' + id).modal('hide');
+            $('#success-modal').modal('show');
+            $('#success-modal-message').text(data.msg);
+            $('.service-id-' + id).css('display','none')
+        },
+        error: function (data) {
+            console.log(data.responseText);
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message-' + id).css('display','block');
+            $('#error-status-' + id).text(errormsg.msg);
+        }
+    });
+}
+
+$(document).ready(function() {
+    $('.js-example-basic-multiple').select2();
+});

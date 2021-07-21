@@ -45,6 +45,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/notifications','User\NotificationsController@index')->name('notifications');
         Route::get('services/categories', 'User\ServiceController@getCategories')->name('service_categories');
         Route::get('services/{category_id?}', 'User\ServiceController@index')->name('services');
+        Route::resource('services','User\ServiceController');
         Route::get('/mark-all-read/{user}', function (User $user) {
             $user->unreadNotifications->markAsRead();
             return response(['message'=>'done', 'notifications'=>$user->notifications]);

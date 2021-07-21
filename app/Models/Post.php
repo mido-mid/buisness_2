@@ -11,6 +11,7 @@ class Post extends Model
     protected $fillable = [
         'price',
         'body',
+        'tags',
         'postTypeId',
         'privacyId',
         'stateId',

@@ -10,8 +10,9 @@ class Report extends Model
     protected $fillable = [
            'model_id',
            'body',
-           'stateId',
-            'model_type'
+           'state',
+            'model_type',
+        'user_id'
     ];
 
     public function post()

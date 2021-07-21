@@ -115,6 +115,9 @@ class StoryController extends Controller
 
         if($story){
             $story->publisher = User::find($story->publisherId);
+            $story->viewers = DB::select(DB::raw('select users.* from users,stories_views
+                        where stories_views.story_id ='. $story->id.
+                ' AND stories_views.user_id = users.id'));
             $story->media = DB::table('media')->where('model_id',$story->id)->where('model_type','story')->first();
             $view = view('includes.partialstory', compact('story'));
 
@@ -133,11 +136,18 @@ class StoryController extends Controller
         //
         $user = auth()->user();
 
-        $story = DB::table('stories_views')->insert([
-            'story_id' => $request->story_id,
-            'user_id' => $user->id,
-        ]);
+        $story_viewed_before = DB::table('stories_views')
+            ->where('story_id',$request->story_id)->where('user_id',$user->id)->exists();
 
+        if ($story_viewed_before == false){
+            $story = DB::table('stories_views')->insert([
+                'story_id' => $request->story_id,
+                'user_id' => $user->id,
+            ]);
+        }
+        else{
+            $story = $story_viewed_before;
+        }
 
         if($story){
             return $this->returnSuccessMessage('success');
@@ -261,6 +271,9 @@ class StoryController extends Controller
             }
 
             $story->publisher = User::find($story->publisherId);
+            $story->viewers = DB::select(DB::raw('select users.* from users,stories_views
+                        where stories_views.story_id ='. $story->id.
+                ' AND stories_views.user_id = users.id'));
             $story->media = DB::table('media')->where('model_id',$story->id)->where('model_type','story')->first();
             $view = view('includes.partialstory', compact('story'));
 
@@ -287,16 +300,15 @@ class StoryController extends Controller
 
         if($story)
         {
-            $story_media = DB::table('media')->where('model_id',$story->id)->get();
+            $story_media = DB::table('media')->where('model_id',$story->id)->where('model_type','story')->get();
 
             foreach ($story_media as $media){
-                $media->delete();
+                DB::table('media')->where('id',$media->id)->delete();
                 unlink('media/' . $media->filename);
             }
-
             $story->delete();
 
-            return $this->returnSuccessMessage('post successfully deleted');
+            return $this->returnSuccessMessage('story successfully deleted');
         }
         else
         {

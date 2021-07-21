@@ -21,6 +21,8 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
     />
 
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
     <!-- Styles -->
     <link href="{{ asset('css/styles/style.css') }}" rel="stylesheet">
     <link href="{{ asset('css/styles/style-mar.css') }}" rel="stylesheet">
@@ -121,6 +123,11 @@
                         @endforeach
                     </ul>
                 </li>
+                @if(auth()->user()->type == 1)
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{url('admin/dashboard')}}"><i class="fas fa-users-cog"></i>  Dashboard</a>
+                    </li>
+                @endif
             </ul>
         </div>
     </div>
@@ -167,6 +174,11 @@
                     <li>
                         <a href="#"><i class="fas fa-bookmark p"></i> Saved Posts</a>
                     </li>
+                    @if(auth()->user()->type == 1)
+                        <li class="nav-item">
+                            <a href="{{url('admin/dashboard')}}"><i class="fas fa-users-cog"></i> Dashboard</a>
+                        </li>
+                    @endif
                 </ul>
             </section>
 
@@ -174,7 +186,6 @@
 
         </section>
     </section>
-
 
     <script src="{{ asset('assets') }}/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('assets') }}/libs/jquery/jquery.min.js"></script>
@@ -185,6 +196,13 @@
     <script src="{{ asset('js/script.js') }}"></script>
     <!-- FONT AWESOME -->
     <script src="https://kit.fontawesome.com/5d2df7d4f7.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('.js-example-basic-multiple').select2();
+        });
+    </script>
 
 </body>
 </html>

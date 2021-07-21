@@ -48,6 +48,8 @@ class FriendshipController extends Controller
                 $receiverId = $request->receiverId;
                 $friendRequest = DB::table('friendships')->where('senderId',$senderId)
                     ->where('receiverId',$receiverId)->delete();
+                $followingRequest = DB::table('following')->where('followerId',$senderId)
+                    ->where('followingId',$receiverId)->delete();
                 return $this->returnSuccessMessage('add friend');
 
             case 'acceptFriendRequest':

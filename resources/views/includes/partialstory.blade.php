@@ -1,14 +1,37 @@
 
 
 @section('story')
-    <div class="story" data-toggle="modal" data-target="#showStoryModal-{{$story->id}}">
-        <img
-            src="{{asset('media')}}/{{$story->cover_image}}" />
+    <div onclick="addStoryViews({{$story->id}})" class="story" data-toggle="modal" data-target="#show-story-modal-{{$story->id}}" id="story-{{$story->id}}">
+        @if($story->cover_image != null)
+            <img
+                src="{{asset('media')}}/{{$story->cover_image}}" />
+        @else
+            <img
+                src="{{asset('media')}}/story_cover_image.jpg" />
+        @endif
+
+        <form id="view-story-form-{{$story->id}}" action="{{ route('story.view') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+            @csrf
+            <input type="hidden" name="story_id" value="{{$story->id}}">
+        </form>
+
     </div>
     <div class="show-story-modal">
-        <div class="modal fade" id="showStoryModal-{{$story->id}}" tabindex="-1" aria-hidden="true">
+        <div class="modal fade" id="show-story-modal-{{$story->id}}" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
+                    <div class="modal-header d-flex justify-content-between">
+                        <span></span>
+                        @if($story->publisher->id == auth()->user()->id)
+                            <button onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$story->id}}) : ''">
+                                Delete</button>
+                            <form action="{{ route('stories.destroy', $story->id) }}" id="delete-story-form-{{$story->id}}" method="post">
+                            @csrf
+                            @method('delete')
+                            <!-- ajax-->
+                            </form>
+                        @endif
+                    </div>
                     <div class="modal-body">
                         <!-- If Content Img -->
                         <!-- <div class="story-content-img">
@@ -68,6 +91,28 @@
                             @endif
 
                         @endif
+
+                        @if($story->publisher->id == auth()->user()->id)
+                            <button data-toggle="modal" data-target="#story-viewers-modal-{{$story->id}}">story views : {{count($story->viewers)}}</button>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="show-story-modal">
+        <div class="modal fade" id="story-viewers-modal-{{$story->id}}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header d-flex justify-content-between">
+                        <span></span>
+                        <h5 class="modal-title" id="exampleModalLabel">Story Viewers</h5>
+                    </div>
+                    <div class="modal-body">
+                        @foreach($story->viewers as $viewer)
+                            {{$viewer->name}}
+                        @endforeach
                     </div>
                 </div>
             </div>

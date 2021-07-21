@@ -35,6 +35,8 @@ class MainController extends Controller
         $friends_stories = [];
         $user_groups_ids = [];
         $user_pages_ids = [];
+        $friends_info = [];
+
 
         // friends posts he follows and are public and in groups you are in and in pages you liked
         $friends = DB::table('friendships')->where(function ($q) use ($user){
@@ -50,9 +52,9 @@ class MainController extends Controller
 
         array_push($friends_ids,$user->id);
 
-        $user_groups = DB::select(DB::raw('select groups.* from groups,group_members
+        $user_groups = DB::select(DB::raw('select groups.*,group_members.stateId from groups,group_members
                         where group_members.group_id = groups.id
-                        AND group_members.user_id = '.$user->id.' and group_members.stateId = 2'));
+                        AND group_members.user_id = '.$user->id.' and group_members.stateId in (2,3)'));
 
         $user_pages = DB::select(DB::raw('select pages.* from pages,user_pages
                         where user_pages.page_id = pages.id
@@ -73,8 +75,12 @@ class MainController extends Controller
                 $friend_posts = DB::table('posts')->where('publisherId',$friend_id)->where('postTypeId',2)->where('stateId',2)->where('privacyId',1)->get();
 
                 foreach ($friend_posts as $post){
-                    $post->type = $post->post_id == null ? "post" : "share";
-                    array_push($friends_posts,$post);
+                    $post->reported = DB::table('reports')->where('user_id', $user->id)
+                        ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+                    if($post->reported == false) {
+                        $post->type = $post->post_id == null ? "post" : "share";
+                        array_push($friends_posts,$post);
+                    }
                 }
             }
 
@@ -92,18 +98,34 @@ class MainController extends Controller
 
             foreach ($friends_of_friend as $user_friend){
                 $friend_of_friend_id = $user_friend->receiverId == $friend_id ? $user_friend->senderId : $user_friend->receiverId;
-                array_push($expected_ids,$friend_of_friend_id);
+                $friend_request = DB::table('friendships')->where(function ($q) use ($user){
+                    $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+                })->where('senderId', $friend_of_friend_id)->orWhere('receiverId', $friend_of_friend_id)
+                    ->whereIn('stateId',[3,4])->exists();
+                if($friend_request == false){
+                    array_push($expected_ids,$friend_of_friend_id);
+                }
             }
+
+            $friend_info = DB::table('users')->select('id','name')->where('id',$friend_id)->first();
+
+            array_push($friends_info,$friend_info);
         }
 
 
         foreach ($user_groups as $group){
-            $group_posts = DB::table('posts')->where('group_id',$group->id)->get();
-            array_push($user_groups_ids,$group->id);
-            foreach ($group_posts as $post){
-                $post->type = $post->post_id == null ? "post" : "share";
-                array_push($groups_posts,$post);
+            if($group->stateId == 2){
+                $group_posts = DB::table('posts')->where('group_id',$group->id)->get();
+                foreach ($group_posts as $post){
+                    $post->reported = DB::table('reports')->where('user_id', $user->id)
+                        ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+                    if($post->reported == false) {
+                        $post->type = $post->post_id == null ? "post" : "share";
+                        array_push($groups_posts, $post);
+                    }
+                }
             }
+            array_push($user_groups_ids,$group->id);
         }
 
         foreach ($user_pages as $page){
@@ -178,7 +200,7 @@ class MainController extends Controller
         $reacts = DB::table('reacts')->get();
 
 
-        return view('home', compact('posts', 'stories', 'expected_users', 'expected_groups', 'expected_pages', 'expected_posts','privacy','categories','times','ages','reaches','reacts'));
+        return view('home', compact('posts', 'stories', 'expected_users', 'expected_groups', 'expected_pages', 'expected_posts','privacy','categories','times','ages','reaches','reacts','friends_info'));
     }
 
 
@@ -192,22 +214,34 @@ class MainController extends Controller
 
 
         foreach ($user_groups as $group) {
-            $group_posts = DB::table('posts')->where('group_id', $group->id)->get();
-            array_push($user_groups_ids, $group->id);
-            foreach ($group_posts as $post) {
-                $post->type = $post->post_id == null ? "post" : "share";
-                array_push($groups_posts, $post);
+
+            if($group->stateId == 2) {
+                $group_posts = DB::table('posts')->where('group_id', $group->id)->get();
+                foreach ($group_posts as $post) {
+                    $post->reported = DB::table('reports')->where('user_id', $user->id)
+                        ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+                    if($post->reported == false) {
+                        $post->type = $post->post_id == null ? "post" : "share";
+                        array_push($groups_posts, $post);
+                    }
+                }
             }
+
+            array_push($user_groups_ids, $group->id);
         }
 
 
         foreach ($user_pages as $page) {
             $page_posts = DB::table('posts')->where('page_id', $page->id)->get();
-            array_push($user_pages_ids, $page->id);
             foreach ($page_posts as $post) {
-                $post->type = $post->post_id == null ? "post" : "share";
-                array_push($pages_posts, $post);
+                $post->reported = DB::table('reports')->where('user_id', $user->id)
+                    ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+                if($post->reported == false) {
+                    $post->type = $post->post_id == null ? "post" : "share";
+                    array_push($pages_posts_posts, $post);
+                }
             }
+            array_push($user_pages_ids, $page->id);
         }
 
 
@@ -229,6 +263,20 @@ class MainController extends Controller
             $post->comments = $comments;
             $post->likes = $likes;
             $post->type = $post->post_id != null ? 'share' : 'post';
+
+            if($post->tags != null){
+                $tags_ids = explode(',',$post->tags);
+                $tags_info = [];
+                $post->tagged = false;
+                foreach ($tags_ids as $id){
+                    if($id == $user->id){
+                        $post->tagged = true;
+                    }
+                    $tagged_friend = User::find($id);
+                    array_push($tags_info,$tagged_friend);
+                }
+                $post->tags_info = $tags_info;
+            }
 
             if ($post->type == 'share'){
                 $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
@@ -273,6 +321,9 @@ class MainController extends Controller
 
         foreach ($stories as $story){
             $story->publisher = User::find($story->publisherId);
+            $story->viewers = DB::select(DB::raw('select users.* from users,stories_views
+                        where stories_views.story_id ='. $story->id.
+                        ' AND stories_views.user_id = users.id'));
             $story->media = DB::table('media')->where('model_id',$story->id)->where('model_type','story')->first();
         }
 
@@ -332,7 +383,11 @@ class MainController extends Controller
             $post->type = 'sponsored';
 
             if( in_array(1,$post_users) != false && Carbon::parse( $post->sponsored_at)->addDays(7) >= Carbon::today()){
-                array_push($user_sponsored_posts,$post);
+                $post->reported = DB::table('reports')->where('user_id', auth()->user()->id)
+                    ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+                if($post->reported == false) {
+                    array_push($user_sponsored_posts,$post);
+                }
             }
         }
 
@@ -382,12 +437,6 @@ class MainController extends Controller
 
     public function report(Request $request){
 
-        $post_id = $request->post_id;
-
-        $post = Post::find($post_id);
-
-        $post_user = User::find($post->publisherId);
-
         $user = auth()->user();
 
         $rules = [
@@ -400,7 +449,7 @@ class MainController extends Controller
             return $this->returnValidationError(402,$validator);
         }
 
-        $comment = Report::create([
+        $report = Report::create([
             'body' => $request->body,
             'user_id' => $user->id,
             'stateId' => 3,
@@ -408,17 +457,8 @@ class MainController extends Controller
             'model_type' => $request->model_type,
         ]);
 
-        if($comment){
-
-            $comment->publisher = User::find($comment->user_id);
-
-            $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-
-            $view = view('includes.partialcomment', compact('comment','post'));
-
-            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
-
-            return $sections['comment'];
+        if($report){
+            return $this->returnSuccessMessage('report sent successfully');
         }
         else{
             return $this->returnError('something wrong happened',402);

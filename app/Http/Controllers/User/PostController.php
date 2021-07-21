@@ -97,9 +97,17 @@ class PostController extends Controller
             }
         }
 
+        if($request->tags != null){
+            $tags = implode(',',$request->tags);
+        }
+        else{
+            $tags = null;
+        }
+
         $post = Post::create([
             'body' => $request->body,
             'privacyId' => $request->privacy_id,
+            'tags' => $tags,
             'postTypeId' => 2,
             'stateId' => 2,
             'publisherId' => $user->id,
@@ -109,59 +117,73 @@ class PostController extends Controller
             'post_id' => $request->post_id
         ]);
 
-        $privacy = DB::table('privacy_type')->get();
-
-        $categories = DB::table('categories')->where('type','post')->get();
-
-        $times = DB::table('sponsored_time')->get();
-
-        $reaches = DB::table('sponsored_reach')->get();
-
-        $ages = DB::table('sponsored_ages')->get();
-
-        $reacts = DB::table('reacts')->get();
-
-        $post->publisher = User::find($post->publisherId);
-        $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
-        $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
-        $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
-
-        $post->comments = $comments;
-        $post->likes = $likes;
-        $post->type = $post->post_id != null ? 'share' : 'post';
-
-        if ($post->type == 'share'){
-            $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
-            if($shared_post->post_id != null) {
-                $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
-            }
-            else{
-                $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
-            }
-        }else{
-            $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
-        }
-
-        $post->comments->count = count($comments);
-        $post->likes->count = count($likes);
-        $post->shares = count($shares);
-
-        $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
-
-        if($post->liked){
-            $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
-        }
-
-        $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
-
-        if($post->comments->count > 0) {
-            foreach ($post->comments as $comment) {
-                $comment->publisher = User::find($comment->user_id);
-                $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-            }
-        }
 
         if($post){
+            $privacy = DB::table('privacy_type')->get();
+
+            $categories = DB::table('categories')->where('type','post')->get();
+
+            $times = DB::table('sponsored_time')->get();
+
+            $reaches = DB::table('sponsored_reach')->get();
+
+            $ages = DB::table('sponsored_ages')->get();
+
+            $reacts = DB::table('reacts')->get();
+
+            $post->publisher = User::find($post->publisherId);
+            $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
+            $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
+            $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
+
+            $post->comments = $comments;
+            $post->likes = $likes;
+            $post->type = $post->post_id != null ? 'share' : 'post';
+
+            if($post->tags != null){
+                $tags_ids = explode(',',$post->tags);
+                $tags_info = [];
+                $post->tagged = false;
+                foreach ($tags_ids as $id){
+                    if($id == $user->id){
+                        $post->tagged = true;
+                    }
+                    $tagged_friend = User::find($id);
+                    array_push($tags_info,$tagged_friend);
+                }
+                $post->tags_info = $tags_info;
+            }
+
+            if ($post->type == 'share'){
+                $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
+                if($shared_post->post_id != null) {
+                    $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
+                }
+                else{
+                    $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
+                }
+            }else{
+                $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
+            }
+
+            $post->comments->count = count($comments);
+            $post->likes->count = count($likes);
+            $post->shares = count($shares);
+
+            $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
+
+            if($post->liked){
+                $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
+            }
+
+            $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
+
+            if($post->comments->count > 0) {
+                foreach ($post->comments as $comment) {
+                    $comment->publisher = User::find($comment->user_id);
+                    $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
+                }
+            }
             $view = view('includes.partialpost', compact('post','privacy','categories','times','ages','reaches','reacts'));
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
@@ -205,7 +227,7 @@ class PostController extends Controller
     public function update(Request $request, $post_id)
     {
         //
-        $post = Post::find($post_id);
+        $post = DB::table('posts')->where('id',$post_id)->first();
 
         $user = auth()->user();
 
@@ -245,7 +267,7 @@ class PostController extends Controller
 
                 foreach ($files as $file) {
 
-                    $post_media = DB::table('media')->where('model_id',$request->post_id)->get();
+                    $post_media = DB::table('media')->where('model_id',$post_id)->get();
 
                     foreach ($post_media as $media){
                         $media->delete();
@@ -315,6 +337,20 @@ class PostController extends Controller
             $post->comments = $comments;
             $post->likes = $likes;
             $post->type = $post->post_id != null ? 'share' : 'post';
+
+            if($post->tags != null){
+                $tags_ids = explode(',',$post->tags);
+                $tags_info = [];
+                $post->tagged = false;
+                foreach ($tags_ids as $id){
+                    if($id == $user->id){
+                        $post->tagged = true;
+                    }
+                    $tagged_friend = User::find($id);
+                    array_push($tags_info,$tagged_friend);
+                }
+                $post->tags_info = $tags_info;
+            }
 
             if ($post->type == 'share'){
                 $shared_post = DB::table('posts')->where('id',$post->post_id)->first();

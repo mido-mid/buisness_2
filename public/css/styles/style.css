@@ -1498,3 +1498,31 @@ body {
     color:#9197a3;
     font-size:12px;
 }
+
+
+.mention-box {
+    height: 60px;
+    width: 360px;
+    padding: 10px;
+    position: absolute;
+    top: -63px;
+    left: -14px;
+    box-shadow: 1px 1px 2px #cccccc, -1px 0px 2px #eeeeee;
+    border-radius: 44px 44px;
+}
+
+.mention-names {
+    color: red;
+    list-style-type: none;
+    cursor: pointer;
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    position: absolute;
+    top: 8px;
+    transform: scale(1, 1);
+    transition: opacity .5s ease-in-out 1s, transform .07s ease-in-out 0s, top .07s ease-in-out 0s;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center
+}
