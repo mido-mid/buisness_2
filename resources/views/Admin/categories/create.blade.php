@@ -7,6 +7,16 @@
         <div class="page-content">
             <div class="container-fluid">
 
+                @if(count($errors) > 0)
+
+                    <div class="row">
+                        <div class="col-12">
+                            @include('includes.errors')
+                        </div>
+                    </div>
+
+                @endif
+
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -15,10 +25,10 @@
                                 <h3 class="card-title">
 
 
-                                    @if(isset($categories))
-                                        {{ __('edit_category') }}
+                                    @if(isset($category))
+                                        {{ __('edit category') }}
                                     @else
-                                        {{ __('add_category') }}
+                                        {{ __('add category') }}
 
                                     @endif
                                 </h3>
@@ -34,7 +44,7 @@
                                     <div class="form-group row">
                                         <label for="example-text-input" class="col-sm-2 col-form-label">Name_Ar</label>
                                         <div class="col-sm-10">
-                                            <input class="form-control" type="text" @if(isset($category)) value="{{old('name_ar',$category->name_ar)}}" @endif name="name_ar" id="example-text-input" required>
+                                            <input class="form-control @error('name_ar') is-invalid @enderror" type="text" @if(isset($category)) value="{{old('name_ar',$category->name_ar)}}" @else value="{{old('name_ar')}}" @endif name="name_ar" id="example-text-input" required>
                                         </div>
                                         @error('name_ar')
                                             <span class="invalid-feedback" role="alert">
@@ -46,7 +56,7 @@
                                     <div class="form-group row">
                                         <label for="example-text-input" class="col-sm-2 col-form-label">Name_En</label>
                                         <div class="col-sm-10">
-                                            <input class="form-control" type="text" @if(isset($category)) value="{{old('name_ar',$category->name_en)}}" @endif name="name_en" id="example-text-input" required>
+                                            <input class="form-control @error('name_en') is-invalid @enderror" type="text" @if(isset($category)) value="{{old('name_ar',$category->name_en)}}" @else value="{{old('name_ar')}}"  @endif name="name_en" id="example-text-input" required>
                                         </div>
                                         @error('name_en')
                                             <span class="invalid-feedback" role="alert">
@@ -58,9 +68,9 @@
                                     <div class="form-group row">
                                         <label for="example-text-input" class="col-sm-2 col-form-label">Type</label>
                                         <div class="col-sm-10">
-                                            <select class="form-control select2" required>
-                                                <option @if(isset($category))  @if($category->id == $service->categoryId) selected @endif  @endif value="post">post</option>
-                                                <option @if(isset($category))  @if($category->id == $service->categoryId) selected @endif  @endif value="service">service</option>
+                                            <select class="form-control select2" name="type" required>
+                                                <option @if(isset($category))  @if($category->id == "post") selected @endif  @endif value="post">post</option>
+                                                <option @if(isset($category))  @if($category->id == "service") selected @endif  @endif value="service">service</option>
                                             </select>
                                         </div>
                                     </div>
@@ -68,7 +78,7 @@
                                     <div class="form-group row">
                                         <label for="example-text-input" class="col-sm-2">Image</label>
                                         <div class="col-sm-10">
-                                            <input type="file" name="image" id="example-text-input">
+                                            <input type="file" class="form-control @error('image') is-invalid @enderror" name="image" id="example-text-input">
                                         </div>
                                         @error('image')
                                             <span class="invalid-feedback" role="alert">

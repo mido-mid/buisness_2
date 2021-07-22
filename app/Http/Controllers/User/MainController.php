@@ -60,6 +60,10 @@ class MainController extends Controller
                         where user_pages.page_id = pages.id
                         AND user_pages.user_id = '.$user->id));
 
+        $user_follows = DB::select(DB::raw('select users.* from users,following
+                        where following.followingId = users.id
+                        AND following.followerId = '.$user->id));
+
         //his posts, shares , friends posts who are followed
         $user_posts = DB::table('posts')->where('publisherId',$user->id)->where('postTypeId',2)->where('stateId',2)->get()->toArray();
 
@@ -69,9 +73,9 @@ class MainController extends Controller
                 unset($friends_ids[$key]);
             }
 
-            $friend_followed = DB::table('following')->where('followerId',$user->id)->where('followingId',$friend->id)->first();
+            $friend_followed = DB::table('following')->where('followerId',$user->id)->where('followingId',$friend_id)->exists();
 
-            if($friend_followed != null){
+            if($friend_followed){
                 $friend_posts = DB::table('posts')->where('publisherId',$friend_id)->where('postTypeId',2)->where('stateId',2)->where('privacyId',1)->get();
 
                 foreach ($friend_posts as $post){
@@ -79,6 +83,7 @@ class MainController extends Controller
                         ->where('model_id', $post->id)->where('model_type', 'post')->exists();
                     if($post->reported == false) {
                         $post->type = $post->post_id == null ? "post" : "share";
+                        $post->source = "friend";
                         array_push($friends_posts,$post);
                     }
                 }
@@ -100,8 +105,9 @@ class MainController extends Controller
                 $friend_of_friend_id = $user_friend->receiverId == $friend_id ? $user_friend->senderId : $user_friend->receiverId;
                 $friend_request = DB::table('friendships')->where(function ($q) use ($user){
                     $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
-                })->where('senderId', $friend_of_friend_id)->orWhere('receiverId', $friend_of_friend_id)
-                    ->whereIn('stateId',[3,4])->exists();
+                })->where(function ($q) use ($friend_of_friend_id){
+                    $q->where('senderId', $friend_of_friend_id)->orWhere('receiverId', $friend_of_friend_id);
+                })->whereIn('stateId',[1,3])->exists();
                 if($friend_request == false){
                     array_push($expected_ids,$friend_of_friend_id);
                 }
@@ -139,37 +145,9 @@ class MainController extends Controller
 
         $expected_users = $this->getExpectedFriends($user,$expected_ids);
 
-        $posts = $this->getPosts($user,$friends_posts,$user_pages,$user_groups,$user_posts);
-
-//        foreach ($posts as $post){
-//            $post->publisher = User::find($post->publisherId);
-//            $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
-//            $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
-//            $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
-//            $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
-//
-//            $post->comments = $comments;
-//            $post->likes = $likes;
-//
-//            $post->comments->count = count($comments);
-//            $post->likes->count = count($likes);
-//            $post->shares = count($shares);
-//
-//            $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->exists();
-//
-//            $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
-//
-//            if($post->comments->count > 0) {
-//                foreach ($post->comments as $comment) {
-//                    $comment->publisher = User::find($comment->user_id);
-//                    $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->get();
-//                }
-//            }
-//        }
-
+        $posts = $this->getPosts($user,$user_follows,$friends_posts,$user_pages,$user_groups,$user_posts);
 
         $stories = $this->getStories($user,$friends_stories);
-
 
         $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
                         where user_categories.categoryId = categories.id
@@ -204,14 +182,17 @@ class MainController extends Controller
     }
 
 
-    public function getPosts($user,$friends_posts,$user_pages,$user_groups,$user_posts){
-
-        $groups_posts = [];
+    public function getPosts($user,$user_follows,$friends_posts,$user_pages,$user_groups,$user_posts){
 
         $pages_posts = [];
 
         $user_pages_ids = [];
 
+        $follows_posts = [];
+
+        $user_groups_ids = [];
+
+        $groups_posts = [];
 
         foreach ($user_groups as $group) {
 
@@ -222,6 +203,8 @@ class MainController extends Controller
                         ->where('model_id', $post->id)->where('model_type', 'post')->exists();
                     if($post->reported == false) {
                         $post->type = $post->post_id == null ? "post" : "share";
+                        $post->source = "group";
+                        $post->page = $group;
                         array_push($groups_posts, $post);
                     }
                 }
@@ -238,21 +221,44 @@ class MainController extends Controller
                     ->where('model_id', $post->id)->where('model_type', 'post')->exists();
                 if($post->reported == false) {
                     $post->type = $post->post_id == null ? "post" : "share";
-                    array_push($pages_posts_posts, $post);
+                    $post->source = "page";
+                    $post->page = $page;
+                    array_push($pages_posts, $post);
                 }
             }
             array_push($user_pages_ids, $page->id);
         }
 
+        foreach ($user_follows as $followed_user) {
+            $is_friend = DB::table('friendships')->where(function ($q) use ($user){
+                $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+            })->where(function ($q) use ($followed_user){
+                $q->where('senderId', $followed_user->id)->orWhere('receiverId', $followed_user->id);
+            })->where('stateId',2)->exists();
+
+            if($is_friend == false){
+                $followed_user_posts = DB::table('posts')->where('publisherId', $followed_user->id)->where('postTypeId',2)->where('stateId',2)->where('privacyId',1)->get();
+                foreach ($followed_user_posts as $post) {
+                    $post->reported = DB::table('reports')->where('user_id', $user->id)
+                        ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+                    if($post->reported == false) {
+                        $post->type = $post->post_id == null ? "post" : "share";
+                        $post->source = "follow";
+                        array_push($follows_posts, $post);
+                    }
+                }
+            }
+        }
 
         foreach ($user_posts as $post){
             $post->type = $post->post_id == null ? "post" : "share";
+            $post->source = "user";
         }
 
         $user_sponsored_posts = $this->getSponsoredPosts();
 
 
-        $posts = array_merge($user_posts,$friends_posts,$groups_posts,$pages_posts,$user_sponsored_posts);
+        $posts = array_merge($follows_posts,$user_posts,$friends_posts,$groups_posts,$pages_posts,$user_sponsored_posts);
 
         foreach ($posts as $post){
             $post->publisher = User::find($post->publisherId);
@@ -309,8 +315,6 @@ class MainController extends Controller
                 }
             }
         }
-
-
         return $posts;
     }
 
@@ -344,12 +348,13 @@ class MainController extends Controller
                 $q->where('senderId', $id)->orWhere('receiverId', $id);
             })->where(function ($q) use($user_id){
                 $q->where('senderId', $user_id)->orWhere('receiverId', $user_id);
-            })->where('stateId',3)->first();
-            if(!$friendship){
+            })->whereIn('stateId',[1,3])->first();
+            if($friendship == null){
                 $friends_of_friend_info = DB::table('users')->where('id',$id)->first();
                 array_push($expected_friends,$friends_of_friend_info);
             }
         }
+
 
         foreach ($expected_friends as $friend){
             $friend->followers = DB::table('following')->where('followingId',$friend->id)->count();
@@ -358,6 +363,22 @@ class MainController extends Controller
         shuffle($expected_friends);
 
         $expected_users = array_slice($expected_friends,0,3);
+
+        if(count($expected_users) == 0){
+            $expected_people = DB::table('users')->where('country',auth()->user()->country)->where('id','!=',auth()->user()->id)->get();
+            foreach ($expected_people as $expected_user){
+                $expected_user_id = $expected_user->id;
+                $expected_user->followers = DB::table('following')->where('followingId',$expected_user->id)->count();
+                $friendship = DB::table('friendships')->where(function ($q) use($expected_user_id){
+                    $q->where('senderId', $expected_user_id)->orWhere('receiverId', $expected_user_id);
+                })->where(function ($q){
+                    $q->where('senderId', auth()->user()->id)->orWhere('receiverId', auth()->user()->id);
+                })->whereIn('stateId',[1,3])->first();
+                if($friendship == null){
+                    array_push($expected_users,$expected_user);
+                }
+            }
+        }
 
         return $expected_users;
     }

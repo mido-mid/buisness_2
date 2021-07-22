@@ -16,14 +16,14 @@
                                 <textarea id="elm1" name="area">
                                     {{$model->body}}
                                 </textarea>
-                                @if($model->publisher->state != "banned")
-                                    <form action="{{ route('reports.ban', $model->publisher->id) }}" method="post">
+                                @if($model->publisher->stateId != "banned")
+                                    <form action="{{ route('reports.ban', $report) }}" method="post">
                                         @csrf
                                         <input type="hidden" name="ban" value="banned">
                                         <button type="button" class="btn btn-purple" onclick="confirm('{{ __("Are you sure you want to ban that user?") }}') ? this.parentElement.submit() : ''" style="margin-top: 20px" class="btn btn-purple waves-effect waves-light">Ban publisher</button>
                                     </form>
                                 @else
-                                    <form action="{{ route('reports.ban', $model->publisher->id) }}" method="post">
+                                    <form action="{{ route('reports.ban', $report)}}" method="post">
                                         @csrf
                                         <input type="hidden" name="ban" value="allowed">
                                         <button type="button" class="btn btn-purple" onclick="confirm('{{ __("Are you sure you want to remove the ban?") }}') ? this.parentElement.submit() : ''" style="margin-top: 20px" class="btn btn-purple waves-effect waves-light">Remove Ban</button>
@@ -34,29 +34,22 @@
                     </div> <!-- end col -->
                 </div> <!-- end row -->
 
-                @if(count($model->media) > 0)
+                @if($model->media != null)
+                    <div class="row">
 
-                    @foreach($model->media as $media)
-
-                        <div class="row">
+                        @foreach($model->media as $media)
                             <div class="col-lg-3 col-md-6">
-                                <a href="assets/images/gallery/work-1.jpg" class="gallery-popup" title="Open Imagination">
-                                    <div class="project-item">
-                                        <div class="overlay-container">
-                                            <img src="{{asset('media')}}/{{$media->filename}}" alt="img" class="gallery-thumb-img">
-                                            <div class="project-item-overlay">
-                                                <h4>Open Imagination</h4>
-                                                <p>
-                                                    <img src="assets/images/users/avatar-1.jpg" alt="user" class="avatar-xs rounded-circle" />
-                                                    <span class="ml-2">Curtis Marion</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </a>
+                                @if($media->mediaType == "image")
+                                    <img src="{{asset('media')}}/{{$media->filename}}" alt="img" class="gallery-thumb-img" style="height: 300px; width: 200px">
+                                @else
+                                    <video class="p-1" controls class="gallery-thumb-img" style="height: 300px; width: 200px">
+                                        <source src="{{asset('media')}}/{{$media->filename}}" type="video/mp4">
+                                        Your browser does not support HTML video.
+                                    </video>
+                                @endif
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 @endif
 
             </div> <!-- container-fluid -->

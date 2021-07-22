@@ -82,6 +82,8 @@
             </div>
             @foreach($stories as $story)
                 <div onclick="addStoryViews({{$story->id}})" class="story" data-toggle="modal" data-target="#show-story-modal-{{$story->id}}" id="story-{{$story->id}}">
+
+                    {{$story->publisher->name}}
                     @if($story->cover_image != null)
                         <img
                             src="{{asset('media')}}/{{$story->cover_image}}" />
@@ -344,31 +346,50 @@
         @foreach($posts as $post)
             <div class="post-container bg-white mt-3 p-3" id="post-{{$post->id}}">
                 <div class="post-owner d-flex align-items-center">
-                    @if($post->publisher->personal_image)
+                    @if($post->source == "page")
                         <div class="owner-img">
-                            <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->publisher->personal_image}}" class="rounded-circle" /></a>
+                            <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->page->profile_image}}" class="rounded-circle" /></a>
                         </div>
                     @else
-                        <div class="owner-img">
-                            <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
-                        </div>
+                        @if($post->publisher->personal_image)
+                            <div class="owner-img">
+                                <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->publisher->personal_image}}" class="rounded-circle" /></a>
+                            </div>
+                        @else
+                            <div class="owner-img">
+                                <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
+                            </div>
+                        @endif
                     @endif
                     <div class="owner-name pl-3">
-                        <a href="{{route('profile',$post->publisher->id)}}"><b>
+                        @if($post->source == "page")
+                            <a href="{{route('profile',$post->publisher->id)}}"><b>
+                                    {{$post->page->name}}
+                            </b></a>
+                        @else
+                            <a href="{{route('profile',$post->publisher->id)}}"><b>
                                 {{$post->publisher->name}}
-                            </b></a><br>
-                        <a data-toggle="modal" data-target="#show-tag-modal-{{$post->id}}"><b>
-                                @if($post->tags != null )
-                                    with
-                                    @if($post->tagged == true)
-                                        you and {{count($post->tags_info) - 1}}
-                                    @else
-                                        {{count($post->tags_info)}}
-                                    @endif
-                                    others
+                            </b></a>
+                        @endif
+
+                        @if($post->tags != null )
+                            <a data-toggle="modal" data-target="#show-tag-modal-{{$post->id}}"><b>
+                                with
+                                @if($post->tagged == true)
+                                    you and {{count($post->tags_info) - 1}}
+                                @else
+                                    {{count($post->tags_info)}}
                                 @endif
-                            </b></a><br>
-                        <span>{{date('d/m/Y',strtotime($post->created_at))}}</span>
+                                others
+                            </b></a>
+                        @endif
+
+                        @if($post->source == "group")
+                            <Span><i class="fas fa-caret-right"></i></Span>
+                            {{$post->group->name}}
+                        @endif
+
+                        <span style="display: block">{{date('d/m/Y',strtotime($post->created_at))}}</span>
                     </div>
                     <!-- Post options -->
                     <div class="post-options post-options-{{$post->id}}">

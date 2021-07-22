@@ -31,41 +31,6 @@ class CategoriesController extends Controller
         return view('Admin.categories.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-
-
-    public function imageUploadPost(Request $request)
-    {
-        $request->validate([
-             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-         ]);
-
-        $imageName = time().'.'.$request->image->extension();
-        $request->image->move(public_path('assets/images/categories'), $imageName);
-        return $imageName;
-    }
-
-    public function removeImage($image)
-    {
-        $path ='assets/images/categories/';
-
-
-        if(file_exists(public_path($path . $image))){
-
-        unlink(public_path($path . $image));
-
-        }else{
-        dd('File does not exists.');
-        }
-
-    }
-
-
 
     public function store(Request $request)
     {
@@ -74,7 +39,7 @@ class CategoriesController extends Controller
              'name_ar' => ['required','min:2','not_regex:/([%\$#\*<>]+)/'],
              'name_en' =>['required','min:2','not_regex:/([%\$#\*<>]+)/'],
              'type' => ['required','string'],
-             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,JPG|max:2048',
          ];
 
          $this->validate($request,$rules);
@@ -95,7 +60,7 @@ class CategoriesController extends Controller
          ]);
 
          if ($category) {
-             return redirect()->route('categories.index')->withStatus('word successfully created');
+             return redirect()->route('categories.index')->withStatus('category successfully created');
          } else {
              return redirect()->route('categories.index')->withStatus('something went wrong, try again');
          }
@@ -149,7 +114,7 @@ class CategoriesController extends Controller
             'name_ar' => ['required','min:2','not_regex:/([%\$#\*<>]+)/'],
             'name_en' =>['required','min:2','not_regex:/([%\$#\*<>]+)/'],
             'type' => ['required','string'],
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,JPG|max:2048',
         ];
 
 
@@ -162,6 +127,7 @@ class CategoriesController extends Controller
                 $filename = $image->getClientOriginalName();
                 $fileextension = $image->getClientOriginalExtension();
                 $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
+                $image->move('category_images', $file_to_store);
             }
 
             $category->update([
@@ -170,7 +136,7 @@ class CategoriesController extends Controller
                 'type' => $request->type,
                 'image'=> $file_to_store
             ]);
-            return redirect()->route('categories.index')->withStatus('word successfully created');
+            return redirect()->route('categories.index')->withStatus('category updated successfully');
         } else {
             return redirect()->route('categories.index')->withStatus('something went wrong, try again');
         }
@@ -198,7 +164,7 @@ class CategoriesController extends Controller
 
             $category->delete();
 
-            return redirect()->route('categories.index')->withStatus('word successfully created');
+            return redirect()->route('categories.index')->withStatus('category successfully deleted');
         } else {
             return redirect()->route('categories.index')->withStatus('something went wrong, try again');
         }

@@ -28,7 +28,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale() . '/admin', 'middlewa
         Route::get('dashboard', 'MainController@index')->name('dashboard');
         Route::resource('categories','CategoriesController');
         Route::resource('reports','ReportsController');
-        Route::get('reports/{id}/{type}','ReportsController@show')->name('reports.showinfo');
+        Route::get('reports/{report_id}','ReportsController@show')->name('reports.showinfo');
         Route::post('reports/{id}','ReportsController@userBan')->name('reports.ban');
         Route::get('admin/profile', 'ProfileController@edit')->name('admin.profile');
         Route::put('admin/profile', 'ProfileController@update')->name('admin.profileupdate');

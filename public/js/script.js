@@ -437,10 +437,10 @@ let addStoryViews = (id) => {
         processData: false,
         contentType: false,
         success: function (data) {
-            console.log(data.msg);
+            console.log(data);
         },
         error: function (data) {
-            console.log('dsff');
+            console.log(data);
         }
     });
 }

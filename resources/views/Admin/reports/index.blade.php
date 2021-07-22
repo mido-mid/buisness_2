@@ -52,16 +52,9 @@
                                                         {{ $report->user_name }}
                                                     </th>
                                                     <td>
-                                                        <a type="button" class="btn btn-info"href="{{route('reports.showinfo',['id' => $report->model_id,'type' => $report->model_type])}}">{{ __('Show') }}</a>
+                                                        <a type="button" class="btn btn-info"href="{{route('reports.showinfo',$report->id)}}">{{ __('Show') }}</a>
                                                     </td>
                                                     <td>
-                                                        <form action="{{ route('reports.destroy', $report->id) }}" method="post" style="display: inline; margin-right: 5px">
-                                                            @csrf
-                                                            @method('delete')
-
-                                                            <button type="button" class="btn btn-danger" onclick="confirm('{{ __("Are you sure you want to delete this report?") }}') ? this.parentElement.submit() : ''">{{ __('Delete') }}</button>
-
-                                                        </form>
 
                                                         <form action="{{ route('reports.update', $report->id) }}" method="post" style="display: inline; margin-right: 5px">
                                                             @csrf

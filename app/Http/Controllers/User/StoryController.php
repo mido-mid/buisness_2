@@ -5,8 +5,10 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\GeneralTrait;
 use App\Models\Media;
+use App\Models\Report;
 use App\Models\Story;
 use App\User;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -136,17 +138,20 @@ class StoryController extends Controller
         //
         $user = auth()->user();
 
-        $story_viewed_before = DB::table('stories_views')
-            ->where('story_id',$request->story_id)->where('user_id',$user->id)->exists();
+        $story = Story::find($request->story_id);
 
-        if ($story_viewed_before == false){
-            $story = DB::table('stories_views')->insert([
-                'story_id' => $request->story_id,
-                'user_id' => $user->id,
-            ]);
-        }
-        else{
-            $story = $story_viewed_before;
+        if($user->id != $story->publisherId) {
+            $story_viewed_before = DB::table('stories_views')
+                ->where('story_id', $request->story_id)->where('user_id', $user->id)->exists();
+
+            if ($story_viewed_before == false) {
+                $story = DB::table('stories_views')->insert([
+                    'story_id' => $request->story_id,
+                    'user_id' => $user->id,
+                ]);
+            } else {
+                $story = $story_viewed_before;
+            }
         }
 
         if($story){

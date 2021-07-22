@@ -158,7 +158,7 @@ class GroupsController extends Controller
             $group = Group::find($group_id);
 
             if ($flag == 0) {
-                if ($group->privacy == 1) {
+                if ($group->privacy == 2) {
                     DB::table('group_members')->insert([
                         'group_id' => $group_id,
                         'user_id' => $user->id,

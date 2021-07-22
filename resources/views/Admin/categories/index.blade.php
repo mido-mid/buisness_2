@@ -53,7 +53,7 @@
                                                         <td>{{$category->name_en}}</td>
                                                     @endif
 
-                                                    <td><center><img src="{{ asset('assets/categories_images/'.$category->image) }}" style="width: 60%;height:200px"></center></td>
+                                                    <td><center><img src="{{ asset('category_images/'.$category->image) }}" style="width: 20%;height:200px"></center></td>
 
                                                     <td>
                                                         <div class="dropdown">
@@ -61,18 +61,14 @@
                                                                 <i class="fas fa-ellipsis-v"></i>
                                                             </button>
                                                             <div class="dropdown-menu" aria-labelledby="dropdownMenu2">
-                                                                    <form action="{{ route('categories.destroy', $category->id) }}" method="post">
-                                                                        @csrf
-                                                                        @method('delete')
+                                                                <form action="{{ route('categories.destroy', $category->id) }}" method="post">
+                                                                    @csrf
+                                                                    @method('delete')
 
-                                                                        <button type="button" class="dropdown-item" onclick="confirm('{{ __("Are you sure you want to delete this vendor?") }}') ? this.parentElement.submit() : ''">{{ __('delete') }}</button>
+                                                                    <button type="button" class="dropdown-item" onclick="confirm('{{ __("Are you sure you want to delete this vendor?") }}') ? this.parentElement.submit() : ''">{{ __('delete') }}</button>
 
-                                                                    </form>
-
-                                                                <a class="btn btn-danger" href="{{ route('categories.create')}}">{{ __('add') }}</a>
-
-
-                                                   <a class="dropdown-item" href="{{ route('categories.edit', $category->id) }}">{{ __('edit') }}</a>
+                                                                </form>
+                                                                <a class="dropdown-item" href="{{ route('categories.edit', $category->id) }}">{{ __('edit') }}</a>
                                                             </div>
                                                         </div>
                                                     </td>

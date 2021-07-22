@@ -55,22 +55,24 @@ class ReportsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id,$type)
+    public function show($report_id)
     {
         //
 
-        if($type == "post"){
-            $model = Post::find($id);
+        $report = Report::find($report_id);
+
+        if($report->model_type == "post"){
+            $model = Post::find($report->model_id);
             $model->publisher = User::find($model->publisherId);
             $model->media = DB::table('media')->where('model_id',$model->id)->where('model_type','post')->get();
         }
         else{
-            $model = Comment::find($id);
+            $model = Comment::find($report->model_id);
             $model->publisher = User::find($model->user_id);
             $model->media = DB::table('media')->where('model_id',$model->id)->where('model_type','comment')->first();
         }
 
-        return view('admin.reports.show',compact('model'));
+        return view('admin.reports.show',compact('model','report'));
 
     }
 
@@ -91,9 +93,9 @@ class ReportsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request,$id)
+    public function update(Request $request,$report_id)
     {
-        $report = Report::find($id);
+        $report = Report::find($report_id);
 
         if($report){
 
@@ -111,7 +113,7 @@ class ReportsController extends Controller
                     $post->delete();
                 }
                 else{
-                    $comment = Comment::find($id);
+                    $comment = Comment::find($report->model_id);
                     $comment_media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->get();
 
                     foreach ($comment_media as $media){
@@ -120,6 +122,8 @@ class ReportsController extends Controller
                     }
                     $comment->delete();
                 }
+
+                $report->delete();
             }
 
 
@@ -134,17 +138,19 @@ class ReportsController extends Controller
         }
     }
 
-    public function userBan(Request $request,$id)
+    public function userBan(Request $request,$report_id)
     {
-        $user = User::find($id);
+
+        $report = Report::find($report_id);
+        $user = User::find($report->user_id);
 
         if($user){
 
             $user->update([
-                'state' => $request->ban
+                'stateId' => $request->ban
             ]);
 
-            return redirect()->route('reports.index')->withStatus('user banned successfully');
+            return redirect()->route('reports.show',$report)->withStatus('user banned successfully');
         }
         else{
             return redirect()->route('reports.index')->withStatus('something wrong happened');
