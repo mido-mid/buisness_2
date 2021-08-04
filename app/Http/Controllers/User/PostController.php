@@ -12,15 +12,16 @@ use App\Models\Page;
 use App\Models\Post;
 use App\User;
 use Carbon\Carbon;
-use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\View;
 
 class PostController extends Controller
 {
 
     use GeneralTrait;
+
     /**
      * Display a listing of the resource.
      *
@@ -44,70 +45,56 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         //
         $user = auth()->user();
+        $user_mentions = [];
         $rules = [
-            'body' => ['required'],
+            'body' => ['nullable'],
             'privacy_id' => 'required|integer',
             'media' => 'nullable',
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif|max:100040',
             'category_id' => 'required|integer'
         ];
 
-        $validator = Validator::make($request->all(),$rules);
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json([
                 'msg' => $validator->errors()->first()
-            ],402);
+            ], 402);
         }
 
-        if($request->hasFile('media')){
 
-            $image_ext = ['jpg', 'png', 'jpeg','svg','gif'];
+        preg_match_all("/(@\w+)/", $request->body, $mentions);
 
-            $files = $request->file('media');
-
-            foreach ($files as $file) {
-
-                $fileextension = $file->getClientOriginalExtension();
-
-                if (in_array($fileextension, $image_ext)) {
-                    $mediaType = 'image';
-                } else {
-                    $mediaType = 'video';
-                }
-
-                $filename = $file->getClientOriginalName();
-                $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
-
-                if($file->move('media', $file_to_store)) {
-                    Media::create([
-                        'filename' => $file_to_store,
-                        'mediaType' => $mediaType,
-                        'model_id' => $request->model_id,
-                        'model_type' => "post"
-                    ]);
+        if (count($mentions[0]) > 0) {
+            foreach ($mentions[0] as $mention) {
+                $user_name = str_replace('@', '', $mention);
+                $user_exist = DB::table('users')->whereRaw("name like '$user_name%'")->exists();
+                if ($user_exist) {
+                    array_push($user_mentions, $user_name);
                 }
             }
         }
 
-        if($request->tags != null){
-            $tags = implode(',',$request->tags);
-        }
-        else{
+        if ($request->tags != null) {
+            $tags = implode(',', $request->tags);
+        } else {
             $tags = null;
         }
+
+        $post_mentions = implode(',', $user_mentions);
 
         $post = Post::create([
             'body' => $request->body,
             'privacyId' => $request->privacy_id,
             'tags' => $tags,
+            'mentions' => $post_mentions,
             'postTypeId' => 2,
             'stateId' => 2,
             'publisherId' => $user->id,
@@ -118,10 +105,41 @@ class PostController extends Controller
         ]);
 
 
-        if($post){
+        if ($post) {
+
+            if ($request->hasFile('media')) {
+
+                $image_ext = ['jpg', 'png', 'jpeg', 'svg', 'gif','JPG'];
+
+                $files = $request->file('media');
+
+                foreach ($files as $file) {
+
+                    $fileextension = $file->getClientOriginalExtension();
+
+                    if (in_array($fileextension, $image_ext)) {
+                        $mediaType = 'image';
+                    } else {
+                        $mediaType = 'video';
+                    }
+
+                    $filename = $file->getClientOriginalName();
+                    $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
+
+                    if ($file->move('media', $file_to_store)) {
+                        Media::create([
+                            'filename' => $file_to_store,
+                            'mediaType' => $mediaType,
+                            'model_id' => $post->id,
+                            'model_type' => "post"
+                        ]);
+                    }
+                }
+            }
+
             $privacy = DB::table('privacy_type')->get();
 
-            $categories = DB::table('categories')->where('type','post')->get();
+            $categories = DB::table('categories')->where('type', 'post')->get();
 
             $times = DB::table('sponsored_time')->get();
 
@@ -131,74 +149,45 @@ class PostController extends Controller
 
             $reacts = DB::table('reacts')->get();
 
-            $post->publisher = User::find($post->publisherId);
-            $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
-            $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
-            $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
+            $cities = DB::table('cities')->get();
 
-            $post->comments = $comments;
-            $post->likes = $likes;
-            $post->type = $post->post_id != null ? 'share' : 'post';
+            $countries = DB::table('countries')->get();
 
-            if($post->tags != null){
-                $tags_ids = explode(',',$post->tags);
-                $tags_info = [];
-                $post->tagged = false;
-                foreach ($tags_ids as $id){
-                    if($id == $user->id){
-                        $post->tagged = true;
-                    }
-                    $tagged_friend = User::find($id);
-                    array_push($tags_info,$tagged_friend);
-                }
-                $post->tags_info = $tags_info;
+            $friends_info = [];
+
+            // friends posts he follows and are public and in groups you are in and in pages you liked
+            $friends = DB::table('friendships')->where(function ($q) use ($user){
+                $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+            })->where('stateId',2)->get();
+
+            foreach ($friends as $friend){
+                $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
+
+                $friend_info = DB::table('users')->select('id','name','cover_image','personal_image')->where('id',$friend_id)->first();
+
+                array_push($friends_info,$friend_info);
+
+            }
+            foreach ($friends_info as $info){
+                $info->name = explode(' ',$info->name)[0];
             }
 
-            if ($post->type == 'share'){
-                $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
-                if($shared_post->post_id != null) {
-                    $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
-                }
-                else{
-                    $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
-                }
-            }else{
-                $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
-            }
+            $post = $this->getPost($user,$post);
 
-            $post->comments->count = count($comments);
-            $post->likes->count = count($likes);
-            $post->shares = count($shares);
-
-            $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
-
-            if($post->liked){
-                $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
-            }
-
-            $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
-
-            if($post->comments->count > 0) {
-                foreach ($post->comments as $comment) {
-                    $comment->publisher = User::find($comment->user_id);
-                    $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-                }
-            }
-            $view = view('includes.partialpost', compact('post','privacy','categories','times','ages','reaches','reacts'));
+            $view = view('includes.partialpost', compact('post', 'privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
             return $sections['post'];
-        }
-        else{
-            return $this->returnError('something wrong happened',402);
+        } else {
+            return $this->returnError('something wrong happened', 402);
         }
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
@@ -209,7 +198,7 @@ class PostController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function edit($id)
@@ -220,37 +209,62 @@ class PostController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param \Illuminate\Http\Request $request
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $post_id)
     {
         //
-        $post = DB::table('posts')->where('id',$post_id)->first();
+        $post = Post::find($post_id);
+
+        $user_mentions = [];
 
         $user = auth()->user();
 
         $rules = [
-            'body' => ['required'],
+            'body' => ['nullable'],
             'privacy_id' => 'required|integer',
             'media' => 'nullable',
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png|max:100040',
             'category_id' => 'required|integer'
         ];
 
-        $validator = Validator::make($request->all(),$rules);
+        $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
-            return $this->returnValidationError(402,$validator);
+            return $this->returnValidationError(402, $validator);
         }
 
-        if($post){
+        if ($post) {
+
+            preg_match_all("/(@\w+)/", $request->body, $mentions);
+
+            if (count($mentions[0]) > 0) {
+                foreach ($mentions[0] as $mention) {
+                    $user_name = str_replace('@', '', $mention);
+                    $user_exist = DB::table('users')->whereRaw("name like '$user_name%'")->exists();
+                    if ($user_exist) {
+                        array_push($user_mentions, $user_name);
+                    }
+                }
+            }
+
+            $post_mentions = implode(',', $user_mentions);
+
+
+            if ($request->tags != null) {
+                $tags = implode(',', $request->tags);
+            } else {
+                $tags = null;
+            }
 
             $post->update([
                 'body' => $request->body,
                 'privacyId' => $request->privacy_id,
                 'postTypeId' => 2,
+                'mentions' => $post_mentions,
+                'tags' => $tags,
                 'stateId' => 2,
                 'publisherId' => $user->id,
                 'categoryId' => $request->category_id,
@@ -259,17 +273,17 @@ class PostController extends Controller
                 'post_id' => $request->post_id
             ]);
 
-            if($request->hasFile('media')){
+            if ($request->hasFile('media')) {
 
-                $image_ext = ['jpg', 'png', 'jpeg','svg','gif'];
+                $image_ext = ['jpg', 'png', 'jpeg', 'svg', 'gif','JPG'];
 
                 $files = $request->file('media');
 
                 foreach ($files as $file) {
 
-                    $post_media = DB::table('media')->where('model_id',$post_id)->get();
+                    $post_media = DB::table('media')->where('model_id', $post_id)->get();
 
-                    foreach ($post_media as $media){
+                    foreach ($post_media as $media) {
                         $media->delete();
                         unlink('media/' . $media->filename);
                     }
@@ -285,11 +299,11 @@ class PostController extends Controller
                     $filename = $file->getClientOriginalName();
                     $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
 
-                    if($file->move('media', $file_to_store)) {
+                    if ($file->move('media', $file_to_store)) {
                         Media::create([
                             'filename' => $file_to_store,
                             'mediaType' => $mediaType,
-                            'model_id' => $request->model_id,
+                            'model_id' => $post->id,
                             'model_type' => "post"
                         ]);
                     }
@@ -297,11 +311,11 @@ class PostController extends Controller
 
             }
 
-            if($request->has('checkedimages')){
+            if ($request->has('checkedimages')) {
 
                 $post_media = [];
 
-                foreach ($post_media as $media){
+                foreach ($post_media as $media) {
                     $post_media = $media->filename;
                 }
 
@@ -311,7 +325,7 @@ class PostController extends Controller
 
                 if (!empty($deleted_media)) {
                     foreach ($deleted_media as $media) {
-                        DB::table('media')->where('filename',$media)->delete();
+                        DB::table('media')->where('filename', $media)->delete();
                         unlink('product_images/' . $media);
                     }
                 }
@@ -319,7 +333,7 @@ class PostController extends Controller
 
             $privacy = DB::table('privacy_type')->get();
 
-            $categories = DB::table('categories')->where('type','post')->get();
+            $categories = DB::table('categories')->where('type', 'post')->get();
 
             $times = DB::table('sponsored_time')->get();
 
@@ -329,76 +343,45 @@ class PostController extends Controller
 
             $reacts = DB::table('reacts')->get();
 
-            $post->publisher = User::find($post->publisherId);
-            $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
-            $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
-            $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
+            $cities = DB::table('cities')->get();
 
-            $post->comments = $comments;
-            $post->likes = $likes;
-            $post->type = $post->post_id != null ? 'share' : 'post';
+            $countries = DB::table('countries')->get();
 
-            if($post->tags != null){
-                $tags_ids = explode(',',$post->tags);
-                $tags_info = [];
-                $post->tagged = false;
-                foreach ($tags_ids as $id){
-                    if($id == $user->id){
-                        $post->tagged = true;
-                    }
-                    $tagged_friend = User::find($id);
-                    array_push($tags_info,$tagged_friend);
-                }
-                $post->tags_info = $tags_info;
+            $friends_info = [];
+
+            // friends posts he follows and are public and in groups you are in and in pages you liked
+            $friends = DB::table('friendships')->where(function ($q) use ($user){
+                $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+            })->where('stateId',2)->get();
+
+            foreach ($friends as $friend){
+                $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
+
+                $friend_info = DB::table('users')->select('id','name','cover_image','personal_image')->where('id',$friend_id)->first();
+
+                array_push($friends_info,$friend_info);
+
+            }
+            foreach ($friends_info as $info){
+                $info->name = explode(' ',$info->name)[0];
             }
 
-            if ($post->type == 'share'){
-                $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
-                if($shared_post->post_id != null) {
-                    $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
-                }
-                else{
-                    $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
-                }
-            }else{
-                $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
-            }
+            $post = $this->getPost($user,$post);
 
-            $post->comments->count = count($comments);
-            $post->likes->count = count($likes);
-            $post->shares = count($shares);
-
-            $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
-
-            if($post->liked){
-                $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
-            }
-
-            $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
-
-            if($post->comments->count > 0) {
-                foreach ($post->comments as $comment) {
-                    $comment->publisher = User::find($comment->user_id);
-                    $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-                }
-            }
-
-            $view = view('includes.partialpost', compact('post','privacy','categories','times','ages','reaches','reacts'));
+            $view = view('includes.partialpost', compact('post', 'privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
             return $sections['post'];
+        } else {
+            return $this->returnError('something wrong happened', 402);
         }
-
-       else{
-           return $this->returnError('something wrong happened',402);
-       }
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param int $id
      * @return \Illuminate\Http\Response
      */
     public function destroy($post_id)
@@ -407,22 +390,19 @@ class PostController extends Controller
 
         $post = Post::find($post_id);
 
-        if($post)
-        {
-            $post_media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
+        if ($post) {
+            $post_media = DB::table('media')->where('model_id', $post->id)->where('model_type', 'post')->get();
 
-            foreach ($post_media as $media){
-                DB::table('media')->where('id',$media->id)->delete();
+            foreach ($post_media as $media) {
+                DB::table('media')->where('id', $media->id)->delete();
                 unlink('media/' . $media->filename);
             }
 
             $post->delete();
 
             return $this->returnSuccessMessage('post successfully deleted');
-        }
-        else
-        {
-            return $this->returnError('something wrong happened',402);
+        } else {
+            return $this->returnError('something wrong happened', 402);
         }
     }
 
@@ -433,12 +413,12 @@ class PostController extends Controller
 
         $saved_posts = DB::select(DB::raw('select posts.* from posts,saved_posts
                         where saved_posts.post_id = posts.id
-                        AND saved_posts.user_id ='.$user->id));
+                        AND saved_posts.user_id =' . $user->id));
 
-        foreach ($saved_posts as $post){
-            $comments = DB::table('comments')->where('model_id',$post->id)->where('type',$post->type)->get()->toArray();
-            $likes = DB::table('likes')->where('postId',$post->id)->get()->toArray();
-            $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
+        foreach ($saved_posts as $post) {
+            $comments = DB::table('comments')->where('model_id', $post->id)->where('type', $post->type)->get()->toArray();
+            $likes = DB::table('likes')->where('postId', $post->id)->get()->toArray();
+            $shares = DB::table('posts')->where('post_id', $post->id)->get()->toArray();
 
             $post->comments = count($comments);
             $post->likes = count($likes);
@@ -448,11 +428,11 @@ class PostController extends Controller
 
             $post->publisher = User::find($post->publisherId);
 
-            $post_media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
+            $post_media = DB::table('media')->where('model_id', $post->id)->where('model_type', 'post')->get();
 
-            if(count($post_media) > 0){
+            if (count($post_media) > 0) {
                 foreach ($post_media as $media) {
-                    array_push($post_media_array,asset('media/'.$media->filename));
+                    array_push($post_media_array, asset('media/' . $media->filename));
                 }
             }
             $post->media = $post_media_array;
@@ -460,14 +440,15 @@ class PostController extends Controller
 
         $user_interests = DB::select(DB::raw('select interests.id from categories,user_interests
                         where user_interests.interest_id = interests.id
-                        AND user_interests.user_id ='.$user->id));
+                        AND user_interests.user_id =' . $user->id));
 
-        $expected_pages = Page::whereIn('interest_id',$user_interests)->limit(3);
+        $expected_pages = Page::whereIn('interest_id', $user_interests)->limit(3);
 
-        return view('User.saved_posts',compact('saved_posts','expected_pages'));
+        return view('User.saved_posts', compact('saved_posts', 'expected_pages'));
     }
 
-    public function savePost(Request $request) {
+    public function savePost(Request $request)
+    {
 
         $post_id = $request->post_id;
 
@@ -475,7 +456,7 @@ class PostController extends Controller
 
         $flag = $request->flag;
 
-        if($flag == 0) {
+        if ($flag == 0) {
 
             DB::table('saved_posts')->insert([
                 'post_id' => $post_id,
@@ -483,10 +464,9 @@ class PostController extends Controller
             ]);
 
             return $this->returnSuccessMessage('saved');
-        }
-        else{
+        } else {
 
-            $user_post = DB::table('saved_posts')->where('post_id',$post_id)->where('user_id',$user->id)->first();
+            $user_post = DB::table('saved_posts')->where('post_id', $post_id)->where('user_id', $user->id)->first();
 
             DB::table('saved_posts')->delete($user_post->id);
 
@@ -495,11 +475,29 @@ class PostController extends Controller
     }
 
 
-    public function sponsor(Request $request) {
+    public function sponsor(Request $request)
+    {
 
         $user = auth()->user();
 
-        $sponsored = DB::table('sponsored')->insert([
+        $rules = [
+            'timeId' => 'required|integer',
+            'reachId' => 'required|integer',
+            'postId' => 'required|integer',
+            'age_id' => 'required|integer',
+            'country_id' => 'required|integer',
+            'city_id' => 'required|integer',
+            'price' => 'required|numeric',
+            'gender' => ['required', 'string', 'not_regex:/([%\$#\*<>]+)/']
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+
+        if ($validator->fails()) {
+            return $this->returnValidationError(402, $validator);
+        }
+
+        $request->session()->put([
             'timeId' => $request->time_id,
             'reachId' => $request->reach_id,
             'postId' => $request->post_id,
@@ -511,30 +509,159 @@ class PostController extends Controller
             'gender' => $request->gender
         ]);
 
-        if($sponsored){
-            return $this->returnSuccessMessage('you have saved this post', 200);
-        }
-        else{
-            return $this->returnError('something wrong happened',402);
-        }
+        $data = $request->session()->all();
+
+        return response()->json([
+            'total_price' => $data['price']
+        ]);
     }
 
-    public function report(Request $request) {
+    public function payment(Request $request)
+    {
 
         $user = auth()->user();
 
-        $report = DB::table('report')->insert([
-            'body' => $request->body,
-            'model_id' => $request->model_id,
-            'model_type' => $request->type,
-            'stateId' => 2,
-        ]);
+    }
 
-        if($report){
-            return $this->returnSuccessMessage('your report have been created successfully', 200);
+    private function getPost($user,$post){
+
+        if($post->mentions != null){
+            $post->edit = $post->body;
+            $mentions = explode(',',$post->mentions);
+            foreach ($mentions as $mention){
+                $post->body = str_replace('@'.$mention,
+                    '<span style="color: #ffc107">'.$mention.'</span>',
+                    $post->body);
+            }
+        }
+        $post->publisher = User::find($post->publisherId);
+        $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->whereNull('comment_id')->get();
+        $total_comments_count = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->count();
+        $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
+        $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
+
+        $post->comments = $comments;
+        $post->likes = $likes;
+        $post->type = $post->post_id != null ? 'share' : 'post';
+
+        if($post->page_id != null){
+            $post->source = "page";
+            $page = DB::table('pages')->where('id',$post->page_id)->first();
+            $post->page = $page;
+        }
+        elseif($post->group_id != null){
+            $post->source = "group";
+            $group = DB::table('groups')->where('id',$post->group_id)->first();
+            $post->group = $group;
         }
         else{
-            return $this->returnError('something wrong happened',402);
+            $post->source = "normal post";
         }
+
+        if($post->tags != null){
+            $tags_ids = explode(',',$post->tags);
+            $post->tags_ids = $tags_ids;
+            $tags_info = [];
+            $post->tagged = false;
+            foreach ($tags_ids as $id){
+                if($id == $user->id){
+                    $post->tagged = true;
+                }
+                $tagged_friend = User::find($id);
+                array_push($tags_info,$tagged_friend);
+            }
+            $post->tags_info = $tags_info;
+        }
+
+        if ($post->type == 'share'){
+            $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
+            if($shared_post->post_id != null) {
+                $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
+            }
+            else{
+                $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
+            }
+        }else{
+            $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
+        }
+
+        $post->comments->count = $total_comments_count;
+        $post->likes->count = count($likes);
+        $post->shares = count($shares);
+
+        $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
+
+        if($post->liked){
+            $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
+        }
+
+        $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
+
+        if($post->comments->count > 0) {
+            foreach ($post->comments as $comment) {
+
+                $comment->reported = DB::table('reports')->where('user_id', $user->id)
+                    ->where('model_id', $comment->id)->where('model_type', 'comment')->exists();
+
+                $comment->type = $comment->comment_id != null ? 'reply' : 'comment';
+
+                if($comment->reported == false) {
+
+                    if ($comment->mentions != null) {
+                        $comment->edit = $comment->body;
+                        $mentions = explode(',', $comment->mentions);
+                        foreach ($mentions as $mention) {
+                            $comment->body = str_replace('@' . $mention,
+                                '<span style="color: #ffc107">' . $mention . '</span>',
+                                $comment->body);
+                        }
+                    }
+                    $comment->publisher = User::find($comment->user_id);
+                    $comment->media = DB::table('media')->where('model_id', $comment->id)->where('model_type', 'comment')->first();
+                    $comment->replies = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->where('comment_id', $comment->id)->get();
+                    $comment->likes = DB::table('likes')->where('model_id', $comment->id)->where('model_type', 'comment')->get();
+                    $comment->replies->count = count($comment->replies);
+                    $comment->likes->count = count($comment->likes);
+                    $comment->liked = DB::table('likes')->where('model_id', $comment->id)->where('model_type', 'comment')->where('senderId', $user->id)->first();
+
+                    if ($comment->liked) {
+                        $comment->user_react = DB::table('reacts')->where('id', $comment->liked->reactId)->get();
+                    }
+
+                    if (count($comment->replies) > 0) {
+                        foreach ($comment->replies as $reply) {
+
+                            $reply->reported = DB::table('reports')->where('user_id', $user->id)
+                                ->where('model_id', $reply->id)->where('model_type', 'comment')->exists();
+
+                            if($reply->reported == false) {
+
+                                if ($reply->mentions != null) {
+                                    $reply->edit = $reply->body;
+                                    $mentions = explode(',', $reply->mentions);
+                                    foreach ($mentions as $mention) {
+                                        $reply->body = str_replace('@' . $mention,
+                                            '<span style="color: #ffc107">' . $mention . '</span>',
+                                            $reply->body);
+                                    }
+                                }
+                                $reply->publisher = User::find($reply->user_id);
+                                $reply->media = DB::table('media')->where('model_id', $reply->id)->where('model_type', 'comment')->first();
+                                $reply->likes = DB::table('likes')->where('model_id', $reply->id)->where('model_type', 'comment')->get();
+                                $reply->likes->count = count($reply->likes);
+                                $reply->liked = DB::table('likes')->where('model_id', $reply->id)->where('model_type', 'comment')->where('senderId', $user->id)->first();
+
+                                if ($reply->liked) {
+                                    $reply->user_react = DB::table('reacts')->where('id', $reply->liked->reactId)->get();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return $post;
     }
+
 }

@@ -5,11 +5,15 @@
         <div class="search-bar">
             <input type="text" placeholder="Search" />
         </div>
-        <div class="stories d-flex mt-2" id="story">
+        <div class="stories d-flex mt-2" id="stories-scroll">
             <div class="my-story story" data-toggle="modal" data-target="#add-story-modal">
-                <img
-                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                    alt="Story Pic" />
+                @if(auth()->user()->personal_image != null)
+                    <img
+                        src="{{asset('media')}}/{{auth()->user()->personal_image}}" />
+                @else
+                    <img
+                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                @endif
                 <i class="far fa-plus-square"></i>
             </div>
             <div class="add-story-modal">
@@ -43,9 +47,9 @@
                                                   placeholder="Start Typing..."></textarea>
                                     </div>
 
-                                    <div class="post-privacy d-flex justify-content-between align-items-center m-auto w-75">
-                                        <label for="cars">Choose Story Privacy:</label>
-                                        <select id="post-privacy" name="privacy_id">
+                                    <div class="form-group post-desc d-flex justify-content-center mt-2">
+                                        <label for="cars">Privacy:</label>
+                                        <select class="form-control" id="post-privacy" name="privacy_id">
                                             @foreach($privacy as $storyprivacy)
                                                 @if(App::getlocale() == 'en')
                                                     <option value="{{$storyprivacy->id}}">{{$storyprivacy->name_en}}</option>
@@ -56,17 +60,13 @@
                                         </select>
                                     </div>
                                     <!-- Story Images -->
-                                    <div class="post-desc d-flex justify-content-center mt-2">
+                                    <div class="form-group post-desc d-flex justify-content-center mt-2">
                                         <input class="form-control w-100 mt-2" type="file" name="media[]" id="story-img" multiple/>
                                     </div>
 
-
-                                    <div class="post-desc d-flex justify-content-center mt-2">
-                                        <input class="form-control w-100 mt-2" type="file" name="cover_image" id="story-img"/>
-                                    </div>
                                     <!-- Add Story Btn -->
-                                    <div class="post-add-btn d-flex justify-content-center mt-4">
-                                        <button type="button" onclick="addStorySubmit()" class="btn btn-secondary btn-block w-75">
+                                    <div class="form-group post-add-btn d-flex justify-content-center mt-4">
+                                        <button type="button" onclick="addStorySubmit({{auth()->user()->id}})" class="btn btn-warning btn-block">
                                             add story
                                         </button>
                                     </div>
@@ -81,126 +81,246 @@
 
             </div>
             @foreach($stories as $story)
-                <div onclick="addStoryViews({{$story->id}})" class="story" data-toggle="modal" data-target="#show-story-modal-{{$story->id}}" id="story-{{$story->id}}">
+                @if(count($story) > 0)
+                    <div onclick="addStoryViews({{$story->publisher->id}})" class="story" data-toggle="modal" data-target="#show-story-modal-{{$story->publisher->id}}" id="story-{{$story->publisher->id}}">
+                        <div class="owner-info d-flex align-items-center">
+                            @if($story->publisher->personal_image != null)
+                                <img
+                                    src="{{asset('media')}}/{{$story->publisher->personal_image}}" class="profile-figure rounded-circle" />
+                            @else
+                                <img
+                                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" class="profile-figure rounded-circle"/>
+                            @endif
+                            <p class="mb-0 p-2"><b>{{$story->publisher->name}}</b></p>
+                        </div>
+                        @if($story->publisher->personal_image != null)
+                            <img
+                                src="{{asset('media')}}/{{$story->publisher->personal_image}}"/>
+                        @else
+                            <img
+                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                            />
+                        @endif
 
-                    {{$story->publisher->name}}
-                    @if($story->cover_image != null)
-                        <img
-                            src="{{asset('media')}}/{{$story->cover_image}}" />
-                    @else
-                        <img
-                            src="{{asset('media')}}/story_cover_image.jpg" />
-                    @endif
+    {{--                        <form id="view-story-form-{{$story->id}}" action="{{ route('story.view') }}" method="POST" enctype="multipart/form-data" style="display: none;">--}}
+    {{--                            @csrf--}}
+    {{--                            <input type="hidden" name="story_id" value="{{$story->id}}">--}}
+    {{--                        </form>--}}
 
-                        <form id="view-story-form-{{$story->id}}" action="{{ route('story.view') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                            @csrf
-                            <input type="hidden" name="story_id" value="{{$story->id}}">
-                        </form>
+                    </div>
+                    <div class="show-story-modal">
+                        <div class="modal fade load-modal" data-controls-modal="show-story-modal-{{$story->publisher->id}}" data-backdrop="static" data-keyboard="false" id="show-story-modal-{{$story->publisher->id}}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+    {{--                                <div class="modal-header d-flex justify-content-between">--}}
+    {{--                                    <span></span>--}}
+    {{--                                    @if($story->publisher->id == auth()->user()->id)--}}
+    {{--                                        <button onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$story->id}}) : ''">--}}
+    {{--                                            Delete</button>--}}
+    {{--                                        <form action="{{ route('stories.destroy', $story->id) }}" id="delete-story-form-{{$story->id}}" method="post">--}}
+    {{--                                            @csrf--}}
+    {{--                                            @method('delete')--}}
+    {{--                                            <!-- ajax-->--}}
+    {{--                                        </form>--}}
+    {{--                                    @endif--}}
+    {{--                                </div>--}}
+                                    <div class="modal-body">
+                                        <div id="story-carousel-{{$story->publisher->id}}" class="carousel slide" data-ride="carousel">
+                                            <div class="carousel-inner">
+                                                @foreach($story as $inner_story)
+                                                    <div class="carousel-item @if ($loop->first == true) active @endif carousel-{{$story->publisher->id}}" @if($inner_story->media != null && $inner_story->media->mediaType == "video" ) data-type="video" @else data-type="not video"  @endif id="carousel-item-{{$inner_story->id}}">
+                                                        <div class="controllers d-flex justify-content-between">
+                                                            @if($story->publisher->id == auth()->user()->id)
+                                                                <i class=" fas fa-eye p-2" data-toggle="modal" data-target="#show-story-views-modal-{{$inner_story->id}}"> {{count($inner_story->viewers)}} </i>
+                                                            @endif
+                                                            <div>
+                                                                @if($story->publisher->id == auth()->user()->id)
+                                                                    <i class="fas fa-trash p-2" onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$inner_story->id}},{{$story->publisher->id}}) : ''"></i>
+                                                                    <form action="{{ route('stories.destroy', $inner_story->id) }}" id="delete-story-form-{{$inner_story->id}}" method="post" style="display: none">
+                                                                    @csrf
+                                                                    @method('delete')
+                                                                    <!-- ajax-->
+                                                                    </form>
+                                                                @endif
+                                                                <i class="fas fa-times p-2" data-dismiss="modal" aria-label="Close" onclick="removeCurrent({{$story->publisher->id}})"></i>
+                                                            </div>
+                                                        </div>
+                                                        @if($inner_story->body != null && is_null($inner_story->media) )
+                                                            <!-- If Content Text -->
+                                                            <p class="m-auto text-center w-100 p-5 h2 h-100">{{$inner_story->body}}</p>
+                                                        @else
+                                                            @if($inner_story->media->mediaType == 'image')
+                                                                <!-- If Content Img -->
+                                                                <img class="w-100"
+                                                                     src="{{asset('media')}}/{{$inner_story->media->filename}}" />
+                                                                @if($inner_story->body != null)
+                                                                    <div class="carousel-caption d-none d-md-block">
+                                                                        <p>{{$inner_story->body}}</p>
+                                                                    </div>
+                                                                @endif
+                                                            @else
+                                                                <!-- If Content Vedio -->
+                                                                <div class="story-content-vedio">
+                                                                    <video class="w-100 h-100" id="story-video-{{$inner_story->id}}">
+                                                                        <source src="{{asset('media')}}/{{$inner_story->media->filename}}" type="video/mp4" />
+                                                                        Your browser does not support the video tag.
+                                                                    </video>
+                                                                    @if($inner_story->body != null)
+                                                                        <div class="carousel-caption d-none d-md-block">
+                                                                            <p>{{$inner_story->body}}</p>
+                                                                        </div>
+                                                                    @endif
+                                                                </div>
+                                                            @endif
+                                                        @endif
+                                                    </div>
 
-                </div>
-                <div class="show-story-modal">
-                    <div class="modal fade" id="show-story-modal-{{$story->id}}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header d-flex justify-content-between">
-                                    <span></span>
-                                    @if($story->publisher->id == auth()->user()->id)
-                                        <button onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$story->id}}) : ''">
-                                            Delete</button>
-                                        <form action="{{ route('stories.destroy', $story->id) }}" id="delete-story-form-{{$story->id}}" method="post">
-                                            @csrf
-                                            @method('delete')
-                                            <!-- ajax-->
-                                        </form>
-                                    @endif
-                                </div>
-                                <div class="modal-body">
-                                    <!-- If Content Img -->
-                                    <!-- <div class="story-content-img">
-                                      <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                      </button>
-                                      <img class="w-100"
-                                        src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                      <p class="m-auto text-center w-100 p-2">Some Caption</p>
-                                    </div> -->
-                                    <!-- If Content Text -->
-                                    <!-- <div class="story-content-text">
-                                      <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                      </button>
-                                      <p class="m-auto text-center w-100 p-5 h2 h-100">Lorem ipsum dolor sit, amet consectetur
-                                        adipisicing
-                                        elit. Nemo libero laudantium vero est quae, perspiciatis, enim quaerat modi alias quos laborum
-                                        porro exercitationem, delectus officia inventore cupiditate at nesciunt adipisci.</p>
-                                    </div> -->
-                                    <!-- If Content Vedio -->
+                                                    <form id="view-story-form-{{$inner_story->id}}" action="{{ route('story.view') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                        @csrf
+                                                        <input type="hidden" name="story_id" value="{{$inner_story->id}}">
+                                                    </form>
 
-                                    @if($story->body != null && is_null($story->media) )
-                                        <div class="story-content-vedio">
-                                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                            @if($story->body != null)
-                                                <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>
-                                            @endif
+                                                    <div class="show-story-views-modal">
+                                                        <div class="modal fade" id="show-story-views-modal-{{$inner_story->id}}" tabindex="-1" aria-hidden="true">
+                                                            <div class="modal-dialog" style="margin-top: 22vh">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header d-flex justify-content-between">
+                                                                        <h5 class="modal-title" id="exampleModalLabel">
+                                                                            Story Viewers
+                                                                        </h5>
+                                                                        <button type="button" class="close ml-0" onclick="$('#show-story-views-modal-{{$inner_story->id}}').modal('hide');" aria-label="Close">
+                                                                            <span aria-hidden="true">&times;</span>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        @if(count($inner_story->viewers) > 0)
+                                                                            @foreach($inner_story->viewers as $viewer)
+                                                                                <div class="people-info d-flex align-items-center">
+                                                                                    @if($viewer->personal_image != null)
+                                                                                        <img class="profile-figure rounded-circle"
+                                                                                             src="{{asset('media')}}/{{$viewer->personal_image}}"
+                                                                                             alt="User Profile Pic">
+                                                                                    @else
+                                                                                        <img class="profile-figure rounded-circle"
+                                                                                             src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                                                             alt="User Profile Pic">
+                                                                                    @endif
+                                                                                    <p class="mb-0 ml-3"><b>{{$viewer->name}}</b></p>
+                                                                                </div>
+                                                                                @if($loop->last == false)
+                                                                                    <hr>
+                                                                                @endif
+                                                                            @endforeach
+
+                                                                        @else
+                                                                            <p class="mb-0 ml-3"><b>no viewers yet</b></p>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         </div>
-                                    @else
-                                        @if($story->media->mediaType == 'image')
-                                            <div class="story-content-img">
-                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                                <img class="w-100"
-                                                     src="{{asset('media')}}/{{$story->media->filename}}" />
-                                                @if($story->body != null)
-                                                    <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <div class="story-content-vedio">
-                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                                <video class="story-video w-100 h-100" autoplay muted>
-                                                    <source src="{{asset('media')}}/{{$story->media->filename}}" type="video/mp4">
-                                                    Your browser does not support the video tag.
-                                                </video>
-                                                @if($story->body != null)
-                                                    <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>
-                                                @endif
-                                            </div>
-                                        @endif
+                                        <a class="carousel-control-prev" href="#story-carousel-{{$story->publisher->id}}" role="button" data-slide="prev">
+                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                            <span class="sr-only">Previous</span>
+                                        </a>
+                                        <a class="carousel-control-next" href="#story-carousel-{{$story->publisher->id}}" role="button" data-slide="next">
+                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                            <span class="sr-only">Next</span>
+                                        </a>
+                                    </div>
+                                        <!-- If Content Img -->
+                                        <!-- <div class="story-content-img">
+                                          <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                          </button>
+                                          <img class="w-100"
+                                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                          <p class="m-auto text-center w-100 p-2">Some Caption</p>
+                                        </div> -->
+                                        <!-- If Content Text -->
+                                        <!-- <div class="story-content-text">
+                                          <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                          </button>
+                                          <p class="m-auto text-center w-100 p-5 h2 h-100">Lorem ipsum dolor sit, amet consectetur
+                                            adipisicing
+                                            elit. Nemo libero laudantium vero est quae, perspiciatis, enim quaerat modi alias quos laborum
+                                            porro exercitationem, delectus officia inventore cupiditate at nesciunt adipisci.</p>
+                                        </div> -->
+                                        <!-- If Content Vedio -->
 
-                                    @endif
+    {{--                                    @if($story->body != null && is_null($story->media) )--}}
+    {{--                                        <div class="story-content-vedio">--}}
+    {{--                                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">--}}
+    {{--                                                <span aria-hidden="true">&times;</span>--}}
+    {{--                                            </button>--}}
+    {{--                                            @if($story->body != null)--}}
+    {{--                                                <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>--}}
+    {{--                                            @endif--}}
+    {{--                                        </div>--}}
+    {{--                                    @else--}}
+    {{--                                        @if($story->media->mediaType == 'image')--}}
+    {{--                                            <div class="story-content-img">--}}
+    {{--                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">--}}
+    {{--                                                    <span aria-hidden="true">&times;</span>--}}
+    {{--                                                </button>--}}
+    {{--                                                <img class="w-100"--}}
+    {{--                                                     src="{{asset('media')}}/{{$story->media->filename}}" />--}}
+    {{--                                                @if($story->body != null)--}}
+    {{--                                                    <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>--}}
+    {{--                                                @endif--}}
+    {{--                                            </div>--}}
+    {{--                                        @else--}}
+    {{--                                            <div class="story-content-vedio">--}}
+    {{--                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">--}}
+    {{--                                                    <span aria-hidden="true">&times;</span>--}}
+    {{--                                                </button>--}}
+    {{--                                                <video class="story-video w-100 h-100" id="story-video-{{$story->id}}" loop="true">--}}
+    {{--                                                    <source src="{{asset('media')}}/{{$story->media->filename}}" type="video/mp4">--}}
+    {{--                                                    Your browser does not support the video tag.--}}
+    {{--                                                </video>--}}
+    {{--                                                @if($story->body != null)--}}
+    {{--                                                    <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>--}}
+    {{--                                                @endif--}}
+    {{--                                            </div>--}}
+    {{--                                        @endif--}}
 
-                                    @if($story->publisher->id == auth()->user()->id)
-                                        <button data-toggle="modal" data-target="#story-viewers-modal-{{$story->id}}">story views : {{count($story->viewers)}}</button>
-                                    @endif
+    {{--                                    @endif--}}
+
+    {{--                                    @if($story->publisher->id == auth()->user()->id)--}}
+    {{--                                        <button data-toggle="modal" data-target="#story-viewers-modal-{{$story->id}}">story views : {{count($story->viewers)}}</button>--}}
+    {{--                                    @endif--}}
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="show-story-modal">
-                    <div class="modal fade" id="story-viewers-modal-{{$story->id}}" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header d-flex justify-content-between">
-                                    <span></span>
-                                    <h5 class="modal-title" id="exampleModalLabel">Story Viewers</h5>
-                                </div>
-                                <div class="modal-body">
-                                    @foreach($story->viewers as $viewer)
-                                        {{$viewer->name}}
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    {{--                <div class="show-story-modal">--}}
+    {{--                    <div class="modal fade" id="story-viewers-modal-{{$story->id}}" tabindex="-1" aria-hidden="true">--}}
+    {{--                        <div class="modal-dialog">--}}
+    {{--                            <div class="modal-content">--}}
+    {{--                                <div class="modal-header d-flex justify-content-between">--}}
+    {{--                                    <span></span>--}}
+    {{--                                    <h5 class="modal-title" id="exampleModalLabel">Story Viewers</h5>--}}
+    {{--                                </div>--}}
+    {{--                                <div class="modal-body">--}}
+    {{--                                    @foreach($story->viewers as $viewer)--}}
+    {{--                                        {{$viewer->name}}--}}
+    {{--                                    @endforeach--}}
+    {{--                                </div>--}}
+    {{--                            </div>--}}
+    {{--                        </div>--}}
+    {{--                    </div>--}}
+    {{--                </div>--}}
+                @endif
             @endforeach
+            <div id="load_stories" style="width: 100%">
+                <!--  load data from database -->
+            </div>
         </div>
 
 {{--        <div class="col-12">--}}
@@ -304,7 +424,7 @@
 
                                <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
                                    <label>Tag friends:</label>
-                                   <select style="width: 200px" class="js-example-basic-multiple" id="post-tags" name="tags[]" multiple="multiple">
+                                   <select style="width: 200px" class="js-example-basic-multiple" name="tags[]" multiple="multiple">
                                        @foreach($friends_info as $friend)
                                            <option value="{{$friend->id}}">{{$friend->name}}</option>
                                        @endforeach
@@ -312,13 +432,9 @@
                                </div>
 
                                 <div class="post-desc d-flex justify-content-center mt-2">
-                                    <textarea class="w-75 p-2" name="body" onkeypress="if ($('#post-text').val() == '@') { $('#user-friends').css('display','block');}" id="post-text" cols="200" rows="4"
+                                    <textarea onfocus="mentionAdd('textarea','menu')" class="w-75 p-2" id="textarea" name="body" cols="200" rows="4"
                                     placeholder="Post Description..."></textarea>
-                                    <ul id="user-friends" class="mention-box" style="display: none">
-                                        @foreach($friends_info as $friend)
-                                            <li class="mention-names" onclick="$('#post-text').text($('#post-text').text() + '@' + {{$friend->name}})">{{$friend->name}}</li>
-                                        @endforeach
-                                    </ul>
+                                    <div id="menu" class="menu" role="listbox"></div>
                                 </div>
                                 <!-- Post Images -->
                                 <div class="post-desc d-flex justify-content-center mt-2">
@@ -368,12 +484,22 @@
                             </b></a>
                         @else
                             <a href="{{route('profile',$post->publisher->id)}}"><b>
+                                @if($post->publisher->official == 1)
+                                    <i class="fas fa-user-check" style="color: #ffc107"></i>
+                                @endif
                                 {{$post->publisher->name}}
-                            </b></a>
+                                </b></a>
+                            @if($post->sponsored)
+                                <div style="font-size: small">
+                                    <span><i class="fas fa-ad"></i></span>
+                                    sponsored
+                                </div>
+
+                            @endif
                         @endif
 
                         @if($post->tags != null )
-                            <a data-toggle="modal" data-target="#show-tag-modal-{{$post->id}}"><b>
+                            <a data-toggle="modal" data-target="#show-post-tags-modal-{{$post->id}}"><b>
                                 with
                                 @if($post->tagged == true)
                                     you and {{count($post->tags_info) - 1}}
@@ -394,7 +520,9 @@
                     <!-- Post options -->
                     <div class="post-options post-options-{{$post->id}}">
                         <ul class="options">
-                            <li data-toggle="modal" data-target="#advertiseModal">Advertise</li>
+                            @if($post->sponsored == false)
+                                <li data-toggle="modal" data-target="#advertise-post-modal-{{$post->id}}">Advertise</li>
+                            @endif
                             @if(!$post->saved)
                                 <!-- ajax -->
                                 <li><a id="save-post-{{$post->id}}" onclick="savePostSubmit({{$post->id}})">Save Post</a></li>
@@ -411,38 +539,53 @@
                                     <input type="hidden" id="save-post-flag-{{$post->id}}" name="flag" value="1">
                                 </form>
                             @endif
+                            <li data-toggle="modal" onclick="textAreaChange({{$post->id}})" data-target="#edit-post-modal-{{$post->id}}">Edit</li>
                             <form action="{{ route('posts.destroy', $post->id) }}" id="delete-post-form-{{$post->id}}" method="post">
                                 @csrf
                                 @method('delete')
                                 <!-- ajax-->
-                                <li data-toggle="modal" data-target="#edit-post-modal-{{$post->id}}">Edit</li>
                                 <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
                                     Delete</li>
                             </form>
                             <li data-toggle="modal" data-target="#report-post-modal-{{$post->id}}" class="last-li">Report</li>
                         </ul>
                     </div>
-                    <div class="post-option ml-auto pr-3" onclick="toggleOptions({{$post->id}})">
+                    <div class="post-option ml-auto pr-3" onclick="toggleOptions({{$post->id}});applySelect2();">
                         <i class="fas fa-ellipsis-v"></i>
                     </div>
                 </div>
 
                 @if($post->tags != null)
 
-                    <div class="post-edit-modal">
-                        <div class="modal fade" id="show-tag-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+                    <div class="show-story-views-modal">
+                        <div class="modal fade" id="show-post-tags-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog" style="margin-top: 22vh">
                                 <div class="modal-content">
                                     <div class="modal-header d-flex justify-content-between">
-                                        <span></span>
-                                        <h5 class="modal-title" id="exampleModalLabel">Tagged Users</h5>
-                                        <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                        <h5 class="modal-title" id="exampleModalLabel">
+                                            Post Tags
+                                        </h5>
+                                        <button type="button" class="close ml-0" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
                                     <div class="modal-body">
                                         @foreach($post->tags_info as $tag)
-                                            {{$tag->name}} </br>
+                                            <div class="people-info d-flex align-items-center">
+                                                @if($tag->personal_image != null)
+                                                    <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
+                                                         src="{{asset('media')}}/{{$tag->personal_image}}"
+                                                         alt="User Profile Pic">
+                                                @else
+                                                    <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
+                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                         alt="User Profile Pic">
+                                                @endif
+                                                <p class="mb-0 ml-3"><b>{{$tag->name}}</b></p>
+                                            </div>
+                                            @if($loop->last == false)
+                                                <hr>
+                                            @endif
                                         @endforeach
                                     </div>
                                 </div>
@@ -456,7 +599,7 @@
                             <div class="modal-content">
                                 <div class="modal-header d-flex justify-content-between">
                                     <span></span>
-                                    <h5 class="modal-title" id="exampleModalLabel">Report Comment</h5>
+                                    <h5 class="modal-title" id="exampleModalLabel">Report Post</h5>
                                     <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
@@ -469,14 +612,14 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <form action="{{route('reports.store')}}" id="report-post-form-{{$post->id}}" method="POST" class="container" enctype="multipart/form-data">
+                                    <form action="{{route('userreports.store')}}" id="report-post-form-{{$post->id}}" method="POST" class="container" enctype="multipart/form-data">
 
                                     @csrf
 
                                     <!-- Post Desc -->
                                         <div class="post-desc d-flex justify-content-center mt-2">
-                                                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
-                                                                                    placeholder="Start Typing..." ></textarea>
+                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                    placeholder="Start Typing..." ></textarea>
                                         </div>
                                         <!-- Add Post Btn -->
                                         <input type="hidden" name="model_id" value="{{$post->id}}">
@@ -496,123 +639,175 @@
                 <div class="post-desc mt-3">
                     <!-- if lang arabic -->
                     @if(App::getlocale() == 'ar')
-                        <pre style="text-align:right;">{{$post->body}}</pre>
+                        <pre style="text-align:right;"><?php echo $post->body ?></pre>
                     @else
-                        <pre style="text-align:left;">{{$post->body}}</pre>
+                        <pre style="text-align:left;"><?php echo $post->body ?></pre>
                     @endif
-                    @if($post->media)
+                    @if(count($post->media) > 0)
                         <div class="media">
-                            @foreach($post->media as $media)
-                                @if($media->mediaType == 'image')
-                                    <!-- if media img and imgs=1 -->
-                                    <div class="d-flex" style="width: 100%">
-                                        <img src="{{asset('media')}}/{{$media->filename}}" alt="opel car" />
-                                    </div>
-                                @else
-                                    <video class="p-1" controls>
-                                        <source src="{{asset('media')}}/{{$media->filename}}" type="video/mp4">
-                                        Your browser does not support HTML video.
-                                    </video>
-                                @endif
+                            @if(count($post->media) == 1)
 
-                                <!-- if media img and imgs=2 -->
-                                <!-- <div class="d-flex">
-                                  <img src="img.jpg" alt="opel car" class="w-50 p-1" />
-                                  <img src="img.jpg" alt="opel car" class="w-50 p-1" />
-                                </div> -->
-                                <!-- if media img and imgs=3 -->
-                                <!-- <div>
-                                  <img class="d-block w-100" src="img.jpg" alt="opel car" />
-                                  <div class="d-flex">
-                                    <img src="img.jpg" alt="opel car" class="w-50 pr-1 pt-2" />
-                                    <img src="img.jpg" alt="opel car" class="w-50 pl-1 pt-2" />
-                                  </div>
-                                </div> -->
-                                <!-- if media img and imgs=4 -->
-                                <!-- <div>
-                                  <div class="d-flex">
-                                    <img src="img.jpg" alt="opel car" class="w-50 pr-1" />
-                                    <img src="img.jpg" alt="opel car" class="w-50 pl-1" />
-                                  </div>
-                                  <div class="d-flex">
-                                    <img src="img.jpg" alt="opel car" class="w-50 pr-1 pt-2" />
-                                    <img src="img.jpg" alt="opel car" class="w-50 pl-1 pt-2" />
-                                  </div>
-                                </div> -->
-                                <!-- if media img and imgs>4 -->
-                                <!-- <div>
-                                  <div class="d-flex">
-                                    <img src="img.jpg" alt="opel car" class="w-50 pr-1" />
-                                    <img src="img.jpg" alt="opel car" class="w-50 pl-1" />
-                                  </div>
-                                  <div class="d-flex">
-                                    <img src="img.jpg" alt="opel car" class="w-50 pr-1 pt-2" />
-                                    <img src="img.jpg" alt="opel car" class="w-50 pl-1 pt-2" />
-                                  </div>
-                                </div> -->
-                                <!-- if media img and vedio=1 -->
-                                <!-- <div class="w-100">
-                                  <video controls>
-                                    <source src="VID.mp4" type="video/mp4">
-                                    Your browser does not support HTML video.
-                                  </video>
-                                </div> -->
-                                <!-- if media img and vedio=2 -->
-                                <!-- <div class="d-flex w-100">
-                                  <video class="p-1" controls>
-                                    <source src="VID.mp4" type="video/mp4">
-                                    Your browser does not support HTML video.
-                                  </video>
-                                  <video class="p-1" controls>
-                                    <source src="VID.mp4" type="video/mp4">
-                                    Your browser does not support HTML video.
-                                  </video>
-                                </div> -->
-                                <!-- if media img and vedio=3 -->
-                                <!-- <div class="w-100">
-                                  <video class="p-1" controls>
-                                    <source src="VID.mp4" type="video/mp4">
-                                    Your browser does not support HTML video.
-                                  </video>
-                                  <div class="d-flex">
-                                    <video class="p-1" controls>
-                                      <source src="VID.mp4" type="video/mp4">
-                                      Your browser does not support HTML video.
-                                    </video>
-                                    <video class="p-1" controls>
-                                      <source src="VID.mp4" type="video/mp4">
-                                      Your browser does not support HTML video.
-                                    </video>
-                                  </div>
-                                </div> -->
-                                <!-- if media img and vedio=4 -->
-                                <!-- <div class="w-100">
-                                  <div class="d-flex w-100">
+                                @foreach($post->media as $media)
+                                    @if($media->mediaType == 'image')
+                                        <!-- if media img and imgs=1 -->
+                                        <div class="d-flex" style="width: 100%">
+                                            <img src="{{asset('media')}}/{{$media->filename}}" alt="opel car" />
+                                        </div>
+                                    @else
+                                        <video class="p-1" controls>
+                                            <source src="{{asset('media')}}/{{$media->filename}}" type="video/mp4">
+                                            Your browser does not support HTML video.
+                                        </video>
+                                    @endif
+                                @endforeach
+
+                            @elseif(count($post->media) > 1 && count($post->media) < 4 )
+
+                                <div class="w-100">
                                     <div class="d-flex w-100">
-                                      <video class="p-1" controls>
-                                        <source src="VID.mp4" type="video/mp4">
-                                        Your browser does not support HTML video.
-                                      </video>
-                                      <video class="p-1" controls>
-                                        <source src="VID.mp4" type="video/mp4">
-                                        Your browser does not support HTML video.
-                                      </video>
+                                        @if($post->media[0]->mediaType == 'image')
+                                        <!-- if media img and imgs=1 -->
+                                            <div class="d-flex" style="width: 100%">
+                                                <img src="{{asset('media')}}/{{$post->media[0]->filename}}" alt="opel car" />
+                                            </div>
+                                        @else
+                                            <video class="p-1" controls>
+                                                <source src="{{asset('media')}}/{{$post->media[0]->filename}}" type="video/mp4">
+                                                Your browser does not support HTML video.
+                                            </video>
+                                        @endif
+
+
+                                        @if($post->media[1]->mediaType == 'image')
+                                        <!-- if media img and imgs=1 -->
+                                            <div class="p-1 w-100" style="width: 100%">
+                                                <img src="{{asset('media')}}/{{$post->media[1]->filename}}" alt="opel car" />
+                                            </div>
+                                        @else
+                                            <video class="p-1 w-100" controls>
+                                                <source src="{{asset('media')}}/{{$post->media[1]->filename}}" type="video/mp4">
+                                                Your browser does not support HTML video.
+                                            </video>
+                                        @endif
                                     </div>
-                                  </div>
-                                  <div class="d-flex w-100">
                                     <div class="d-flex w-100">
-                                      <video class="p-1" controls>
-                                        <source src="VID.mp4" type="video/mp4">
-                                        Your browser does not support HTML video.
-                                      </video>
-                                      <video class="p-1" controls>
-                                        <source src="VID.mp4" type="video/mp4">
-                                        Your browser does not support HTML video.
-                                      </video>
+                                        @if($post->media[2]->mediaType == 'image')
+                                        <!-- if media img and imgs=1 -->
+                                            <div class="p-1 w-100" style="width: 100%">
+                                                <img src="{{asset('media')}}/{{$post->media[2]->filename}}" alt="opel car" />
+                                            </div>
+                                        @else
+                                            <video class="p-1 w-100" controls>
+                                                <source src="{{asset('media')}}/{{$post->media[2]->filename}}" type="video/mp4">
+                                                Your browser does not support HTML video.
+                                            </video>
+                                        @endif
                                     </div>
-                                  </div>
-                                </div> -->
-                            @endforeach
+                                </div>
+                            @else
+                                <div class="w-100">
+                                    <div class="d-flex w-100">
+                                        @if($post->media[0]->mediaType == 'image')
+                                        <!-- if media img and imgs=1 -->
+                                            <div class="d-flex" style="width: 100%">
+                                                <img src="{{asset('media')}}/{{$post->media[0]->filename}}" alt="opel car" />
+                                            </div>
+                                        @else
+                                            <video class="p-1" controls>
+                                                <source src="{{asset('media')}}/{{$post->media[0]->filename}}" type="video/mp4">
+                                                Your browser does not support HTML video.
+                                            </video>
+                                        @endif
+
+
+                                        @if($post->media[1]->mediaType == 'image')
+                                        <!-- if media img and imgs=1 -->
+                                            <div class="p-1 w-100" style="width: 100%">
+                                                <img src="{{asset('media')}}/{{$post->media[1]->filename}}" alt="opel car" />
+                                            </div>
+                                        @else
+                                            <video class="p-1 w-100" controls>
+                                                <source src="{{asset('media')}}/{{$post->media[1]->filename}}" type="video/mp4">
+                                                Your browser does not support HTML video.
+                                            </video>
+                                        @endif
+                                    </div>
+                                    <div class="d-flex w-100">
+                                        @if($post->media[2]->mediaType == 'image')
+                                        <!-- if media img and imgs=1 -->
+                                            <div class="p-1 w-100" style="width: 100%">
+                                                <img src="{{asset('media')}}/{{$post->media[2]->filename}}" alt="opel car" />
+                                            </div>
+                                        @else
+                                            <video class="p-1 w-100" controls>
+                                                <source src="{{asset('media')}}/{{$post->media[2]->filename}}" type="video/mp4">
+                                                Your browser does not support HTML video.
+                                            </video>
+                                        @endif
+
+                                        @if(count($post->media) > 4)
+
+                                            <div class="more-media w-50" data-toggle="modal" data-target="#more-media-modal-{{$post->id}}">
+                                                <p>+5</p>
+                                                <div class="overlay"></div>
+
+                                                @if($post->media[3]->mediaType == 'image')
+                                                <!-- if media img and imgs=1 -->
+                                                    <div class="p-1 w-100" style="width: 100%">
+                                                        <img src="{{asset('media')}}/{{$post->media[3]->filename}}" alt="opel car" />
+                                                    </div>
+                                                @else
+                                                    <video class="p-1 w-100" controls>
+                                                        <source src="{{asset('media')}}/{{$post->media[3]->filename}}" type="video/mp4">
+                                                        Your browser does not support HTML video.
+                                                    </video>
+                                                @endif
+                                            </div>
+                                        @else
+                                            @if($post->media[2]->mediaType == 'image')
+                                            <!-- if media img and imgs=1 -->
+                                                <div class="p-1 w-100" style="width: 100%">
+                                                    <img src="{{asset('media')}}/{{$post->media[2]->filename}}" alt="opel car" />
+                                                </div>
+                                            @else
+                                                <video class="p-1 w-100" controls>
+                                                    <source src="{{asset('media')}}/{{$post->media[2]->filename}}" type="video/mp4">
+                                                    Your browser does not support HTML video.
+                                                </video>
+                                            @endif
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="post-more-media-modal">
+                            <div class="modal fade" id="more-media-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog" style="margin-top: 10vh">
+                                    <div class="modal-content">
+                                        <div class="modal-body">
+                                            <div id="media-carousel-{{$post->id}}" class="carousel slide" data-ride="carousel">
+                                                <div class="carousel-inner">
+                                                    @foreach($post->media as $media)
+                                                        <div class="carousel-item @if ($loop->first == true) active @endif">
+                                                            <img src="{{asset('media')}}/{{$media->filename}}" class="d-block w-100" alt="...">
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <a class="carousel-control-prev" href="#media-carousel-{{$post->id}}" role="button"
+                                                   data-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="sr-only">Previous</span>
+                                                </a>
+                                                <a class="carousel-control-next" href="#media-carousel-{{$post->id}}" role="button"
+                                                   data-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="sr-only">Next</span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     @endif
                     <div class="post-statistics mt-3 d-flex">
@@ -628,7 +823,7 @@
                                             <!-- Default like button -->
                                             <span class="reaction-btn-emo like-btn-{{$post->user_react[0]->name}}" id="reaction-btn-emo-{{$post->id}}"></span>
                                         <!-- Default like button emotion-->
-                                            <span class="reaction-btn-text reaction-btn-text-{{$post->user_react[0]->name}} active" onclick="unlikePostSubmit({{$post->id}},{{$post->user_react[0]->id}})" id="reaction-btn-text-{{$post->id}}">
+                                            <span class="reaction-btn-text reaction-btn-text-{{$post->user_react[0]->name}} active" onclick="unlikeModelSubmit({{$post->id}},{{$post->user_react[0]->id}})" id="reaction-btn-text-{{$post->id}}">
                                                 {{$post->user_react[0]->name}}
                                                     <form id="unlike-form-{{$post->id}}-{{$post->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                                         @csrf
@@ -642,7 +837,7 @@
                                             <ul class="emojies-box">
                                                 @foreach($reacts as $react)
                                                 <!-- Reaction buttons container-->
-                                                    <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likePostSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
+                                                    <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
                                                     <form id="like-form-{{$post->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                                         @csrf
                                                         <input type="hidden" name="model_id" value="{{$post->id}}">
@@ -685,7 +880,7 @@
                                         <ul class="emojies-box">
                                             @foreach($reacts as $react)
                                               <!-- Reaction buttons container-->
-                                              <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likePostSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
+                                              <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
                                               <form id="like-form-{{$post->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                                 @csrf
                                                 <input type="hidden" name="model_id" value="{{$post->id}}">
@@ -795,8 +990,9 @@
                                             {{--                                </div>--}}
                                             <!-- Post Desc -->
                                                 <div class="post-desc d-flex justify-content-center mt-2">
-                                                    <textarea class="w-75 p-2" name="body" id="post-text" cols="200" rows="4"
+                                                    <textarea class="w-75 p-2" name="body" id="textarea" cols="200" rows="4"
                                                       placeholder="Post Description..."></textarea>
+                                                    <div id="menu" class="menu" role="listbox"></div>
                                                 </div>
                                                 <!-- Add Post Btn -->
                                                 <div class="post-add-btn d-flex justify-content-center mt-4">
@@ -822,166 +1018,532 @@
                         <div class="hide-commnet-list d-flex flex-row-reverse">
                             <span onclick="toggleComments({{$post->id}})"><i class="fas fa-chevron-up"></i> Hide</span>
                         </div>
-                        @if($post->comments)
+                        @if(count($post->comments) > 0)
                             @foreach($post->comments as $comment)
-                                <div class="comment d-flex justify-content-between" id="comment-{{$comment->id}}">
-                                    <div class="comment-owner d-flex p-2">
-                                        @if($comment->publisher->personal_image)
-                                            <div class="owner-img">
-                                                <a style="display: inline" href="{{route('profile',$comment->publisher->id)}}"><img src="{{asset('media')}}/{{$comment->publisher->personal_image}}" class="rounded-circle" /></a>
-                                            </div>
-                                        @else
-                                            <div class="owner-img">
-                                                <a style="display: inline" href="{{route('profile',$comment->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
-                                            </div>
-                                        @endif
-                                        <div class="owner-name pl-3">
-                                            <a href="comment.userProfile" class="mb-0"><b>{{$comment->publisher->name}}</b></a>
-                                            <p class="comment-content mb-0">{{$comment->body}}</p>
-                                            <!-- attatched img -->
-                                            <!-- <img src="img.jpg" class="w-100 pt-3"> -->
-                                            <!-- attatched vedio -->
-                                            @if($comment->media != null)
-                                                @if($comment->media->mediaType == 'image')
-                                                    <img src="{{asset('media')}}/{{$comment->media->filename}}" class="w-100 pt-3">
-                                                @else
-                                                    <video class="pt-3" controls>
-                                                        <source src="{{asset('media')}}/{{$comment->media->filename}}" type="video/mp4">
-                                                    </video>
-                                                @endif
+                                @if($comment->type == "comment" && $comment->reported == false)
+                                    <div class="comment d-flex justify-content-between" id="comment-{{$comment->id}}">
+                                        <div class="comment-owner d-flex p-2 w-100">
+                                            @if($comment->publisher->personal_image)
+                                                <div class="owner-img">
+                                                    <a style="display: inline" href="{{route('profile',$comment->publisher->id)}}"><img src="{{asset('media')}}/{{$comment->publisher->personal_image}}" class="rounded-circle" /></a>
+                                                </div>
+                                            @else
+                                                <div class="owner-img">
+                                                    <a style="display: inline" href="{{route('profile',$comment->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
+                                                </div>
                                             @endif
+                                            <div class="owner-name pl-3 w-100">
+                                                <a href="comment.userProfile" class="mb-0"><b>{{$comment->publisher->name}}</b></a>
+                                                <p class="comment-content mb-0"><?php echo $comment->body ?></p>
+                                                <!-- attatched img -->
+                                                <!-- <img src="img.jpg" class="w-100 pt-3"> -->
+                                                <!-- attatched vedio -->
+                                                @if($comment->media != null)
+                                                    @if($comment->media->mediaType == 'image')
+                                                        <img src="{{asset('media')}}/{{$comment->media->filename}}" class="w-100 pt-3">
+                                                    @else
+                                                        <video class="pt-3" controls>
+                                                            <source src="{{asset('media')}}/{{$comment->media->filename}}" type="video/mp4">
+                                                        </video>
+                                                    @endif
+                                                @endif
+                                                <ul class="comment-actions mt-1">
+                                                @if($comment->liked)
+                                                    <!-- if post is liked by user -->
+                                                        <!-- <div><i class="fas fa-thumbs-up"></i><span> 20</span></div> -->
+                                                        <!-- if post isn't liked by user -->
+                                                        <div class="reaction-container" id="reaction-container-{{$comment->id}}">
+                                                            <!-- container div for reaction system -->
+                                                            <span class="reaction-btn">
+                                                            <!-- Default like button -->
+                                                            <span class="reaction-btn-emo like-btn-{{$comment->user_react[0]->name}}" id="reaction-btn-emo-{{$comment->id}}"></span>
+                                                                            <!-- Default like button emotion-->
+                                                            <span class="reaction-btn-text reaction-btn-text-{{$comment->user_react[0]->name}} active" onclick="unlikeModelSubmit({{$comment->id}},{{$comment->user_react[0]->id}})" id="reaction-btn-text-{{$comment->id}}">
+                                                                {{$comment->user_react[0]->name}}
+                                                                    <form id="unlike-form-{{$comment->id}}-{{$comment->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                        @csrf
+                                                                        <input type="hidden" name="model_id" value="{{$comment->id}}">
+                                                                        <input type="hidden" name="model_type" value="comment">
+                                                                        <input type="hidden" name="reactId" value="{{$comment->user_react[0]->id}}">
+                                                                       <input type="hidden" name="requestType" id="like-request-type-{{$comment->id}}" value="delete">
+                                                                    </form>
+                                                            </span>
+                                                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
+                                                            <ul class="emojies-box">
+                                                                @foreach($reacts as $react)
+                                                                    <!-- Reaction buttons container-->
+                                                                        <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$comment->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
+                                                                        <form id="like-form-{{$comment->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                        @csrf
+                                                                        <input type="hidden" name="model_id" value="{{$comment->id}}">
+                                                                        <input type="hidden" name="model_type" value="comment">
+                                                                        <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                       <input type="hidden" name="requestType" id="like-request-type-{{$comment->id}}" value="update">
+                                                                    </form>
+                                                                    @endforeach
+                                                            </ul>
+                                                          </span>
+                                                            <div class="like-stat">
+                                                                <!-- Like statistic container-->
+                                                                <span class="like-emo" id="like-emo-{{$comment->id}}">
+                                                                  <!-- like emotions container -->
+                                                                  <span class="like-btn-like"></span>
+                                                                    @if($comment->user_react[0]->name != "like")
+                                                                        <span class="like-btn-{{$comment->user_react[0]->name}}"></span>
+                                                                    @endif
+                                                                <!-- given emotions like, wow, sad (default:Like) -->
+                                                                </span>
+                                                                <span class="like-details" id="like-details-{{$comment->id}}">You @if($comment->likes->count-1 != 0) and {{$comment->likes->count-1}} @if($comment->likes->count-1 > 1000) k @endif others @endif</span>
+                                                            </div>
+                                                        </div>
+                                                    @else
+                                                        <div class="reaction-container" id="reaction-container-{{$comment->id}}">
+                                                            <!-- container div for reaction system -->
+                                                            <span class="reaction-btn">
+                                                                <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$comment->id}}" style="display: none"></span>
+                                                                                    <!-- Default like button emotion-->
+                                                                <span class="reaction-btn-text" id="reaction-btn-text-{{$comment->id}}">
+                                                                    <div><i class="far fa-thumbs-up"></i>
+                                                                        @if($comment->likes->count > 0)
+                                                                            <span>
+                                                                                {{$comment->likes->count}}
+                                                                            </span>
+                                                                        @endif
+                                                                    </div>
+                                                                </span>
+                                                                                    <!-- Default like button text,(Like, wow, sad..) default:Like  -->
+                                                                <ul class="emojies-box">
+                                                                    @foreach($reacts as $react)
+                                                                        <!-- Reaction buttons container-->
+                                                                        <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$comment->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
+                                                                        <form id="like-form-{{$comment->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                            @csrf
+                                                                            <input type="hidden" name="model_id" value="{{$comment->id}}">
+                                                                            <input type="hidden" name="model_type" value="comment">
+                                                                            <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                        </form>
+                                                                    @endforeach
+                                                                </ul>
+                                                            </span>
+                                                            <div class="like-stat" id="like-stat-{{$comment->id}}" style="display: none">
+                                                                <!-- Like statistic container-->
+                                                                <span class="like-emo" id="like-emo-{{$comment->id}}">
+                                                                  <!-- like emotions container -->
+                                                                  <span class="like-btn-like"></span>
+                                                                    <!-- given emotions like, wow, sad (default:Like) -->
+                                                                </span>
+                                                                <span class="like-details" id="like-details-{{$comment->id}}">@if($comment->likes->count-1 > 0) and {{$comment->likes->count-1}} @if($comment->likes->count-1 > 1000) k @endif others @endif</span>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                    <li class="ml-3 text-primary" onclick="toggleReply({{$comment->id}},'{{$comment->publisher->name}}')">Reply</li>
+                                                </ul>
+                                                @if($comment->replies)
+                                                    <div class="replays comment-1-replays" id="comment-replies-{{$comment->id}}" style="display: none">
+                                                        <div class="mt-2">
+                                                            @foreach($comment->replies as $reply)
+                                                                @if($reply->reported == false)
+                                                                    <div class="comment d-flex justify-content-between" id="reply-{{$reply->id}}">
+                                                                        <div class="comment-owner d-flex p-2">
+                                                                            @if($reply->publisher->personal_image)
+                                                                                <div class="owner-img">
+                                                                                    <a style="display: inline" href="{{route('profile',$reply->publisher->id)}}"><img src="{{asset('media')}}/{{$reply->publisher->personal_image}}" class="rounded-circle" /></a>
+                                                                                </div>
+                                                                            @else
+                                                                                <div class="owner-img">
+                                                                                    <a style="display: inline" href="{{route('profile',$reply->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
+                                                                                </div>
+                                                                            @endif
+                                                                            <div class="owner-name pl-3 w-100">
+                                                                                <a href="comment.userProfile" class="mb-0"><b>{{$reply->publisher->name}}</b></a>
+                                                                                <p class="comment-content mb-0"><?php echo $reply->body ?></p>
+                                                                                <!-- attatched img -->
+                                                                                <!-- <img src="img.jpg" class="w-100 pt-3"> -->
+                                                                                <!-- attatched vedio -->
+                                                                                @if($reply->media != null)
+                                                                                    @if($reply->media->mediaType == 'image')
+                                                                                        <img src="{{asset('media')}}/{{$reply->media->filename}}" class="w-100 pt-3">
+                                                                                    @else
+                                                                                        <video class="pt-3" controls>
+                                                                                            <source src="{{asset('media')}}/{{$reply->media->filename}}" type="video/mp4">
+                                                                                        </video>
+                                                                                    @endif
+                                                                                @endif
+                                                                                <ul class="comment-actions mt-1">
+                                                                                    @if($reply->liked)
+                                                                                        <!-- if post is liked by user -->
+                                                                                        <!-- <div><i class="fas fa-thumbs-up"></i><span> 20</span></div> -->
+                                                                                        <!-- if post isn't liked by user -->
+                                                                                        <div class="reaction-container" id="reaction-container-{{$reply->id}}">
+                                                                                            <!-- container div for reaction system -->
+                                                                                            <span class="reaction-btn">
+                                                                                                <!-- Default like button -->
+                                                                                                <span class="reaction-btn-emo like-btn-{{$reply->user_react[0]->name}}" id="reaction-btn-emo-{{$reply->id}}"></span>
+                                                                                                                                <!-- Default like button emotion-->
+                                                                                                <span class="reaction-btn-text reaction-btn-text-{{$reply->user_react[0]->name}} active" onclick="unlikeModelSubmit({{$reply->id}},{{$reply->user_react[0]->id}})" id="reaction-btn-text-{{$reply->id}}">
+                                                                                                    {{$reply->user_react[0]->name}}
+                                                                                                    <form id="unlike-form-{{$reply->id}}-{{$reply->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                        @csrf
+                                                                                                        <input type="hidden" name="model_id" value="{{$reply->id}}">
+                                                                                                        <input type="hidden" name="model_type" value="comment">
+                                                                                                        <input type="hidden" name="reactId" value="{{$reply->user_react[0]->id}}">
+                                                                                                       <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="delete">
+                                                                                                    </form>
+                                                                                                </span>
+                                                                                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
+                                                                                                <ul class="emojies-box">
+                                                                                                    @foreach($reacts as $react)
+                                                                                                        <!-- Reaction buttons container-->
+                                                                                                        <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
+                                                                                                        <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                            @csrf
+                                                                                                            <input type="hidden" name="model_id" value="{{$reply->id}}">
+                                                                                                            <input type="hidden" name="model_type" value="comment">
+                                                                                                            <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                                                            <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="update">
+                                                                                                        </form>
+                                                                                                    @endforeach
+                                                                                                </ul>
+                                                                                            </span>
+                                                                                            <div class="like-stat">
+                                                                                                <!-- Like statistic container-->
+                                                                                                <span class="like-emo" id="like-emo-{{$reply->id}}">
+                                                                                                  <!-- like emotions container -->
+                                                                                                    <span class="like-btn-like"></span>
+                                                                                                    @if($reply->user_react[0]->name != "like")
+                                                                                                        <span class="like-btn-{{$reply->user_react[0]->name}}"></span>
+                                                                                                    @endif
+                                                                                                <!-- given emotions like, wow, sad (default:Like) -->
+                                                                                                </span>
+                                                                                                <span class="like-details" id="like-details-{{$reply->id}}">You @if($reply->likes->count-1 != 0) and {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) k @endif others @endif</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    @else
+                                                                                        <div class="reaction-container" id="reaction-container-{{$reply->id}}">
+                                                                                            <!-- container div for reaction system -->
+                                                                                            <span class="reaction-btn">
+                                                                                            <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$reply->id}}" style="display: none"></span>
+                                                                                                <!-- Default like button emotion-->
+                                                                                            <span class="reaction-btn-text" id="reaction-btn-text-{{$reply->id}}">
+                                                                                                <div><i class="far fa-thumbs-up"></i>
+                                                                                                    @if($reply->likes->count > 0)
+                                                                                                        <span>
+                                                                                                            {{$reply->likes->count}}
+                                                                                                        </span>
+                                                                                                    @endif
+                                                                                                </div>
+                                                                                            </span>
+                                                                                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
+                                                                                            <ul class="emojies-box">
+                                                                                                @foreach($reacts as $react)
+                                                                                                    <!-- Reaction buttons container-->
+                                                                                                        <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
+                                                                                                        <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                        @csrf
+                                                                                                        <input type="hidden" name="model_id" value="{{$reply->id}}">
+                                                                                                        <input type="hidden" name="model_type" value="comment">
+                                                                                                        <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                                                    </form>
+                                                                                                    @endforeach
+                                                                                            </ul>
+                                                                                        </span>
+                                                                                            <div class="like-stat" id="like-stat-{{$reply->id}}" style="display: none">
+                                                                                                <!-- Like statistic container-->
+                                                                                                <span class="like-emo" id="like-emo-{{$reply->id}}">
+                                                                                                  <!-- like emotions container -->
+                                                                                                  <span class="like-btn-like"></span>
+                                                                                                    <!-- given emotions like, wow, sad (default:Like) -->
+                                                                                                </span>
+                                                                                                <span class="like-details" id="like-details-{{$reply->id}}">@if($reply->likes->count-1 > 0) and {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) k @endif others @endif</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    @endif
+                                                                                    <li class="ml-3 text-primary" onclick="makeReply({{$comment->id}},'{{$reply->publisher->name}}')">Reply</li>
+                                                                                </ul>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="comment-options comment-options-{{$reply->id}}">
+                                                                            <ul class="options">
+                                                                                <li data-toggle="modal" data-target="#report-comment-modal-{{$reply->id}}">
+                                                                                    Report this comment</li>
+                                                                                @if($reply->publisher->id == auth()->user()->id)
+                                                                                    <li data-toggle="modal" data-target="#edit-reply-modal-{{$reply->id}}">Edit</li>
+                                                                                    <li onclick="confirm('{{ __("Are you sure you want to delete this reply ?") }}') ? deleteCommentSubmit({{$reply->id}},{{$post->id}}) : ''" >Delete</li>
+                                                                                    <form action="{{ route('comments.destroy', $reply->id) }}" id="delete-comment-form-{{$reply->id}}" method="POST">
+                                                                                        @csrf
+                                                                                        @method('delete')
+                                                                                        <!-- ajax-->
+                                                                                    </form>
+                                                                                @endif
+
+                                                                                <div class="post-edit-modal">
+                                                                                    <div class="modal fade" id="edit-reply-modal-{{$reply->id}}" tabindex="-1" aria-hidden="true">
+                                                                                        <div class="modal-dialog" style="margin-top: 22vh">
+                                                                                            <div class="modal-content">
+                                                                                                <div class="modal-header d-flex justify-content-between">
+                                                                                                    <span></span>
+                                                                                                    <h5 class="modal-title" id="exampleModalLabel">Edit Reply</h5>
+                                                                                                    <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                                                                        <span aria-hidden="true">&times;</span>
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                                <div class="modal-body">
+                                                                                                    <div class="col-12" id="error-message-{{$reply->id}}" style="display: none">
+                                                                                                        <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$post->id}}" role="alert">
+                                                                                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                                                                                <span aria-hidden="true">&times;</span>
+                                                                                                            </button>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <form action="{{route('comments.update',$reply->id)}}" id="edit-reply-form-{{$reply->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                                                                                                    @csrf
+                                                                                                    @method('put')
+
+                                                                                                    <!-- Post Desc -->
+                                                                                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                                                                          <textarea onfocus="mentionAdd('text-edit-{{$reply->id}}','menu-edit-reply-{{$reply->id}}')" id="text-edit-{{$reply->id}}" class="w-75" name="body" cols="200" rows="4"
+                                                                                                                        placeholder="Start Typing..." >
+                                                                                                            @if($reply->mentions != null)
+                                                                                                              {{$reply->edit}}
+                                                                                                            @else
+                                                                                                              {{$reply->body}}
+                                                                                                            @endif
+                                                                                                          </textarea>
+                                                                                                            <div id="menu-edit-reply-{{$reply->id}}" class="menu" role="listbox"></div>
+                                                                                                        </div>
+
+                                                                                                        <input type="hidden" name="model_id" value="{{$post->id}}">
+
+                                                                                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                                                                            <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs"/>
+                                                                                                        </div>
+                                                                                                        <!-- Add Post Btn -->
+                                                                                                        <div class="post-add-btn d-flex justify-content-center mt-4">
+                                                                                                            <button type="button" onclick="editReplySubmit({{$reply->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                                                                                                Save
+                                                                                                            </button>
+                                                                                                        </div>
+                                                                                                    </form>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+
+                                                                                <div class="post-edit-modal">
+                                                                                    <div class="modal fade" id="report-comment-modal-{{$reply->id}}" tabindex="-1" aria-hidden="true">
+                                                                                        <div class="modal-dialog" style="margin-top: 22vh">
+                                                                                            <div class="modal-content">
+                                                                                                <div class="modal-header d-flex justify-content-between">
+                                                                                                    <span></span>
+                                                                                                    <h5 class="modal-title" id="exampleModalLabel">Report Comment</h5>
+                                                                                                    <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                                                                        <span aria-hidden="true">&times;</span>
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                                <div class="modal-body">
+                                                                                                    <div class="col-12" id="error-message-{{$reply->id}}" style="display: none">
+                                                                                                        <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$reply->id}}" role="alert">
+                                                                                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                                                                                <span aria-hidden="true">&times;</span>
+                                                                                                            </button>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    <form action="{{route('userreports.store')}}" id="report-comment-form-{{$reply->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                                                                                                    @csrf
+
+                                                                                                    <!-- Post Desc -->
+                                                                                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                                                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                                                                                    placeholder="Start Typing..." ></textarea>
+                                                                                                        </div>
+                                                                                                        <!-- Add Post Btn -->
+                                                                                                        <input type="hidden" name="model_id" value="{{$reply->id}}">
+                                                                                                        <input type="hidden" name="model_type" value="comment">
+
+                                                                                                        <div class="post-add-btn d-flex justify-content-center mt-4">
+                                                                                                            <button type="button" onclick="reportCommentSubmit({{$reply->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                                                                                                Report
+                                                                                                            </button>
+                                                                                                        </div>
+                                                                                                    </form>
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </ul>
+                                                                        </div>
+                                                                        <div class="comment-option ml-auto pr-3 pt-2">
+                                                                            <i class="fas fa-ellipsis-v" onclick="toggleCommentOptions({{$reply->id}})"></i>
+                                                                        </div>
+                                                                    </div>
+                                                                @endif
+                                                            @endforeach
+                                                            <div id="added-reply-{{$comment->id}}">
+
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                        <div class="comment-options comment-options-{{$comment->id}}">
+                                            <ul class="options">
+                                                <li data-toggle="modal" data-target="#report-comment-modal-{{$comment->id}}">
+                                                    Report this comment</li>
+                                                @if($comment->publisher->id == auth()->user()->id)
+                                                    <li data-toggle="modal" data-target="#edit-comment-modal-{{$comment->id}}">Edit</li>
+                                                    <li onclick="confirm('{{ __("Are you sure you want to delete this comment ?") }}') ? deleteCommentSubmit({{$comment->id}},{{$post->id}}) : ''" >Delete</li>
+                                                    <form action="{{ route('comments.destroy', $comment->id) }}" id="delete-comment-form-{{$comment->id}}" method="POST">
+                                                        @csrf
+                                                        @method('delete')
+                                                        <!-- ajax-->
+                                                    </form>
+                                                @endif
+
+                                                <div class="post-edit-modal">
+                                                    <div class="modal fade" id="edit-comment-modal-{{$comment->id}}" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog" style="margin-top: 22vh">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header d-flex justify-content-between">
+                                                                    <span></span>
+                                                                    <h5 class="modal-title" id="exampleModalLabel">Edit Comment</h5>
+                                                                    <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="col-12" id="error-message-{{$comment->id}}" style="display: none">
+                                                                        <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$post->id}}" role="alert">
+                                                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <form action="{{route('comments.update',$comment->id)}}" id="edit-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                                                                        @csrf
+                                                                        @method('put')
+
+                                                                        <!-- Post Desc -->
+                                                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                                              <textarea onfocus="mentionAdd('text-edit-{{$comment->id}}','menu-edit-comment-{{$comment->id}}')" id="text-edit-{{$comment->id}}" class="w-75" name="body" cols="200" rows="4"
+                                                                                        placeholder="Start Typing..." >
+                                                                                  @if($comment->mentions != null)
+                                                                                    {{$comment->edit}}
+                                                                                  @else
+                                                                                      {{$comment->body}}
+                                                                                  @endif
+                                                                              </textarea>
+                                                                            <div id="menu-edit-comment-{{$comment->id}}" class="menu" role="listbox"></div>
+                                                                        </div>
+
+                                                                        <input type="hidden" name="model_id" value="{{$post->id}}">
+
+                                                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                                            <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs"/>
+                                                                        </div>
+                                                                        <!-- Add Post Btn -->
+                                                                        <div class="post-add-btn d-flex justify-content-center mt-4">
+                                                                            <button type="button" onclick="editCommentSubmit({{$comment->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                                                                Save
+                                                                            </button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="post-edit-modal">
+                                                    <div class="modal fade" id="report-comment-modal-{{$comment->id}}" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog" style="margin-top: 22vh">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header d-flex justify-content-between">
+                                                                    <span></span>
+                                                                    <h5 class="modal-title" id="exampleModalLabel">Report Comment</h5>
+                                                                    <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    <div class="col-12" id="error-message-{{$comment->id}}" style="display: none">
+                                                                        <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$comment->id}}" role="alert">
+                                                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <form action="{{route('userreports.store')}}" id="report-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                                                                        @csrf
+
+                                                                        <!-- Post Desc -->
+                                                                        <div class="post-desc d-flex justify-content-center mt-2">
+                                                                              <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                                                        placeholder="Start Typing..." ></textarea>
+                                                                        </div>
+                                                                        <!-- Add Post Btn -->
+                                                                        <input type="hidden" name="model_id" value="{{$comment->id}}">
+                                                                        <input type="hidden" name="model_type" value="comment">
+
+                                                                        <div class="post-add-btn d-flex justify-content-center mt-4">
+                                                                            <button type="button" onclick="reportCommentSubmit({{$comment->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                                                                Report
+                                                                            </button>
+                                                                        </div>
+                                                                    </form>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </ul>
+                                        </div>
+                                        <div class="comment-option ml-auto pr-3 pt-2">
+                                            <i class="fas fa-ellipsis-v" onclick="toggleCommentOptions({{$comment->id}})"></i>
                                         </div>
                                     </div>
-                                    <div class="comment-options comment-options-{{$comment->id}}">
-                                        <ul class="options">
-                                            <li data-toggle="modal" data-target="#report-comment-modal-{{$comment->id}}">
-                                                Report this comment</li>
-                                            @if($comment->publisher->id == auth()->user()->id)
-                                                <li data-toggle="modal" data-target="#edit-comment-modal-{{$comment->id}}">Edit</li>
-                                                <li onclick="confirm('{{ __("Are you sure you want to delete this comment ?") }}') ? deleteCommentSubmit({{$comment->id}},{{$post->id}}) : ''" >Delete</li>
-                                                <form action="{{ route('comments.destroy', $comment->id) }}" id="delete-comment-form-{{$comment->id}}" method="POST">
-                                                    @csrf
-                                                    @method('delete')
-                                                    <!-- ajax-->
-                                                </form>
-                                            @endif
-
-                                            <div class="post-edit-modal">
-                                                <div class="modal fade" id="edit-comment-modal-{{$comment->id}}" tabindex="-1" aria-hidden="true">
-                                                    <div class="modal-dialog" style="margin-top: 22vh">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header d-flex justify-content-between">
-                                                                <span></span>
-                                                                <h5 class="modal-title" id="exampleModalLabel">Edit Comment</h5>
-                                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <div class="col-12" id="error-message-{{$post->id}}" style="display: none">
-                                                                    <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$post->id}}" role="alert">
-                                                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                                                            <span aria-hidden="true">&times;</span>
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                                <form action="{{route('comments.update',$comment->id)}}" id="edit-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
-
-                                                                    @csrf
-                                                                    @method('put')
-
-                                                                    <!-- Post Desc -->
-                                                                    <div class="post-desc d-flex justify-content-center mt-2">
-                                                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
-                                                                                    placeholder="Start Typing..." >{{$comment->body}}</textarea>
-                                                                    </div>
-
-                                                                    <input type="hidden" name="model_id" value="{{$post->id}}">
-
-                                                                    <div class="post-desc d-flex justify-content-center mt-2">
-                                                                        <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs"/>
-                                                                    </div>
-                                                                    <!-- Add Post Btn -->
-                                                                    <div class="post-add-btn d-flex justify-content-center mt-4">
-                                                                        <button type="button" onclick="editCommentSubmit({{$comment->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
-                                                                            Save
-                                                                        </button>
-                                                                    </div>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                    <button type="button" id="reply-submit-btn-{{$comment->id}}" onclick="event.preventDefault();
+                                        addReplySubmit({{$comment->id}},{{$post->id}})" hidden></button>
+                                    <div style="display: none" id="add-reply-div-{{$comment->id}}">
+                                        <form class="add-commnet mt-2 d-flex align-items-center" id="add-reply-form-{{$comment->id}}" onkeypress="if (event.keyCode === 13) { event.preventDefault(); $('#reply-submit-btn-{{$comment->id}}').click();}" action="{{route('comments.store')}}" method="POST" enctype="multipart/form-data">
+                                            @csrf
+                                            <input type="hidden" name="post_id" value="{{$post->id}}" />
+                                            <input type="hidden" name="comment_id" value="{{$comment->id}}" />
+                                            <input onfocus="mentionAdd('reply-text-{{$comment->id}}','menu-{{$comment->id}}')" id="reply-text-{{$comment->id}}" class="w-100 pl-2" type="text" name="body" placeholder="Add Reply" />
+                                            <div id="menu-{{$comment->id}}" class="menu" role="listbox"></div>
+                                            <div class="d-flex align-items-center pr-3">
+                                                <i class="fas fa-paperclip" onclick="commentAttachClick({{$post->id}})"></i>
+                                                <input type="file" id="comment-attach-{{$comment->id}}" name="img" accept="image/*" />
                                             </div>
-
-                                            <div class="post-edit-modal">
-                                                <div class="modal fade" id="report-comment-modal-{{$comment->id}}" tabindex="-1" aria-hidden="true">
-                                                    <div class="modal-dialog" style="margin-top: 22vh">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header d-flex justify-content-between">
-                                                                <span></span>
-                                                                <h5 class="modal-title" id="exampleModalLabel">Report Comment</h5>
-                                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                                                    <span aria-hidden="true">&times;</span>
-                                                                </button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                <div class="col-12" id="error-message-{{$comment->id}}" style="display: none">
-                                                                    <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$comment->id}}" role="alert">
-                                                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                                                            <span aria-hidden="true">&times;</span>
-                                                                        </button>
-                                                                    </div>
-                                                                </div>
-                                                                <form action="{{route('reports.store')}}" id="report-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
-
-                                                                    @csrf
-
-                                                                    <!-- Post Desc -->
-                                                                    <div class="post-desc d-flex justify-content-center mt-2">
-                                                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
-                                                                                    placeholder="Start Typing..." ></textarea>
-                                                                    </div>
-                                                                    <!-- Add Post Btn -->
-                                                                    <input type="hidden" name="model_id" value="{{$comment->id}}">
-                                                                    <input type="hidden" name="model_type" value="comment">
-
-                                                                    <div class="post-add-btn d-flex justify-content-center mt-4">
-                                                                        <button type="button" onclick="reportCommentSubmit({{$comment->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
-                                                                            Report
-                                                                        </button>
-                                                                    </div>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </ul>
+                                        </form>
                                     </div>
-                                    <div class="comment-option ml-auto pr-3 pt-2">
-                                        <i class="fas fa-ellipsis-v" onclick="toggleCommentOptions({{$comment->id}})"></i>
-                                    </div>
-                                </div>
+                                @endif
                             @endforeach
-                            <div id="added-comment-{{$post->id}}">
-
-                            </div>
                         @endif
+                        <div id="added-comment-{{$post->id}}">
+
+                        </div>
                     </div>
                     <button type="button" id="comment-submit-btn-{{$post->id}}" onclick="event.preventDefault();
                               addCommentSubmit({{$post->id}})" hidden></button>
                     <form class="add-commnet mt-2 d-flex align-items-center" onkeypress="if (event.keyCode === 13) { event.preventDefault(); $('#comment-submit-btn-{{$post->id}}').click();}" id="add-comment-form-{{$post->id}}" action="{{route('comments.store')}}" method="POST" enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="post_id" value="{{$post->id}}" />
-                        <input class="w-100 pl-2" type="text" name="body" placeholder="Add Your Comment" />
+                        <input onfocus="mentionAdd('reply-text-{{$post->id}}','menu-{{$post->id}}')" id="reply-text-{{$post->id}}" class="w-100 pl-2" type="text" name="body" placeholder="Add Your Comment" />
+                        <div id="menu-{{$post->id}}" class="menu" role="listbox"></div>
                         <div class="d-flex align-items-center pr-3">
                             <i class="fas fa-paperclip" onclick="commentAttachClick({{$post->id}})"></i>
                             <input type="file" id="comment-attach-{{$post->id}}" name="img" accept="image/*" />
                         </div>
                     </form>
                     <div class="post-advertise-modal">
-                        <div class="modal fade" id="advertiseModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal fade" id="advertise-post-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog" style="margin-top: 10vh">
                                 <div class="modal-content">
                                     <div class="modal-header d-flex justify-content-between">
@@ -994,12 +1556,13 @@
                                         </button>
                                     </div>
                                     <div class="modal-body pl-5 pr-5">
-                                        <form action="{{route('sponsor')}}" class="container">
+                                        <form action="{{route('sponsor')}}" id="sponsor-post-form-{{$post->id}}" class="container" method="POST">
+                                            @csrf
                                             <p>Select Duration:</p>
                                             @foreach($times as $time)
                                                 <div class="form-group form-check mb-1">
-                                                    <input type="radio" name="timeId" class="form-check-input" id="exampleCheck1" />
-                                                    <label class="form-check-label" for="exampleCheck1">3 days</label>
+                                                    <input id="time-{{$post->id}}" data-value="{{$time->price}}" type="radio" name="timeId" onclick="getPrice({{$post->id}})" value="{{$time->duration}}" class="form-check-input"/>
+                                                    <label class="form-check-label" for="exampleCheck1">{{$time->duration}} days</label>
                                                 </div>
                                                 <hr class="m-1">
                                             @endforeach
@@ -1007,8 +1570,8 @@
                                             <p>Select Audience:</p>
                                             @foreach($reaches as $reach)
                                                 <div class="form-group form-check mb-1">
-                                                    <input type="radio" name="reachId" class="form-check-input" id="exampleCheck1" />
-                                                    <label class="form-check-label" for="exampleCheck1">From 100 To 1000</label>
+                                                    <input id="reach-{{$post->id}}" type="radio" data-value="{{$reach->price}}" onclick="getPrice({{$post->id}})" name="reachId" value="{{$reach->id}}" class="form-check-input"/>
+                                                    <label class="form-check-label" for="exampleCheck1">{{$reach->reach}} persons</label>
                                                 </div>
                                                 <hr class="m-1">
                                             @endforeach
@@ -1019,27 +1582,79 @@
                                                     <option value="female">Female</option>
                                                 </select>
                                             </div>
-                                            @foreach($ages as $age)
-                                                <div class="form-group d-flex justify-content-between">
-                                                    <label for="exampleInputEmail1">Target Age:</label>
-                                                    <select name="age_id">
-                                                        <option value="male">From 20 To 30</option>
-                                                        <option value="female">From 30 To 40</option>
-                                                    </select>
-                                                </div>
-                                            @endforeach
                                             <div class="form-group d-flex justify-content-between">
-                                                <label for="exampleInputEmail1">Target Countery:</label>
-                                                <select name="country_id">
-                                                    <option value="male">Egypt</option>
+                                                <label for="exampleInputEmail1">Target Age:</label>
+                                                <select name="age_id">
+                                                    @foreach($ages as $age)
+                                                        <option value="{{$age->id}}">From {{$age->from}} To {{$age->to}}</option>
+                                                    @endforeach
                                                 </select>
                                             </div>
+                                            <div class="form-group d-flex justify-content-between">
+                                                <label for="exampleInputEmail1">Target City:</label>
+                                                <select name="city_id">
+                                                    @foreach($cities as $city)
+                                                        <option value="{{$city->id}}">{{$city->name}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="form-group d-flex justify-content-between">
+                                                <label for="exampleInputEmail1">Target Country:</label>
+                                                <select name="country_id">
+                                                    @foreach($countries as $country)
+                                                        <option value="{{$country->id}}">{{$country->name}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <!-- Select Service Price -->
+                                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                                <input name="price" id="sponsored-post-price-{{$post->id}}" class="w-100 border" type="number" placeholder="Price $" readonly/>
+                                            </div>
                                             <input type="hidden" name="postId" value="{{$post->id}}">
-                                            <button type="submit" class="btn btn-warning btn-block">
+                                            <button onclick="sponsorPost({{$post->id}})" class="btn btn-warning btn-block" data-dismiss="modal">
                                                 Sponsor
                                             </button>
                                         </form>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal" id="payment-modal-{{$post->id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
+                         aria-hidden="true">
+                        <div class="modal-dialog" style="margin-top: 22vh">
+                            <div class="modal-content">
+                                <div class="modal-header d-flex justify-content-between">
+                                    <span></span>
+                                    <h5 class="modal-title" id="exampleModalLabel">Payment Modal</h5>
+                                    <button type="button" id="success-modal-dismiss" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="col-12" id="error-message-{{$post->id}}" style="display: none">
+                                        <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$post->id}}" role="alert">
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    let's pay
+                                    <form action="{{route('sponsor.payment')}}" id="sponsor-payment-form-{{$post->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                                    @csrf
+                                    <!-- Post Desc -->
+                                        <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                            <input id="payment-text-box-{{$post->id}}" class="w-100 border" type="number" placeholder="Price $" readonly/>
+                                        </div>
+
+                                        <!-- Add Post Btn -->
+                                        <div class="post-add-btn d-flex justify-content-center mt-4">
+                                            <button type="button" onclick="sponsorPaymentSubmit({{$post->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                                Pay Now
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </div>
@@ -1065,10 +1680,10 @@
                                         </div>
                                         <form action="{{route('posts.update',$post->id)}}" id="edit-post-form-{{$post->id}}" method="POST" class="container" enctype="multipart/form-data">
 
-                                          @csrf
-                                          @method('put')
+                                            @csrf
+                                            @method('put')
 
-                                            <!-- Select post Privacy -->
+                                        <!-- Select post Privacy -->
                                             <div class="post-privacy d-flex justify-content-between align-items-center m-auto w-75">
                                                 <label for="cars">Choose Post Privacy:</label>
                                                 <select id="post-privacy" name="privacy_id">
@@ -1081,29 +1696,34 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div id="post-type-service-content">
-                                                <!-- Select Service Category -->
-                                                <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
-                                                    <label for="cars">Choose A Category:</label>
-                                                    <select id="post-category" name="category_id">
-                                                        @foreach($categories as $category)
-                                                            @if(App::getlocale() == 'en')
-                                                                <option value="{{$category->id}}" @if($category->id == $post->categoryId) selected @endif>{{$category->name_en}}</option>
-                                                            @else
-                                                                <option value="{{$category->id}}" @if($category->id == $post->categoryId) selected @endif>{{$category->name_ar}}</option>
-                                                            @endif
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <!-- Select Service Price -->
-{{--                                                <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">--}}
-{{--                                                    <input class="w-100 border" type="number" placeholder="Service Price $" />--}}
-{{--                                                </div>--}}
+                                            <!-- Select Service Category -->
+                                            <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
+                                                <label for="cars">Choose A Category:</label>
+                                                <select id="post-category" name="category_id">
+                                                    @foreach($categories as $category)
+                                                        @if(App::getlocale() == 'en')
+                                                            <option value="{{$category->id}}" @if($category->id == $post->categoryId) selected @endif>{{$category->name_en}}</option>
+                                                        @else
+                                                            <option value="{{$category->id}}" @if($category->id == $post->categoryId) selected @endif>{{$category->name_ar}}</option>
+                                                        @endif
+                                                    @endforeach
+                                                </select>
                                             </div>
+
+                                            <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
+                                                <label>Tag friends:</label>
+                                                <select style="width: 200px" class="js-example-basic-multiple" name="tags[]" multiple="multiple">
+                                                    @foreach($friends_info as $friend)
+                                                        <option value="{{$friend->id}}" @if($post->tags != null) @if(in_array($friend->id,$post->tags_ids)) selected @endif @endif>{{$friend->name}}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
                                             <!-- Post Desc -->
                                             <div class="post-desc d-flex justify-content-center mt-2">
-                                              <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
-                                                        placeholder="Start Typing..." >{{$post->body}}</textarea>
+                                              <textarea onfocus="mentionAdd('textarea-edit-{{$post->id}}','menu-edit-{{$post->id}}')" class="w-75" name="body" id="textarea-edit-{{$post->id}}" cols="200" rows="4" placeholder="Start Typing..."
+                                              >@if($post->mentions != null) {{$post->edit}}@else{{$post->body}}@endif</textarea>
+                                                <div id="menu-edit-{{$post->id}}" class="menu" role="listbox"></div>
                                             </div>
                                             <!-- Post Images -->
                                             <div class="post-desc d-flex justify-content-center mt-2">
@@ -1122,27 +1742,15 @@
                             </div>
                         </div>
                     </div>
-                    <div class="post-delete-modal">
-                        <div class="modal fade" id="delete-post-modal" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog" style="margin-top: 22vh">
-                                <div class="modal-content">
-                                    <div class="modal-header d-flex justify-content-between">
-                                        <h5 class="modal-title" id="exampleModalLabel">Confirm Delete Post</h5>
-                                        <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <button type="button" onclick="deletePost(1)" class="btn btn-warning btn-block w-100"
-                                                data-dismiss="modal">Delete</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         @endforeach
+        <div id="load_data" style="width: 100%">
+            <!--  load data from database -->
+        </div>
+        <div id="load_data_message" class="mb-3 " style="width: 100%">
+
+        </div>
     </section>
     <section id="ez-body__right-sidebar" class="col-lg-2 ez-sidebar">
         <ul class="pt-4" id="right-sidebar__items">
@@ -1279,7 +1887,7 @@
                                     @if($page->cover_image)
                                         <img
                                             width="100%"
-                                            src="{{asset('media')}}/{{$page->cover_image}}"
+                                            src="{{asset('media')}}/{{$page->profile_image}}"
                                             alt="User Profile Pic"
                                         />
                                     @else

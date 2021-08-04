@@ -18,10 +18,10 @@ class admin
     {
         $user = auth()->user();
 
-        if($user->type == "admin"){
+        if($user->type == 1){
             return $next($request);
         }
-        return view('')->withStatus('dfdskfhdf');
+        return back()->withStatus('you are not allowed to enter this page');
 
     }
 }

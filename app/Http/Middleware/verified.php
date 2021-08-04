@@ -18,8 +18,6 @@ class verified
     {
         $user = auth()->user();
 
-        dd($user);
-
         if($user->email_verified_at == null){
             return $this->returnError('your email is not verified',422);
         }

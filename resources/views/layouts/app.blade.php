@@ -193,6 +193,108 @@
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('js/index.js') }}"></script>
     <script src="{{ asset('js/vue.js') }}"></script>
+    <script>
+        window.users = @json(['user' => $friends_mention]);
+    </script>
+    <script>
+        $( document ).ready(function() {
+
+        });
+    </script>
+    <script>
+
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        $(document).ready(function(){
+            var limit = 5;
+            var start = 5;
+            var action = 'inactive';
+            function loadData(limit, start)
+            {
+                $.ajax({
+                    url:"loadmore/"+limit+'/'+start,
+                    type: 'GET',
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success:function(data)
+                    {
+                        $('#load_data').append(data);
+                        if(data == '')
+                        {
+                            $('#load_data_message').html("<div style='width: 100%;background:#fff;border-radius: 8px;padding:1px;margin-top: 10px;'><p style='text-align: center;font-weight: bold;'>End</p></div>'");
+                            action = 'active';
+                        }
+                        else
+                        {
+                            $('#load_data_message').html("<div style='width: 100%;background:#fff;border-radius: 8px;padding:1px;margin-top: 10px;'><p style='text-align: center;font-weight: bold;'>Loading</p></div>'");
+                            action = "inactive";
+                        }
+
+                    },
+                    error: function (data) {
+                        console.log(data.responseText);
+                    }
+                });
+            }
+
+            if(action == 'inactive')
+            {
+                action = 'active';
+                loadData(limit, start);
+            }
+            $(window).scroll(function(){
+                if($(window).scrollTop() + $(window).height() > $("#load_data").height() && action == 'inactive')
+                {
+                    action = 'active';
+                    start = start + limit;
+                    setTimeout(function(){
+                        loadData(limit, start);
+                    }, 1000);
+                }
+            });
+        });
+    </script>
+    <script>
+        $( document ).ready(function() {
+            // $('.carousel').carousel({ interval: 4000 });
+            $('.carousel').on('slid.bs.carousel', function() {
+                var active_id = $('.carousel div.carousel-item.active.current').attr('id');
+                var story_id = active_id.split('-')[2];
+
+                // if($('.carousel div.carousel-item.active.current').attr('data-type') == 'video') {
+
+                    var myEle = document.getElementById("story-video-" + story_id);
+                    if(myEle){
+                        $("#story-video-" + story_id)[0].play();
+                    }
+                    else{
+                        $("video")[0].pause();
+                    }
+                // }
+
+                $.ajax({
+                    url: $('#view-story-form-' + story_id).attr('action'),
+                    type: 'POST',
+                    data: new FormData(document.getElementById("view-story-form-" + story_id)),
+                    dataType: 'JSON',
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        console.log(data);
+                    },
+                    error: function (data) {
+                        console.log(data);
+                    }
+                });
+            });
+        });
+    </script>
     <script src="{{ asset('js/script.js') }}"></script>
     <!-- FONT AWESOME -->
     <script src="https://kit.fontawesome.com/5d2df7d4f7.js"></script>
@@ -200,7 +302,7 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
-            $('.js-example-basic-multiple').select2();
+            $('#js-example-basic-multiple').select2();
         });
     </script>
 

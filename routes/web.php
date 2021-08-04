@@ -22,16 +22,18 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Auth::routes(['verify' => true]);
 
 
-    Route::group(['middleware' => ['auth','verified']],function() {
+    Route::group(['middleware' => ['auth','mention']],function() {
 
         Route::get('home', 'User\MainController@index')->name('home');
         Route::post('joingroup', 'User\GroupsController@enterGroup')->name('join_group');
         Route::post('likepage', 'User\PagesController@likePage')->name('like_page');
         Route::post('addfriend', 'User\FriendshipController@friendship')->name('addfriend');
         Route::post('savepost', 'User\PostController@savePost')->name('savepost');
+        Route::get('loadmore/{take?}/{start?}','User\MainController@index');
         Route::resource('posts', 'User\PostController');
         Route::post('sponsor', 'User\PostController@sponsor')->name('sponsor');
-        Route::post('report', 'User\MainController@report')->name('reports.store');
+        Route::post('sponsor/payment', 'User\PostController@payment')->name('sponsor.payment');
+        Route::post('userreport', 'User\MainController@report')->name('userreports.store');
         Route::resource('comments', 'User\CommentController');
         Route::get('comments', 'User\CommentController@store');
         Route::resource('likes', 'User\LikeController');

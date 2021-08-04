@@ -11,6 +11,6 @@ class Comment extends Model
     use Notifiable;
 
     protected $fillable = [
-        'body','model_id','comment_id','belong_to','user_id','model_type'
+        'body','model_id','comment_id','belong_to','user_id','model_type','mentions'
     ];
 }

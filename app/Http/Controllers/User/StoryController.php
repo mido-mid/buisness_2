@@ -48,11 +48,10 @@ class StoryController extends Controller
         $user = auth()->user();
         $cover_file_to_store = null;
         $rules = [
-            'body' => ['required','not_regex:/([%\$#\*<>]+)/'],
+            'body' => ['nullable'],
             'privacy_id' => 'required|integer',
-            'cover_image' => 'nullable|mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png|max:100040',
             'media' => 'nullable',
-            'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png|max:100040',
+            'media.*' => ['mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif','max:100040'],
         ];
 
         $validator = Validator::make($request->all(),$rules);
@@ -64,34 +63,19 @@ class StoryController extends Controller
         }
 
 
-        if($request->hasFile('cover_image')){
-
-            $file = $request->file('cover_image');
-
-            $fileextension = $file->getClientOriginalExtension();
-
-            $filename = $file->getClientOriginalName();
-
-            $cover_file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
-
-            $file->move('media', $cover_file_to_store);
-        }
-
-        $story = Story::create([
-            'body' => $request->body,
-            'cover_image' => $cover_file_to_store,
-            'privacyId' => $request->privacy_id,
-            'publisherId' => $user->id,
-        ]);
-
-
         if($request->hasFile('media')){
 
-            $image_ext = ['jpg', 'png', 'jpeg','JPG'];
+            $image_ext = ['jpg', 'png', 'jpeg', 'svg', 'gif','JPG'];
 
             $files = $request->file('media');
 
             foreach ($files as $file) {
+
+                $story = Story::create([
+                    'body' => $request->body,
+                    'privacyId' => $request->privacy_id,
+                    'publisherId' => $user->id,
+                ]);
 
                 $fileextension = $file->getClientOriginalExtension();
 
@@ -114,22 +98,32 @@ class StoryController extends Controller
                 }
             }
         }
-
-        if($story){
-            $story->publisher = User::find($story->publisherId);
-            $story->viewers = DB::select(DB::raw('select users.* from users,stories_views
-                        where stories_views.story_id ='. $story->id.
-                ' AND stories_views.user_id = users.id'));
-            $story->media = DB::table('media')->where('model_id',$story->id)->where('model_type','story')->first();
-            $view = view('includes.partialstory', compact('story'));
-
-            $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
-
-            return $sections['story'];
-        }
         else{
-            return $this->returnError('something wrong happened',402);
+            $story = Story::create([
+                'body' => $request->body,
+                'privacyId' => $request->privacy_id,
+                'publisherId' => $user->id,
+            ]);
         }
+
+        $user_stories = DB::table('stories')->where('publisherId',$user->id)->get();
+
+        $user_stories->publisher = User::find($user->id);
+
+        foreach ($user_stories as $inner_story){
+            $inner_story->viewers = DB::select(DB::raw('select users.* from users,stories_views
+                        where stories_views.story_id =' . $inner_story->id .
+                ' AND stories_views.user_id = users.id'));
+            $inner_story->media = DB::table('media')->where('model_id', $inner_story->id)->where('model_type', 'story')->first();
+        }
+
+        $story = $user_stories;
+
+        $view = view('includes.partialstory', compact('story'));
+
+        $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+        return $sections['story'];
     }
 
 
@@ -145,16 +139,16 @@ class StoryController extends Controller
                 ->where('story_id', $request->story_id)->where('user_id', $user->id)->exists();
 
             if ($story_viewed_before == false) {
-                $story = DB::table('stories_views')->insert([
+                $story_created = DB::table('stories_views')->insert([
                     'story_id' => $request->story_id,
                     'user_id' => $user->id,
                 ]);
             } else {
-                $story = $story_viewed_before;
+                $story_created = $story_viewed_before;
             }
         }
 
-        if($story){
+        if($story_created){
             return $this->returnSuccessMessage('success');
         }
         else{

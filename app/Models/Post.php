@@ -19,7 +19,8 @@ class Post extends Model
         'categoryId',
         'group_id',
         'post_id',
-        'page_id'
+        'page_id',
+        'mentions'
     ];
 
     public function media() {
