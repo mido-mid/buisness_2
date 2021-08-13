@@ -6,7 +6,7 @@
         <span class="reaction-btn-text" id="reaction-btn-text-{{$model->id}}">
             <div><i class="far fa-thumbs-up"></i>
                 @if($model->likes->count > 0)
-                    <span>
+                    <span data-toggle="modal" data-target="#likes-modal-{{$model->id}}">
                         {{$model->likes->count}}
                     </span>
                 @endif
@@ -33,6 +33,6 @@
                                               <span class="like-btn-like"></span>
             <!-- given emotions like, wow, sad (default:Like) -->
                                             </span>
-        <span class="like-details" id="like-details-{{$model->id}}">@if($model->likes->count-1 > 0) and {{$model->likes->count-1}} @if($model->likes->count-1 > 1000) k @endif others @endif</span>
+        <span class="like-details" id="like-details-{{$model->id}}" data-toggle="modal" data-target="#likes-modal-{{$model->id}}">@if($model->likes->count-1 > 0) and {{$model->likes->count-1}} @if($model->likes->count-1 > 1000) k @endif others @endif</span>
     </div>
 @endsection

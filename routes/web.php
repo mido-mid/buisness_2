@@ -30,6 +30,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::post('addfriend', 'User\FriendshipController@friendship')->name('addfriend');
         Route::post('savepost', 'User\PostController@savePost')->name('savepost');
         Route::get('loadmore/{take?}/{start?}','User\MainController@index');
+        Route::get('loadstories/{take?}/{start?}','User\MainController@loadStories')->name('load_stories');
+        Route::get('loadcomments/{post_id}/{limit?}/{start?}','User\MainController@loadComments');
         Route::resource('posts', 'User\PostController');
         Route::post('sponsor', 'User\PostController@sponsor')->name('sponsor');
         Route::post('sponsor/payment', 'User\PostController@payment')->name('sponsor.payment');

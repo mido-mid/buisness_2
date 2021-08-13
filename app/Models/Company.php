@@ -9,7 +9,7 @@ class Company extends Model
 
     protected $table = 'packaging_companies';
     protected $fillable = [
-        'name','details','image', "stateId"
+        'name','details','image', "stateId",'country'
     ];
 
     public function phone() {

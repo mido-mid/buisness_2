@@ -208,8 +208,8 @@ let addCommentSubmit = (id) => {
         processData: false,
         contentType: false,
         success: function (data) {
+            console.log(data)
             var div = document.getElementById('added-comment-' + id);
-            console.log(div);
             if(parseInt($('#comment-count-' + id).text()) > 0) {
                 $('#comment-count-' + id).text(parseInt($('#comment-count-' + id).text()) + 1);
             }
@@ -381,6 +381,7 @@ let sharePostSubmit = (id) => {
             div.innerHTML = data + div.innerHTML;
         },
         error: function (data) {
+            console.log(data.responseText)
             var errormsg = $.parseJSON(data.responseText);
             $('#error-message-' + id).css('display','block');
             $('#error-status-' + id).text(errormsg.msg);
@@ -652,6 +653,48 @@ let getPrice = (post_id) => {
     total_price = reach_price + time_price;
 
     $('#sponsored-post-price-' + post_id).val(total_price)
+}
+
+let loadComments = (post_id) => {
+
+    var limit = 5;
+    var start =  parseInt($('#load-comments-' + post_id).attr('data-value'));
+    var action = 'active';
+    function loadData(limit, start)
+    {
+        $.ajax({
+            url:"loadcomments/"+post_id+'/'+limit+'/'+start,
+            type: 'GET',
+            cache: false,
+            processData: false,
+            contentType: false,
+            success:function(data)
+            {
+                console.log(data)
+                $('#load-comments-' + post_id).append(data);
+
+                var myElement = document.getElementById("stop-load-comments-message-" + post_id);
+
+                if(!myElement){
+                    $('#load-comments-message-' + post_id).text('load more comments')
+                    $('#load-comments-' + post_id).attr('data-value',start + limit)
+                    action = "active";
+                }
+                else {
+                    $('#load-comments-message-' + post_id).remove();
+                }
+            },
+            error: function (data) {
+                console.log(data.responseText);
+            }
+        });
+    }
+
+    if(action == 'active')
+    {
+        action = 'inactive';
+        loadData(limit, start);
+    }
 }
 
 

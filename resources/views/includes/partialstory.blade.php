@@ -3,18 +3,6 @@
 @section('story')
     <div class="modal-dialog">
         <div class="modal-content">
-            {{--                                <div class="modal-header d-flex justify-content-between">--}}
-            {{--                                    <span></span>--}}
-            {{--                                    @if($story->publisher->id == auth()->user()->id)--}}
-            {{--                                        <button onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$story->id}}) : ''">--}}
-            {{--                                            Delete</button>--}}
-            {{--                                        <form action="{{ route('stories.destroy', $story->id) }}" id="delete-story-form-{{$story->id}}" method="post">--}}
-            {{--                                            @csrf--}}
-            {{--                                            @method('delete')--}}
-            {{--                                            <!-- ajax-->--}}
-            {{--                                        </form>--}}
-            {{--                                    @endif--}}
-            {{--                                </div>--}}
             <div class="modal-body">
                 <div id="story-carousel-{{$story->publisher->id}}" class="carousel slide" data-ride="carousel">
                     <div class="carousel-inner">
@@ -123,68 +111,6 @@
                     <span class="sr-only">Next</span>
                 </a>
             </div>
-            <!-- If Content Img -->
-            <!-- <div class="story-content-img">
-              <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              <img class="w-100"
-                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-              <p class="m-auto text-center w-100 p-2">Some Caption</p>
-            </div> -->
-            <!-- If Content Text -->
-            <!-- <div class="story-content-text">
-              <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-              <p class="m-auto text-center w-100 p-5 h2 h-100">Lorem ipsum dolor sit, amet consectetur
-                adipisicing
-                elit. Nemo libero laudantium vero est quae, perspiciatis, enim quaerat modi alias quos laborum
-                porro exercitationem, delectus officia inventore cupiditate at nesciunt adipisci.</p>
-            </div> -->
-            <!-- If Content Vedio -->
-
-            {{--                                    @if($story->body != null && is_null($story->media) )--}}
-            {{--                                        <div class="story-content-vedio">--}}
-            {{--                                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">--}}
-            {{--                                                <span aria-hidden="true">&times;</span>--}}
-            {{--                                            </button>--}}
-            {{--                                            @if($story->body != null)--}}
-            {{--                                                <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>--}}
-            {{--                                            @endif--}}
-            {{--                                        </div>--}}
-            {{--                                    @else--}}
-            {{--                                        @if($story->media->mediaType == 'image')--}}
-            {{--                                            <div class="story-content-img">--}}
-            {{--                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">--}}
-            {{--                                                    <span aria-hidden="true">&times;</span>--}}
-            {{--                                                </button>--}}
-            {{--                                                <img class="w-100"--}}
-            {{--                                                     src="{{asset('media')}}/{{$story->media->filename}}" />--}}
-            {{--                                                @if($story->body != null)--}}
-            {{--                                                    <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>--}}
-            {{--                                                @endif--}}
-            {{--                                            </div>--}}
-            {{--                                        @else--}}
-            {{--                                            <div class="story-content-vedio">--}}
-            {{--                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">--}}
-            {{--                                                    <span aria-hidden="true">&times;</span>--}}
-            {{--                                                </button>--}}
-            {{--                                                <video class="story-video w-100 h-100" id="story-video-{{$story->id}}" loop="true">--}}
-            {{--                                                    <source src="{{asset('media')}}/{{$story->media->filename}}" type="video/mp4">--}}
-            {{--                                                    Your browser does not support the video tag.--}}
-            {{--                                                </video>--}}
-            {{--                                                @if($story->body != null)--}}
-            {{--                                                    <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>--}}
-            {{--                                                @endif--}}
-            {{--                                            </div>--}}
-            {{--                                        @endif--}}
-
-            {{--                                    @endif--}}
-
-            {{--                                    @if($story->publisher->id == auth()->user()->id)--}}
-            {{--                                        <button data-toggle="modal" data-target="#story-viewers-modal-{{$story->id}}">story views : {{count($story->viewers)}}</button>--}}
-            {{--                                    @endif--}}
         </div>
     </div>
 @endsection

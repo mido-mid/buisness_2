@@ -39,6 +39,6 @@
         @endif
         <!-- given emotions like, wow, sad (default:Like) -->
                                             </span>
-        <span class="like-details" id="like-details-{{$model->id}}">You @if($model->likes->count-1 != 0) and {{$model->likes->count-1}} @if($model->likes->count-1 > 1000) k @endif others @endif</span>
+        <span class="like-details" id="like-details-{{$model->id}}" data-toggle="modal" data-target="#likes-modal-{{$model->id}}">You @if($model->likes->count-1 != 0) and {{$model->likes->count-1}} @if($model->likes->count-1 > 1000) k @endif others @endif</span>
     </div>
 @endsection

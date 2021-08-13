@@ -31,6 +31,7 @@
     @if(App::getLocale() == 'ar')
         <link href="{{ asset('css/styles/style.css') }}" rel="stylesheet">
         <link href="{{ asset('css/styles/style-mar.css') }}" rel="stylesheet">
+        <link href="{{ asset('css/styles/style-rtl.css') }}" rel="stylesheet">
     @endif
 </head>
 <body>
@@ -197,8 +198,25 @@
         window.users = @json(['user' => $friends_mention]);
     </script>
     <script>
-        $( document ).ready(function() {
-
+        $(document).ready(function()
+        {
+            var bar = $('.bar');
+            var percent = $('.percent');
+            $('add-post-form').ajaxForm({
+            beforeSend: function() {
+            var percentVal = '0%';
+            bar.width(percentVal)
+            percent.html(percentVal);
+            },
+            uploadProgress: function(event, position, total, percentComplete) {
+            var percentVal = percentComplete + '%';
+            bar.width(percentVal)
+            percent.html(percentVal);
+            },
+            complete: function(xhr) {
+            alert('File Has Been Uploaded Successfully');
+            }
+            });
         });
     </script>
     <script>
@@ -224,7 +242,7 @@
                     success:function(data)
                     {
                         $('#load_data').append(data);
-                        if(data == '')
+                        if(data.msg == "end")
                         {
                             $('#load_data_message').html("<div style='width: 100%;background:#fff;border-radius: 8px;padding:1px;margin-top: 10px;'><p style='text-align: center;font-weight: bold;'>End</p></div>'");
                             action = 'active';
@@ -250,6 +268,50 @@
             $(window).scroll(function(){
                 if($(window).scrollTop() + $(window).height() > $("#load_data").height() && action == 'inactive')
                 {
+                    action = 'active';
+                    start = start + limit;
+                    setTimeout(function(){
+                        loadData(limit, start);
+                    }, 1000);
+                }
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function(){
+            var limit = 5;
+            var start = 0;
+            var action = 'active';
+            function loadData(limit, start)
+            {
+                $.ajax({
+                    url:"loadstories/"+limit+'/'+start,
+                    type: 'GET',
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success:function(data)
+                    {
+                        $('#stories-scroll').append(data);
+
+                        if(data.msg == "end"){
+                            action = "inactive";
+                        }
+                        else{
+                            action = "active";
+                        }
+                    },
+                    error: function (data) {
+                        console.log(data.responseText);
+                    }
+                });
+            }
+            $('#stories-scroll').scroll( function() {
+                var $width = $('#stories-scroll').outerWidth()
+                var $scrollWidth = $('#stories-scroll')[0].scrollWidth;
+                var $scrollLeft = $('#stories-scroll').scrollLeft();
+
+                if (parseInt($scrollWidth - $width) <= parseInt($scrollLeft)) {
                     action = 'active';
                     start = start + limit;
                     setTimeout(function(){
@@ -300,11 +362,6 @@
     <script src="https://kit.fontawesome.com/5d2df7d4f7.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function() {
-            $('#js-example-basic-multiple').select2();
-        });
-    </script>
 
 </body>
 </html>

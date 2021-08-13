@@ -18,8 +18,8 @@ class CompaniesController extends Controller
     {
         //
         $companies = DB::select(DB::raw('
-                            select * from packaging_companies where packaging_companies.stateId = 4
-                            '));
+                            select * from packaging_companies where packaging_companies.stateId = 4 and
+                            packaging_companies.country = "'.auth()->user()->country.'"'));
 
         foreach ($companies as $company){
             $phones = DB::select(DB::raw('

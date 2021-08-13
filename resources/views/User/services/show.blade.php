@@ -65,7 +65,7 @@
 
                             @csrf
 
-                            <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
+                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
                                 <label for="cars">Choose A Category:</label>
                                 <select id="post-category" name="category_id">
                                     @foreach($categories as $category)
@@ -78,12 +78,26 @@
                                 </select>
                             </div>
 
-                            <div class="post-desc d-flex justify-content-center mt-2">
-                                    <textarea class="w-75 p-2" name="body"  id="post-text" cols="200" rows="4"
+                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                <label for="exampleInputEmail1">Target Country:</label>
+                                <select name="country">
+                                    @foreach($countries as $country)
+                                        <option value="{{$country->name}}">{{$country->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-group d-flex justify-content-center mt-2">
+                                    <textarea class="form-control w-75 p-2" name="body"  id="post-text" cols="200" rows="4"
                                               placeholder="Post Description..."></textarea>
                             </div>
+
+                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                <label for="exampleInputEmail1">price</label>
+                                <input name="price" class="form-control w-75 mt-2" type="number"/>
+                            </div>
                             <!-- Post Images -->
-                            <div class="post-desc d-flex justify-content-center mt-2">
+                            <div class="form-group d-flex justify-content-center mt-2">
                                 <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs"
                                        multiple />
                             </div>
@@ -124,6 +138,8 @@
                                     <source src="{{asset('media')}}/{{$service->media[0]->filename}}" type="video/mp4" width="100%">
                                 </video>
                             @endif
+                        @else
+                            <img src="{{asset('media')}}/services.jpg" width="100%">
                         @endif
                         <div class="card-body">
                             <h5 class="card-title">{{$service->body}}</h5>
@@ -228,16 +244,63 @@
                                                 @endif
                                         </div>
                                     </div>
-                                    <div class="col-8 img-container">
-                                        @if(count($service->media) > 0)
-                                            @if($service->media[0]->mediaType == 'image')
-                                                <img src="{{asset('media')}}/{{$service->media[0]->filename}}" width="100%">
+                                        <div class="col-8 img-container">
+                                            @if(count($service->media) > 0)
+                                                @if(count($service->media) == 1)
+                                                    @if($service->media[0]->mediaType == 'image')
+                                                        <img src="{{asset('media')}}/{{$service->media[0]->filename}}" width="100%">
+                                                    @else
+                                                        <video class="pt-3" controls>
+                                                            <source src="{{asset('media')}}/{{$service->media[0]->filename}}" type="video/mp4">
+                                                        </video>
+                                                    @endif
+
+                                                @else
+                                                    <div class="more-media w-50" data-toggle="modal" data-target="#more-media-modal-{{$service->id}}">
+                                                        <p>+{{count($service->media) - 1}}</p>
+                                                        <div class="overlay"></div>
+                                                        @if($service->media[0]->mediaType == 'image')
+                                                            <img src="{{asset('media')}}/{{$service->media[0]->filename}}" width="100%">
+                                                        @else
+                                                            <video class="pt-3" controls>
+                                                                <source src="{{asset('media')}}/{{$service->media[0]->filename}}" type="video/mp4">
+                                                            </video>
+                                                        @endif
+                                                    </div>
+                                                @endif
+
                                             @else
-                                                <video class="pt-3" controls>
-                                                    <source src="{{asset('media')}}/{{$service->media[0]->filename}}" type="video/mp4">
-                                                </video>
+                                                <img src="{{asset('media')}}/services.jpg" width="100%">
                                             @endif
-                                        @endif
+                                        </div>
+                                    <div class="post-more-media-modal">
+                                        <div class="modal fade" id="more-media-modal-{{$service->id}}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog" style="margin-top: 10vh">
+                                                <div class="modal-content">
+                                                    <div class="modal-body">
+                                                        <div id="media-carousel-{{$service->id}}" class="carousel slide" data-ride="carousel">
+                                                            <div class="carousel-inner">
+                                                                @foreach($service->media as $media)
+                                                                    <div class="carousel-item @if ($loop->first == true) active @endif">
+                                                                        <img src="{{asset('media')}}/{{$media->filename}}" class="d-block w-100" alt="...">
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                            <a class="carousel-control-prev" href="#media-carousel-{{$service->id}}" role="button"
+                                                               data-slide="prev">
+                                                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                                <span class="sr-only">Previous</span>
+                                                            </a>
+                                                            <a class="carousel-control-next" href="#media-carousel-{{$service->id}}" role="button"
+                                                               data-slide="next">
+                                                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                                <span class="sr-only">Next</span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -267,35 +330,70 @@
                                             @csrf
                                             @method('put')
 
-                                            <div id="post-type-service-content">
-                                                <!-- Select Service Category -->
-                                                <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
-                                                    <label for="cars">Choose A Category:</label>
-                                                    <select id="post-category" name="category_id">
-                                                        @foreach($categories as $category)
-                                                            @if(App::getlocale() == 'en')
-                                                                <option value="{{$category->id}}" @if($category->id == $service->categoryId) selected @endif>{{$category->name_en}}</option>
-                                                            @else
-                                                                <option value="{{$category->id}}" @if($category->id == $service->categoryId) selected @endif>{{$category->name_ar}}</option>
-                                                            @endif
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <!-- Select Service Price -->
-                                                {{--                                                <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">--}}
-                                                {{--                                                    <input class="w-100 border" type="number" placeholder="Service Price $" />--}}
-                                                {{--                                                </div>--}}
+
+                                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                                <label for="cars">Choose A Category:</label>
+                                                <select id="post-category" name="category_id">
+                                                    @foreach($categories as $category)
+                                                        @if(App::getlocale() == 'en')
+                                                            <option value="{{$category->id}}" @if($category->id == $service->categoryId) selected @endif>{{$category->name_en}}</option>
+                                                        @else
+                                                            <option value="{{$category->id}}" @if($category->id == $service->categoryId) selected @endif>{{$category->name_ar}}</option>
+                                                        @endif
+                                                    @endforeach
+                                                </select>
+                                            </div>
+
+                                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                                <label for="exampleInputEmail1">Target Country:</label>
+                                                <select name="country">
+                                                    @foreach($countries as $country)
+                                                        <option value="{{$country->name}}" @if($country->id == $service->country_id) selected @endif>{{$country->name}}</option>
+                                                    @endforeach
+                                                </select>
                                             </div>
                                             <!-- Post Desc -->
-                                            <div class="post-desc d-flex justify-content-center mt-2">
-                                                              <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
-                                                                        placeholder="Start Typing..." >{{$service->body}}</textarea>
+                                            <div class="form-group d-flex justify-content-center mt-2">
+                                              <textarea class="form-control w-75 mt-2" name="body" id="post-text" cols="200" rows="4"
+                                                        placeholder="Start Typing..." >{{$service->body}}</textarea>
+                                            </div>
+
+                                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                                <label for="exampleInputEmail1">price</label>
+                                                <input name="price" value="{{$service->price}}" class="form-control w-75 mt-2" type="number"/>
                                             </div>
                                             <!-- Post Images -->
                                             <div class="post-desc d-flex justify-content-center mt-2">
                                                 <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs" accept="image/*"
                                                        multiple />
                                             </div>
+
+                                            @if(count($service->media) > 0)
+                                                <p>Media</p>
+                                                <div class="imgsContainer d-flex flex-wrap">
+                                                @foreach($service->media as $media)
+                                                    @if($media->mediaType == 'image')
+                                                        <!-- if media img and imgs=1 -->
+                                                            <div class="p-3" style="width: 33%;">
+                                                                <img src="{{asset('media')}}/{{$media->filename}}" alt="" width="100%">
+                                                                <div class="w-100 text-center">
+                                                                    <input checked type="checkbox" name="checkedimages[]">
+                                                                </div>
+                                                            </div>
+                                                        @else
+                                                            <div class="p-3" style="width: 33%;">
+                                                                <video class="p-1" controls width="100%">
+                                                                    <source src="{{asset('media')}}/{{$media->filename}}" type="video/mp4">
+                                                                    Your browser does not support HTML video.
+                                                                </video>
+                                                                <div class="w-100 text-center">
+                                                                    <input checked type="checkbox" value="{{$media->filename}}" name="checkedimages[]">
+                                                                </div>
+                                                            </div>
+                                                        @endif
+                                                    @endforeach
+                                                </div>
+                                        @endif
                                             <!-- Add Post Btn -->
                                             <div class="post-add-btn d-flex justify-content-center mt-4">
                                                 <button type="button" onclick="editServiceSubmit({{$service->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">

@@ -30,10 +30,11 @@ class ServiceController extends Controller
     public function index($category_id = null)
     {
         //
+        $countries = DB::table('countries')->get();
         $categories = Category::where('type','service')->get();
         if($category_id != null) {
 
-            $services = Post::where('postTypeId', 1)->where('categoryId',$category_id)->get();
+            $services = Post::where('postTypeId', 1)->where('categoryId',$category_id)->where('country',auth()->user()->country)->get();
             if (count($services) > 0) {
                 foreach ($services as $service) {
                     $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
@@ -46,7 +47,7 @@ class ServiceController extends Controller
             }
         }
         else{
-            $services = Post::where('postTypeId', 1)->get();
+            $services = Post::where('postTypeId', 1)->where('country',auth()->user()->country)->get();
             if (count($services) > 0) {
                 foreach ($services as $service) {
                     $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
@@ -59,7 +60,7 @@ class ServiceController extends Controller
             }
         }
 
-        return view('User.services.show',compact('services','categories','category_id'));
+        return view('User.services.show',compact('services','categories','category_id','countries'));
     }
 
     /**
@@ -87,7 +88,8 @@ class ServiceController extends Controller
             'price' => ['nullable','numeric'],
             'media' => 'nullable',
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif|max:100040',
-            'category_id' => 'required|integer'
+            'category_id' => 'required|integer',
+            'country' => 'required|string'
         ];
 
         $validator = Validator::make($request->all(),$rules);
@@ -98,9 +100,24 @@ class ServiceController extends Controller
             ],402);
         }
 
-        if($request->hasFile('media')){
 
-            $image_ext = ['jpg', 'png', 'jpeg','svg','gif'];
+        $price =  $request->price != null ? $request->price : 0;
+
+
+        $service = Post::create([
+            'body' => $request->body,
+            'price' => $price,
+            'country' => $request->country,
+            'privacyId' => 1,
+            'postTypeId' => 1,
+            'stateId' => 2,
+            'publisherId' => $user->id,
+            'categoryId' => $request->category_id,
+        ]);
+
+        if ($request->hasFile('media')) {
+
+            $image_ext = ['jpg', 'png', 'jpeg', 'svg', 'gif','JPG'];
 
             $files = $request->file('media');
 
@@ -117,28 +134,20 @@ class ServiceController extends Controller
                 $filename = $file->getClientOriginalName();
                 $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
 
-                if($file->move('media', $file_to_store)) {
+
+                if ($file->move('media', $file_to_store)) {
                     Media::create([
                         'filename' => $file_to_store,
                         'mediaType' => $mediaType,
-                        'model_id' => $request->model_id,
+                        'model_id' => $service->id,
                         'model_type' => "post"
                     ]);
                 }
             }
+
         }
 
-        $service = Post::create([
-            'body' => $request->body,
-            'price' => $request->price,
-            'privacyId' => 1,
-            'postTypeId' => 1,
-            'stateId' => 2,
-            'publisherId' => $user->id,
-            'categoryId' => $request->category_id,
-        ]);
-
-
+        $countries = DB::table('countries')->get();
 
         $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
         $publisher = User::find($service->publisherId);
@@ -149,7 +158,7 @@ class ServiceController extends Controller
         $categories = Category::where('type','service')->get();
 
         if($service){
-            $view = view('includes.partialservice', compact('service','categories'));
+            $view = view('includes.partialservice', compact('service','categories','countries'));
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
@@ -215,7 +224,8 @@ class ServiceController extends Controller
             'price' => ['nullable','numeric'],
             'media' => 'nullable',
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif|max:100040',
-            'category_id' => 'required|integer'
+            'category_id' => 'required|integer',
+            'country' => 'required|string'
         ];
 
         $validator = Validator::make($request->all(),$rules);
@@ -224,11 +234,14 @@ class ServiceController extends Controller
             return $this->returnValidationError(402,$validator);
         }
 
+        $price =  $request->price != null ? $request->price : 0;
+
         if($service){
 
             $service->update([
                 'body' => $request->body,
-                'price' => $request->price,
+                'price' => $price,
+                'country' => $request->country,
                 'privacyId' => 1,
                 'postTypeId' => 1,
                 'stateId' => 2,
@@ -236,20 +249,13 @@ class ServiceController extends Controller
                 'categoryId' => $request->category_id,
             ]);
 
-            if($request->hasFile('media')){
+            if ($request->hasFile('media')) {
 
-                $image_ext = ['jpg', 'png', 'jpeg','svg','gif'];
+                $image_ext = ['jpg', 'png', 'jpeg', 'svg', 'gif','JPG'];
 
                 $files = $request->file('media');
 
                 foreach ($files as $file) {
-
-                    $post_media = DB::table('media')->where('model_id',$service_id)->get();
-
-                    foreach ($post_media as $media){
-                        $media->delete();
-                        unlink('media/' . $media->filename);
-                    }
 
                     $fileextension = $file->getClientOriginalExtension();
 
@@ -262,11 +268,12 @@ class ServiceController extends Controller
                     $filename = $file->getClientOriginalName();
                     $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
 
-                    if($file->move('media', $file_to_store)) {
+
+                    if ($file->move('media', $file_to_store)) {
                         Media::create([
                             'filename' => $file_to_store,
                             'mediaType' => $mediaType,
-                            'model_id' => $request->model_id,
+                            'model_id' => $service->id,
                             'model_type' => "post"
                         ]);
                     }
@@ -274,25 +281,31 @@ class ServiceController extends Controller
 
             }
 
-            if($request->has('checkedimages')){
+            if ($request->has('checkedimages')) {
 
-                $post_media = [];
+                $medias = [];
+
+                $post_media = DB::table('media')->where('model_id', $service_id)->get()->toArray();
 
                 foreach ($post_media as $media){
-                    $post_media = $media->filename;
+                    array_push($medias,$media->filename);
                 }
 
                 $checkedimages = $request->input('checkedimages');
 
-                $deleted_media = array_diff($post_media, $checkedimages);
+
+                $deleted_media = array_diff($medias, $checkedimages);
+
 
                 if (!empty($deleted_media)) {
                     foreach ($deleted_media as $media) {
-                        DB::table('media')->where('filename',$media)->delete();
-                        unlink('product_images/' . $media);
+                        DB::table('media')->where('filename', $media)->delete();
+                        unlink('media/' . $media);
                     }
                 }
             }
+
+            $countries = DB::table('countries')->get();
 
             $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
             $publisher = User::find($service->publisherId);
@@ -303,7 +316,7 @@ class ServiceController extends Controller
             $categories = Category::where('type','service')->get();
 
 
-            $view = view('includes.partialservice', compact('service','categories'));
+            $view = view('includes.partialservice', compact('service','categories','countries'));
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 

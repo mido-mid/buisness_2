@@ -4,8 +4,8 @@ body {
 
 .ez-navbar {
     background-color: #fcbc22;
-    border-bottom-left-radius: 20px;
-    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 .ez-navbar .navbar-brand {
@@ -259,6 +259,7 @@ body {
 }
 
 .ez-body #ez-body__center-content .stories .story .owner-info {
+    z-index: 99;
     position: absolute;
     top: 0.5vh;
     left: 0.5vw;
@@ -267,6 +268,7 @@ body {
 .ez-body #ez-body__center-content .stories .story .owner-info .profile-figure {
     width: 35px;
     height: 35px;
+    opacity: 1;
 }
 
 .ez-body #ez-body__center-content .stories .story .owner-info p {
@@ -277,6 +279,7 @@ body {
     border-radius: 10px;
     width: 12vw;
     height: 25vh;
+    opacity: 0.7;
 }
 
 .ez-body #ez-body__center-content .stories .show-story-modal .modal-dialog {
@@ -529,6 +532,10 @@ body {
     padding-left: 1vw;
 }
 
+.ez-body #ez-body__center-content .post-container .post-edit-modal input[type="checkbox"] {
+    height: unset;
+}
+
 .ez-body #ez-body__center-content .post-container .post-edit-modal #post-category,
 .ez-body #ez-body__center-content .post-container .post-edit-modal #post-privacy,
 .ez-body #ez-body__center-content .post-container .post-edit-modal #post-text {
@@ -537,6 +544,16 @@ body {
 
 .ez-body #ez-body__center-content .post-container .post-edit-modal .model-content {
     border-radius: 100px !important;
+}
+
+.ez-body #ez-body__center-content .post-container .likes-modal .people-info .profile-figure {
+    width: 50px;
+    height: 50px;
+}
+
+.ez-body #ez-body__center-content .post-container .likes-modal .people-info div p {
+    font-size: small;
+    margin-bottom: 5px;
 }
 
 .ez-body #ez-body__center-content .shared-post {
@@ -1600,3 +1617,9 @@ body {
 .item_text {
     color: #ffc107;
 }
+
+.progress { position:relative; width:100%; }
+
+.bar { background-color: #00ff00; width:0%; height:20px; }
+
+.percent { position:absolute; display:inline-block; left:50%; color: #040608;}

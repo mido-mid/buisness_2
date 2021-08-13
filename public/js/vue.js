@@ -39,3 +39,4 @@ let makeReply = (comment_id,name) => {
     document.getElementById('reply-text-' + comment_id).focus();
     document.getElementById('reply-text-' + comment_id).value = '@'+name.split(" ")[0]
 }
+

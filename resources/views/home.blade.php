@@ -81,258 +81,144 @@
 
             </div>
             @foreach($stories as $story)
-                @if(count($story) > 0)
-                    <div onclick="addStoryViews({{$story->publisher->id}})" class="story" data-toggle="modal" data-target="#show-story-modal-{{$story->publisher->id}}" id="story-{{$story->publisher->id}}">
-                        <div class="owner-info d-flex align-items-center">
-                            @if($story->publisher->personal_image != null)
-                                <img
-                                    src="{{asset('media')}}/{{$story->publisher->personal_image}}" class="profile-figure rounded-circle" />
-                            @else
-                                <img
-                                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" class="profile-figure rounded-circle"/>
-                            @endif
-                            <p class="mb-0 p-2"><b>{{$story->publisher->name}}</b></p>
-                        </div>
+                <div onclick="addStoryViews({{$story->publisher->id}})" class="story" data-toggle="modal" data-target="#show-story-modal-{{$story->publisher->id}}" id="story-{{$story->publisher->id}}">
+                    <div class="owner-info d-flex align-items-center">
                         @if($story->publisher->personal_image != null)
                             <img
-                                src="{{asset('media')}}/{{$story->publisher->personal_image}}"/>
+                                src="{{asset('media')}}/{{$story->publisher->personal_image}}" class="profile-figure rounded-circle" />
                         @else
                             <img
-                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                            />
+                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" class="profile-figure rounded-circle"/>
                         @endif
-
-    {{--                        <form id="view-story-form-{{$story->id}}" action="{{ route('story.view') }}" method="POST" enctype="multipart/form-data" style="display: none;">--}}
-    {{--                            @csrf--}}
-    {{--                            <input type="hidden" name="story_id" value="{{$story->id}}">--}}
-    {{--                        </form>--}}
-
+                        <p class="mb-0 p-2"><b>{{$story->publisher->name}}</b></p>
                     </div>
-                    <div class="show-story-modal">
-                        <div class="modal fade load-modal" data-controls-modal="show-story-modal-{{$story->publisher->id}}" data-backdrop="static" data-keyboard="false" id="show-story-modal-{{$story->publisher->id}}" tabindex="-1" aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-    {{--                                <div class="modal-header d-flex justify-content-between">--}}
-    {{--                                    <span></span>--}}
-    {{--                                    @if($story->publisher->id == auth()->user()->id)--}}
-    {{--                                        <button onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$story->id}}) : ''">--}}
-    {{--                                            Delete</button>--}}
-    {{--                                        <form action="{{ route('stories.destroy', $story->id) }}" id="delete-story-form-{{$story->id}}" method="post">--}}
-    {{--                                            @csrf--}}
-    {{--                                            @method('delete')--}}
-    {{--                                            <!-- ajax-->--}}
-    {{--                                        </form>--}}
-    {{--                                    @endif--}}
-    {{--                                </div>--}}
-                                    <div class="modal-body">
-                                        <div id="story-carousel-{{$story->publisher->id}}" class="carousel slide" data-ride="carousel">
-                                            <div class="carousel-inner">
-                                                @foreach($story as $inner_story)
-                                                    <div class="carousel-item @if ($loop->first == true) active @endif carousel-{{$story->publisher->id}}" @if($inner_story->media != null && $inner_story->media->mediaType == "video" ) data-type="video" @else data-type="not video"  @endif id="carousel-item-{{$inner_story->id}}">
-                                                        <div class="controllers d-flex justify-content-between">
+                    @if($story->publisher->personal_image != null)
+                        <img
+                            src="{{asset('media')}}/{{$story->publisher->personal_image}}"/>
+                    @else
+                        <img
+                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                        />
+                    @endif
+                </div>
+                <div class="show-story-modal">
+                    <div class="modal fade load-modal" data-controls-modal="show-story-modal-{{$story->publisher->id}}" data-backdrop="static" data-keyboard="false" id="show-story-modal-{{$story->publisher->id}}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-body">
+                                    <div id="story-carousel-{{$story->publisher->id}}" class="carousel slide" data-ride="carousel">
+                                        <div class="carousel-inner">
+                                            @foreach($story as $inner_story)
+                                                <div class="carousel-item @if ($loop->first == true) active @endif carousel-{{$story->publisher->id}}" @if($inner_story->media != null && $inner_story->media->mediaType == "video" ) data-type="video" @else data-type="not video"  @endif id="carousel-item-{{$inner_story->id}}">
+                                                    <div class="controllers d-flex justify-content-between">
+                                                        @if($story->publisher->id == auth()->user()->id)
+                                                            <i class=" fas fa-eye p-2" data-toggle="modal" data-target="#show-story-views-modal-{{$inner_story->id}}"> {{count($inner_story->viewers)}} </i>
+                                                        @endif
+                                                        <div>
                                                             @if($story->publisher->id == auth()->user()->id)
-                                                                <i class=" fas fa-eye p-2" data-toggle="modal" data-target="#show-story-views-modal-{{$inner_story->id}}"> {{count($inner_story->viewers)}} </i>
+                                                                <i class="fas fa-trash p-2" onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$inner_story->id}},{{$story->publisher->id}}) : ''"></i>
+                                                                <form action="{{ route('stories.destroy', $inner_story->id) }}" id="delete-story-form-{{$inner_story->id}}" method="post" style="display: none">
+                                                                @csrf
+                                                                @method('delete')
+                                                                <!-- ajax-->
+                                                                </form>
                                                             @endif
-                                                            <div>
-                                                                @if($story->publisher->id == auth()->user()->id)
-                                                                    <i class="fas fa-trash p-2" onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$inner_story->id}},{{$story->publisher->id}}) : ''"></i>
-                                                                    <form action="{{ route('stories.destroy', $inner_story->id) }}" id="delete-story-form-{{$inner_story->id}}" method="post" style="display: none">
-                                                                    @csrf
-                                                                    @method('delete')
-                                                                    <!-- ajax-->
-                                                                    </form>
-                                                                @endif
-                                                                <i class="fas fa-times p-2" data-dismiss="modal" aria-label="Close" onclick="removeCurrent({{$story->publisher->id}})"></i>
-                                                            </div>
+                                                            <i class="fas fa-times p-2" data-dismiss="modal" aria-label="Close" onclick="removeCurrent({{$story->publisher->id}})"></i>
                                                         </div>
-                                                        @if($inner_story->body != null && is_null($inner_story->media) )
-                                                            <!-- If Content Text -->
-                                                            <p class="m-auto text-center w-100 p-5 h2 h-100">{{$inner_story->body}}</p>
+                                                    </div>
+                                                    @if($inner_story->body != null && is_null($inner_story->media) )
+                                                        <!-- If Content Text -->
+                                                        <p class="m-auto text-center w-100 p-5 h2 h-100">{{$inner_story->body}}</p>
+                                                    @else
+                                                        @if($inner_story->media->mediaType == 'image')
+                                                            <!-- If Content Img -->
+                                                            <img class="w-100"
+                                                                 src="{{asset('media')}}/{{$inner_story->media->filename}}" />
+                                                            @if($inner_story->body != null)
+                                                                <div class="carousel-caption d-none d-md-block">
+                                                                    <p>{{$inner_story->body}}</p>
+                                                                </div>
+                                                            @endif
                                                         @else
-                                                            @if($inner_story->media->mediaType == 'image')
-                                                                <!-- If Content Img -->
-                                                                <img class="w-100"
-                                                                     src="{{asset('media')}}/{{$inner_story->media->filename}}" />
+                                                            <!-- If Content Vedio -->
+                                                            <div class="story-content-vedio">
+                                                                <video class="w-100 h-100" id="story-video-{{$inner_story->id}}">
+                                                                    <source src="{{asset('media')}}/{{$inner_story->media->filename}}" type="video/mp4" />
+                                                                    Your browser does not support the video tag.
+                                                                </video>
                                                                 @if($inner_story->body != null)
                                                                     <div class="carousel-caption d-none d-md-block">
                                                                         <p>{{$inner_story->body}}</p>
                                                                     </div>
                                                                 @endif
-                                                            @else
-                                                                <!-- If Content Vedio -->
-                                                                <div class="story-content-vedio">
-                                                                    <video class="w-100 h-100" id="story-video-{{$inner_story->id}}">
-                                                                        <source src="{{asset('media')}}/{{$inner_story->media->filename}}" type="video/mp4" />
-                                                                        Your browser does not support the video tag.
-                                                                    </video>
-                                                                    @if($inner_story->body != null)
-                                                                        <div class="carousel-caption d-none d-md-block">
-                                                                            <p>{{$inner_story->body}}</p>
-                                                                        </div>
-                                                                    @endif
-                                                                </div>
-                                                            @endif
+                                                            </div>
                                                         @endif
-                                                    </div>
+                                                    @endif
+                                                </div>
 
-                                                    <form id="view-story-form-{{$inner_story->id}}" action="{{ route('story.view') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                        @csrf
-                                                        <input type="hidden" name="story_id" value="{{$inner_story->id}}">
-                                                    </form>
+                                                <form id="view-story-form-{{$inner_story->id}}" action="{{ route('story.view') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                    @csrf
+                                                    <input type="hidden" name="story_id" value="{{$inner_story->id}}">
+                                                </form>
 
-                                                    <div class="show-story-views-modal">
-                                                        <div class="modal fade" id="show-story-views-modal-{{$inner_story->id}}" tabindex="-1" aria-hidden="true">
-                                                            <div class="modal-dialog" style="margin-top: 22vh">
-                                                                <div class="modal-content">
-                                                                    <div class="modal-header d-flex justify-content-between">
-                                                                        <h5 class="modal-title" id="exampleModalLabel">
-                                                                            Story Viewers
-                                                                        </h5>
-                                                                        <button type="button" class="close ml-0" onclick="$('#show-story-views-modal-{{$inner_story->id}}').modal('hide');" aria-label="Close">
-                                                                            <span aria-hidden="true">&times;</span>
-                                                                        </button>
-                                                                    </div>
-                                                                    <div class="modal-body">
-                                                                        @if(count($inner_story->viewers) > 0)
-                                                                            @foreach($inner_story->viewers as $viewer)
-                                                                                <div class="people-info d-flex align-items-center">
-                                                                                    @if($viewer->personal_image != null)
-                                                                                        <img class="profile-figure rounded-circle"
-                                                                                             src="{{asset('media')}}/{{$viewer->personal_image}}"
-                                                                                             alt="User Profile Pic">
-                                                                                    @else
-                                                                                        <img class="profile-figure rounded-circle"
-                                                                                             src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                                                                                             alt="User Profile Pic">
-                                                                                    @endif
-                                                                                    <p class="mb-0 ml-3"><b>{{$viewer->name}}</b></p>
-                                                                                </div>
-                                                                                @if($loop->last == false)
-                                                                                    <hr>
+                                                <div class="show-story-views-modal">
+                                                    <div class="modal fade" id="show-story-views-modal-{{$inner_story->id}}" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog" style="margin-top: 22vh">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header d-flex justify-content-between">
+                                                                    <h5 class="modal-title" id="exampleModalLabel">
+                                                                        Story Viewers
+                                                                    </h5>
+                                                                    <button type="button" class="close ml-0" onclick="$('#show-story-views-modal-{{$inner_story->id}}').modal('hide');" aria-label="Close">
+                                                                        <span aria-hidden="true">&times;</span>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="modal-body">
+                                                                    @if(count($inner_story->viewers) > 0)
+                                                                        @foreach($inner_story->viewers as $viewer)
+                                                                            <div class="people-info d-flex align-items-center">
+                                                                                @if($viewer->personal_image != null)
+                                                                                    <img class="profile-figure rounded-circle"
+                                                                                         src="{{asset('media')}}/{{$viewer->personal_image}}"
+                                                                                         alt="User Profile Pic">
+                                                                                @else
+                                                                                    <img class="profile-figure rounded-circle"
+                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                                                         alt="User Profile Pic">
                                                                                 @endif
-                                                                            @endforeach
+                                                                                <p class="mb-0 ml-3"><b>{{$viewer->name}}</b></p>
+                                                                            </div>
+                                                                            @if($loop->last == false)
+                                                                                <hr>
+                                                                            @endif
+                                                                        @endforeach
 
-                                                                        @else
-                                                                            <p class="mb-0 ml-3"><b>no viewers yet</b></p>
-                                                                        @endif
-                                                                    </div>
+                                                                    @else
+                                                                        <p class="mb-0 ml-3"><b>no viewers yet</b></p>
+                                                                    @endif
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                @endforeach
-                                            </div>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                        <a class="carousel-control-prev" href="#story-carousel-{{$story->publisher->id}}" role="button" data-slide="prev">
-                                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                            <span class="sr-only">Previous</span>
-                                        </a>
-                                        <a class="carousel-control-next" href="#story-carousel-{{$story->publisher->id}}" role="button" data-slide="next">
-                                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                            <span class="sr-only">Next</span>
-                                        </a>
                                     </div>
-                                        <!-- If Content Img -->
-                                        <!-- <div class="story-content-img">
-                                          <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                          </button>
-                                          <img class="w-100"
-                                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                          <p class="m-auto text-center w-100 p-2">Some Caption</p>
-                                        </div> -->
-                                        <!-- If Content Text -->
-                                        <!-- <div class="story-content-text">
-                                          <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                          </button>
-                                          <p class="m-auto text-center w-100 p-5 h2 h-100">Lorem ipsum dolor sit, amet consectetur
-                                            adipisicing
-                                            elit. Nemo libero laudantium vero est quae, perspiciatis, enim quaerat modi alias quos laborum
-                                            porro exercitationem, delectus officia inventore cupiditate at nesciunt adipisci.</p>
-                                        </div> -->
-                                        <!-- If Content Vedio -->
-
-    {{--                                    @if($story->body != null && is_null($story->media) )--}}
-    {{--                                        <div class="story-content-vedio">--}}
-    {{--                                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">--}}
-    {{--                                                <span aria-hidden="true">&times;</span>--}}
-    {{--                                            </button>--}}
-    {{--                                            @if($story->body != null)--}}
-    {{--                                                <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>--}}
-    {{--                                            @endif--}}
-    {{--                                        </div>--}}
-    {{--                                    @else--}}
-    {{--                                        @if($story->media->mediaType == 'image')--}}
-    {{--                                            <div class="story-content-img">--}}
-    {{--                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">--}}
-    {{--                                                    <span aria-hidden="true">&times;</span>--}}
-    {{--                                                </button>--}}
-    {{--                                                <img class="w-100"--}}
-    {{--                                                     src="{{asset('media')}}/{{$story->media->filename}}" />--}}
-    {{--                                                @if($story->body != null)--}}
-    {{--                                                    <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>--}}
-    {{--                                                @endif--}}
-    {{--                                            </div>--}}
-    {{--                                        @else--}}
-    {{--                                            <div class="story-content-vedio">--}}
-    {{--                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">--}}
-    {{--                                                    <span aria-hidden="true">&times;</span>--}}
-    {{--                                                </button>--}}
-    {{--                                                <video class="story-video w-100 h-100" id="story-video-{{$story->id}}" loop="true">--}}
-    {{--                                                    <source src="{{asset('media')}}/{{$story->media->filename}}" type="video/mp4">--}}
-    {{--                                                    Your browser does not support the video tag.--}}
-    {{--                                                </video>--}}
-    {{--                                                @if($story->body != null)--}}
-    {{--                                                    <p class="m-auto text-center w-100 p-2">{{$story->body}}</p>--}}
-    {{--                                                @endif--}}
-    {{--                                            </div>--}}
-    {{--                                        @endif--}}
-
-    {{--                                    @endif--}}
-
-    {{--                                    @if($story->publisher->id == auth()->user()->id)--}}
-    {{--                                        <button data-toggle="modal" data-target="#story-viewers-modal-{{$story->id}}">story views : {{count($story->viewers)}}</button>--}}
-    {{--                                    @endif--}}
+                                    <a class="carousel-control-prev" href="#story-carousel-{{$story->publisher->id}}" role="button" data-slide="prev">
+                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Previous</span>
+                                    </a>
+                                    <a class="carousel-control-next" href="#story-carousel-{{$story->publisher->id}}" role="button" data-slide="next">
+                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                        <span class="sr-only">Next</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-    {{--                <div class="show-story-modal">--}}
-    {{--                    <div class="modal fade" id="story-viewers-modal-{{$story->id}}" tabindex="-1" aria-hidden="true">--}}
-    {{--                        <div class="modal-dialog">--}}
-    {{--                            <div class="modal-content">--}}
-    {{--                                <div class="modal-header d-flex justify-content-between">--}}
-    {{--                                    <span></span>--}}
-    {{--                                    <h5 class="modal-title" id="exampleModalLabel">Story Viewers</h5>--}}
-    {{--                                </div>--}}
-    {{--                                <div class="modal-body">--}}
-    {{--                                    @foreach($story->viewers as $viewer)--}}
-    {{--                                        {{$viewer->name}}--}}
-    {{--                                    @endforeach--}}
-    {{--                                </div>--}}
-    {{--                            </div>--}}
-    {{--                        </div>--}}
-    {{--                    </div>--}}
-    {{--                </div>--}}
-                @endif
+                </div>
             @endforeach
-            <div id="load_stories" style="width: 100%">
-                <!--  load data from database -->
-            </div>
         </div>
-
-{{--        <div class="col-12">--}}
-{{--            @if (session('status'))--}}
-{{--                <div class="alert alert-success alert-dismissible fade show" role="alert">--}}
-{{--                    {{ session('status') }}--}}
-{{--                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">--}}
-{{--                        <span aria-hidden="true">&times;</span>--}}
-{{--                    </button>--}}
-{{--                </div>--}}
-{{--            @endif--}}
-{{--        </div>--}}
 
         <div class="col-12" id="success-message" style="display: none">
             <div class="alert alert-success alert-dismissible fade show" id="success-status" role="alert">
@@ -361,7 +247,6 @@
         </div>
 
         <div class="col-12">
-
             @if(session('status'))
                 <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ session('status') }}
@@ -437,9 +322,13 @@
                                     <div id="menu" class="menu" role="listbox"></div>
                                 </div>
                                 <!-- Post Images -->
-                                <div class="post-desc d-flex justify-content-center mt-2">
-                                    <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs"
-                                           multiple />
+                                <div class="form-group post-desc d-flex justify-content-center mt-2">
+                                    <input class="form-control w-75 mt-2" type="file" accept=".mpeg,.ogg,.mp4,.webm,.3gp,.mov,.flv,.avi,.wmv,.ts,.jpg,.jpeg,.png,.svg,.gif" name="media[]" id="imgs"
+                                           multiple /><br>
+{{--                                    <div class="progress">--}}
+{{--                                        <div class="bar"></div >--}}
+{{--                                        <div class="percent">0%</div >--}}
+{{--                                    </div>--}}
                                 </div>
                                 <!-- Add Post Btn -->
                                 <div class="post-add-btn d-flex justify-content-center mt-4">
@@ -452,7 +341,7 @@
                     </div>
                 </div>
             </div>
-            <input type="text" placeholder="Add New Post" class="w-100" data-toggle="modal"
+            <input type="text" onclick="applySelect2();" placeholder="Add New Post" class="w-100" data-toggle="modal"
                    data-target="#add-post-modal" />
         </div>
         <div id="addedpost">
@@ -520,7 +409,7 @@
                     <!-- Post options -->
                     <div class="post-options post-options-{{$post->id}}">
                         <ul class="options">
-                            @if($post->sponsored == false)
+                            @if($post->sponsored == false && $post->type == "post")
                                 <li data-toggle="modal" data-target="#advertise-post-modal-{{$post->id}}">Advertise</li>
                             @endif
                             @if(!$post->saved)
@@ -643,13 +532,13 @@
                     @else
                         <pre style="text-align:left;"><?php echo $post->body ?></pre>
                     @endif
-                    @if(count($post->media) > 0)
+                    @if(count($post->media) > 0 && $post->type == "post")
                         <div class="media">
                             @if(count($post->media) == 1)
 
                                 @foreach($post->media as $media)
                                     @if($media->mediaType == 'image')
-                                        <!-- if media img and imgs=1 -->
+                                    <!-- if media img and imgs=1 -->
                                         <div class="d-flex" style="width: 100%">
                                             <img src="{{asset('media')}}/{{$media->filename}}" alt="opel car" />
                                         </div>
@@ -661,49 +550,6 @@
                                     @endif
                                 @endforeach
 
-                            @elseif(count($post->media) > 1 && count($post->media) < 4 )
-
-                                <div class="w-100">
-                                    <div class="d-flex w-100">
-                                        @if($post->media[0]->mediaType == 'image')
-                                        <!-- if media img and imgs=1 -->
-                                            <div class="d-flex" style="width: 100%">
-                                                <img src="{{asset('media')}}/{{$post->media[0]->filename}}" alt="opel car" />
-                                            </div>
-                                        @else
-                                            <video class="p-1" controls>
-                                                <source src="{{asset('media')}}/{{$post->media[0]->filename}}" type="video/mp4">
-                                                Your browser does not support HTML video.
-                                            </video>
-                                        @endif
-
-
-                                        @if($post->media[1]->mediaType == 'image')
-                                        <!-- if media img and imgs=1 -->
-                                            <div class="p-1 w-100" style="width: 100%">
-                                                <img src="{{asset('media')}}/{{$post->media[1]->filename}}" alt="opel car" />
-                                            </div>
-                                        @else
-                                            <video class="p-1 w-100" controls>
-                                                <source src="{{asset('media')}}/{{$post->media[1]->filename}}" type="video/mp4">
-                                                Your browser does not support HTML video.
-                                            </video>
-                                        @endif
-                                    </div>
-                                    <div class="d-flex w-100">
-                                        @if($post->media[2]->mediaType == 'image')
-                                        <!-- if media img and imgs=1 -->
-                                            <div class="p-1 w-100" style="width: 100%">
-                                                <img src="{{asset('media')}}/{{$post->media[2]->filename}}" alt="opel car" />
-                                            </div>
-                                        @else
-                                            <video class="p-1 w-100" controls>
-                                                <source src="{{asset('media')}}/{{$post->media[2]->filename}}" type="video/mp4">
-                                                Your browser does not support HTML video.
-                                            </video>
-                                        @endif
-                                    </div>
-                                </div>
                             @else
                                 <div class="w-100">
                                     <div class="d-flex w-100">
@@ -732,24 +578,22 @@
                                             </video>
                                         @endif
                                     </div>
-                                    <div class="d-flex w-100">
-                                        @if($post->media[2]->mediaType == 'image')
-                                        <!-- if media img and imgs=1 -->
-                                            <div class="p-1 w-100" style="width: 100%">
-                                                <img src="{{asset('media')}}/{{$post->media[2]->filename}}" alt="opel car" />
-                                            </div>
-                                        @else
-                                            <video class="p-1 w-100" controls>
-                                                <source src="{{asset('media')}}/{{$post->media[2]->filename}}" type="video/mp4">
-                                                Your browser does not support HTML video.
-                                            </video>
-                                        @endif
 
-                                        @if(count($post->media) > 4)
+                                    @if(count($post->media) > 2)
+                                        <div class="d-flex w-100">
+                                            @if($post->media[2]->mediaType == 'image')
+                                            <!-- if media img and imgs=1 -->
+                                                <div class="p-1 w-100" style="width: 100%">
+                                                    <img src="{{asset('media')}}/{{$post->media[2]->filename}}" alt="opel car" />
+                                                </div>
+                                            @else
+                                                <video class="p-1 w-100" controls>
+                                                    <source src="{{asset('media')}}/{{$post->media[2]->filename}}" type="video/mp4">
+                                                    Your browser does not support HTML video.
+                                                </video>
+                                            @endif
 
-                                            <div class="more-media w-50" data-toggle="modal" data-target="#more-media-modal-{{$post->id}}">
-                                                <p>+5</p>
-                                                <div class="overlay"></div>
+                                            @if(count($post->media) == 4)
 
                                                 @if($post->media[3]->mediaType == 'image')
                                                 <!-- if media img and imgs=1 -->
@@ -762,21 +606,28 @@
                                                         Your browser does not support HTML video.
                                                     </video>
                                                 @endif
-                                            </div>
-                                        @else
-                                            @if($post->media[2]->mediaType == 'image')
-                                            <!-- if media img and imgs=1 -->
-                                                <div class="p-1 w-100" style="width: 100%">
-                                                    <img src="{{asset('media')}}/{{$post->media[2]->filename}}" alt="opel car" />
-                                                </div>
-                                            @else
-                                                <video class="p-1 w-100" controls>
-                                                    <source src="{{asset('media')}}/{{$post->media[2]->filename}}" type="video/mp4">
-                                                    Your browser does not support HTML video.
-                                                </video>
                                             @endif
-                                        @endif
-                                    </div>
+
+                                            @if(count($post->media) > 4)
+                                                <div class="more-media w-50" data-toggle="modal" data-target="#more-media-modal-{{$post->id}}">
+                                                    <p>+{{count($post->media) - 3}}</p>
+                                                    <div class="overlay"></div>
+
+                                                @if($post->media[3]->mediaType == 'image')
+                                                    <!-- if media img and imgs=1 -->
+                                                        <div class="p-1 w-100" style="width: 100%">
+                                                            <img src="{{asset('media')}}/{{$post->media[3]->filename}}" alt="opel car" />
+                                                        </div>
+                                                    @else
+                                                        <video class="p-1 w-100" controls>
+                                                            <source src="{{asset('media')}}/{{$post->media[3]->filename}}" type="video/mp4">
+                                                            Your browser does not support HTML video.
+                                                        </video>
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
                             @endif
                         </div>
@@ -810,19 +661,212 @@
                             </div>
                         </div>
                     @endif
+
+                    @if($post->type == "share")
+                        <div class="post-container shared-post bg-white p-2">
+                            <div class="post-owner d-flex align-items-center">
+                                @if($post->shared_post->source == "page")
+                                    <div class="owner-img">
+                                        <a style="display: inline" href="{{route('profile',$post->shared_post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->shared_post->page->profile_image}}" class="rounded-circle" /></a>
+                                    </div>
+                                @else
+                                    @if($post->shared_post->publisher->personal_image)
+                                        <div class="owner-img">
+                                            <a style="display: inline" href="{{route('profile',$post->shared_post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->shared_post->publisher->personal_image}}" class="rounded-circle" /></a>
+                                        </div>
+                                    @else
+                                        <div class="owner-img">
+                                            <a style="display: inline" href="{{route('profile',$post->shared_post->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
+                                        </div>
+                                    @endif
+                                @endif
+                                <div class="owner-name pl-3">
+                                    @if($post->shared_post->source == "page")
+                                        <a href="{{route('profile',$post->shared_post->publisher->id)}}"><b>
+                                                {{$post->shared_post->page->name}}
+                                            </b></a>
+                                    @else
+                                        <a href="{{route('profile',$post->shared_post->publisher->id)}}"><b>
+                                                @if($post->shared_post->publisher->official == 1)
+                                                    <i class="fas fa-user-check" style="color: #ffc107"></i>
+                                                @endif
+                                                {{$post->shared_post->publisher->name}}
+                                            </b></a>
+                                        @if($post->shared_post->sponsored)
+                                            <div style="font-size: small">
+                                                <span><i class="fas fa-ad"></i></span>
+                                                sponsored
+                                            </div>
+
+                                        @endif
+                                    @endif
+
+                                    @if($post->shared_post->tags != null )
+                                        <a data-toggle="modal" data-target="#show-post-tags-modal-{{$post->shared_post->id}}"><b>
+                                                with
+                                                @if($post->shared_post->tagged == true)
+                                                    you and {{count($post->shared_post->tags_info) - 1}}
+                                                @else
+                                                    {{count($post->shared_post->tags_info)}}
+                                                @endif
+                                                others
+                                            </b></a>
+                                    @endif
+
+                                    @if($post->shared_post->source == "group")
+                                        <Span><i class="fas fa-caret-right"></i></Span>
+                                        {{$post->shared_post->group->name}}
+                                    @endif
+
+                                    <span style="display: block">{{date('d/m/Y',strtotime($post->shared_post->created_at))}}</span>
+                                </div>
+                            </div>
+
+                            <div class="post-desc mt-3">
+                                <!-- if lang arabic -->
+                                @if(App::getlocale() == 'ar')
+                                    <pre style="text-align:right;"><?php echo $post->shared_post->body ?></pre>
+                                @else
+                                    <pre style="text-align:left;"><?php echo $post->shared_post->body ?></pre>
+                                @endif
+                                @if(count($post->shared_post->media) > 0)
+                                    <div class="media">
+                                    @if(count($post->shared_post->media) == 1)
+
+                                        @foreach($post->shared_post->media as $media)
+                                            @if($media->mediaType == 'image')
+                                                <!-- if media img and imgs=1 -->
+                                                    <div class="d-flex" style="width: 100%">
+                                                        <img src="{{asset('media')}}/{{$media->filename}}" alt="opel car" />
+                                                    </div>
+                                                @else
+                                                    <video class="p-1" controls>
+                                                        <source src="{{asset('media')}}/{{$media->filename}}" type="video/mp4">
+                                                        Your browser does not support HTML video.
+                                                    </video>
+                                                @endif
+                                            @endforeach
+
+                                        @else
+                                            <div class="w-100">
+                                                <div class="d-flex w-100">
+                                                @if($post->shared_post->media[0]->mediaType == 'image')
+                                                    <!-- if media img and imgs=1 -->
+                                                        <div class="d-flex" style="width: 100%">
+                                                            <img src="{{asset('media')}}/{{$post->shared_post->media[0]->filename}}" alt="opel car" />
+                                                        </div>
+                                                    @else
+                                                        <video class="p-1" controls>
+                                                            <source src="{{asset('media')}}/{{$post->shared_post->media[0]->filename}}" type="video/mp4">
+                                                            Your browser does not support HTML video.
+                                                        </video>
+                                                    @endif
+
+
+                                                    @if($post->shared_post->media[1]->mediaType == 'image')
+                                                    <!-- if media img and imgs=1 -->
+                                                        <div class="p-1 w-100" style="width: 100%">
+                                                            <img src="{{asset('media')}}/{{$post->shared_post->media[1]->filename}}" alt="opel car" />
+                                                        </div>
+                                                    @else
+                                                        <video class="p-1 w-100" controls>
+                                                            <source src="{{asset('media')}}/{{$post->shared_post->media[1]->filename}}" type="video/mp4">
+                                                            Your browser does not support HTML video.
+                                                        </video>
+                                                    @endif
+                                                </div>
+
+                                                @if(count($post->shared_post->media) > 2)
+                                                    <div class="d-flex w-100">
+                                                    @if($post->shared_post->media[2]->mediaType == 'image')
+                                                        <!-- if media img and imgs=1 -->
+                                                            <div class="p-1 w-100" style="width: 100%">
+                                                                <img src="{{asset('media')}}/{{$post->shared_post->media[2]->filename}}" alt="opel car" />
+                                                            </div>
+                                                        @else
+                                                            <video class="p-1 w-100" controls>
+                                                                <source src="{{asset('media')}}/{{$post->shared_post->media[2]->filename}}" type="video/mp4">
+                                                                Your browser does not support HTML video.
+                                                            </video>
+                                                        @endif
+
+                                                        @if(count($post->shared_post->media) == 4)
+
+                                                            @if($post->shared_post->media[3]->mediaType == 'image')
+                                                            <!-- if media img and imgs=1 -->
+                                                                <div class="p-1 w-100" style="width: 100%">
+                                                                    <img src="{{asset('media')}}/{{$post->shared_post->media[3]->filename}}" alt="opel car" />
+                                                                </div>
+                                                            @else
+                                                                <video class="p-1 w-100" controls>
+                                                                    <source src="{{asset('media')}}/{{$post->shared_post->media[3]->filename}}" type="video/mp4">
+                                                                    Your browser does not support HTML video.
+                                                                </video>
+                                                            @endif
+                                                        @endif
+
+                                                        @if(count($post->shared_post->media) > 4)
+                                                            <div class="more-media w-50" data-toggle="modal" data-target="#more-media-modal-{{$post->id}}">
+                                                                <p>+{{count($post->media) - 3}}</p>
+                                                                <div class="overlay"></div>
+
+                                                            @if($post->shared_post->media[3]->mediaType == 'image')
+                                                                <!-- if media img and imgs=1 -->
+                                                                    <div class="p-1 w-100" style="width: 100%">
+                                                                        <img src="{{asset('media')}}/{{$post->shared_post->media[3]->filename}}" alt="opel car" />
+                                                                    </div>
+                                                                @else
+                                                                    <video class="p-1 w-100" controls>
+                                                                        <source src="{{asset('media')}}/{{$post->shared_post->media[3]->filename}}" type="video/mp4">
+                                                                        Your browser does not support HTML video.
+                                                                    </video>
+                                                                @endif
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="post-more-media-modal">
+                                        <div class="modal fade" id="more-media-modal-{{$post->shared_post->id}}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog" style="margin-top: 10vh">
+                                                <div class="modal-content">
+                                                    <div class="modal-body">
+                                                        <div id="media-carousel-{{$post->shared_post->id}}" class="carousel slide" data-ride="carousel">
+                                                            <div class="carousel-inner">
+                                                                @foreach($post->shared_post->media as $media)
+                                                                    <div class="carousel-item @if ($loop->first == true) active @endif">
+                                                                        <img src="{{asset('media')}}/{{$media->filename}}" class="d-block w-100" alt="...">
+                                                                    </div>
+                                                                @endforeach
+                                                            </div>
+                                                            <a class="carousel-control-prev" href="#media-carousel-{{$post->shared_post->id}}" role="button"
+                                                               data-slide="prev">
+                                                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                                <span class="sr-only">Previous</span>
+                                                            </a>
+                                                            <a class="carousel-control-next" href="#media-carousel-{{$post->shared_post->id}}" role="button"
+                                                               data-slide="next">
+                                                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                                <span class="sr-only">Next</span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
                     <div class="post-statistics mt-3 d-flex">
                         <div class="likes">
-
                             @if($post->liked)
-                            <!-- if post is liked by user -->
-                            <!-- <div><i class="fas fa-thumbs-up"></i><span> 20</span></div> -->
-                            <!-- if post isn't liked by user -->
                                 <div class="reaction-container" id="reaction-container-{{$post->id}}">
-                                    <!-- container div for reaction system -->
                                     <span class="reaction-btn">
-                                            <!-- Default like button -->
                                             <span class="reaction-btn-emo like-btn-{{$post->user_react[0]->name}}" id="reaction-btn-emo-{{$post->id}}"></span>
-                                        <!-- Default like button emotion-->
                                             <span class="reaction-btn-text reaction-btn-text-{{$post->user_react[0]->name}} active" onclick="unlikeModelSubmit({{$post->id}},{{$post->user_react[0]->id}})" id="reaction-btn-text-{{$post->id}}">
                                                 {{$post->user_react[0]->name}}
                                                     <form id="unlike-form-{{$post->id}}-{{$post->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
@@ -833,7 +877,6 @@
                                                        <input type="hidden" name="requestType" id="like-request-type-{{$post->id}}" value="delete">
                                                     </form>
                                             </span>
-                                        <!-- Default like button text,(Like, wow, sad..) default:Like  -->
                                             <ul class="emojies-box">
                                                 @foreach($reacts as $react)
                                                 <!-- Reaction buttons container-->
@@ -849,37 +892,31 @@
                                             </ul>
                                           </span>
                                     <div class="like-stat">
-                                        <!-- Like statistic container-->
                                         <span class="like-emo" id="like-emo-{{$post->id}}">
                                               <!-- like emotions container -->
                                               <span class="like-btn-like"></span>
                                                 @if($post->user_react[0]->name != "like")
                                                     <span class="like-btn-{{$post->user_react[0]->name}}"></span>
                                                 @endif
-                                            <!-- given emotions like, wow, sad (default:Like) -->
                                             </span>
-                                        <span class="like-details" id="like-details-{{$post->id}}">You @if($post->likes->count-1 != 0) and {{$post->likes->count-1}} @if($post->likes->count-1 > 1000) k @endif others @endif</span>
+                                        <span class="like-details" id="like-details-{{$post->id}}" data-toggle="modal" data-target="#likes-modal-{{$post->id}}">You @if($post->likes->count-1 != 0) and {{$post->likes->count-1}} @if($post->likes->count-1 > 1000) k @endif others @endif</span>
                                     </div>
                                 </div>
                             @else
                                 <div class="reaction-container" id="reaction-container-{{$post->id}}">
-                                    <!-- container div for reaction system -->
                                     <span class="reaction-btn">
                                         <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$post->id}}" style="display: none"></span>
-                                            <!-- Default like button emotion-->
                                         <span class="reaction-btn-text" id="reaction-btn-text-{{$post->id}}">
                                             <div><i class="far fa-thumbs-up"></i>
                                                 @if($post->likes->count > 0)
-                                                    <span>
+                                                    <span data-toggle="modal" data-target="#likes-modal-{{$post->id}}">
                                                         {{$post->likes->count}}
                                                     </span>
                                                 @endif
                                             </div>
                                         </span>
-                                        <!-- Default like button text,(Like, wow, sad..) default:Like  -->
                                         <ul class="emojies-box">
                                             @foreach($reacts as $react)
-                                              <!-- Reaction buttons container-->
                                               <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
                                               <form id="like-form-{{$post->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                                 @csrf
@@ -891,17 +928,127 @@
                                         </ul>
                                     </span>
                                     <div class="like-stat" id="like-stat-{{$post->id}}" style="display: none">
-                                        <!-- Like statistic container-->
                                         <span class="like-emo" id="like-emo-{{$post->id}}">
-                                          <!-- like emotions container -->
                                           <span class="like-btn-like"></span>
-                                            <!-- given emotions like, wow, sad (default:Like) -->
                                         </span>
-                                        <span class="like-details" id="like-details-{{$post->id}}">@if($post->likes->count-1 > 0) and {{$post->likes->count-1}} @if($post->likes->count-1 > 1000) k @endif others @endif</span>
+                                        <span class="like-details" id="like-details-{{$post->id}}" data-toggle="modal" data-target="#likes-modal-{{$post->id}}">@if($post->likes->count-1 > 0) and {{$post->likes->count-1}} @if($post->likes->count-1 > 1000) k @endif others @endif</span>
                                     </div>
                                 </div>
                             @endif
                         </div>
+                        @if($post->likes->count > 0)
+                            <div class="likes-modal">
+                                <div class="modal fade" id="likes-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog" style="margin-top: 10vh;">
+                                        <div class="modal-content">
+                                            <div class="modal-header d-flex justify-content-between">
+                                                <span></span>
+                                                <h5 class="modal-title" id="exampleModalLabel">
+                                                    Reactions
+                                                </h5>
+                                                <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="services-controller m-3 text-left">
+                                                    <button onclick="filterPostLikes({{$post->id}},'all-{{$post->id}}')" class="btn btn-light active-{{$post->id}} filter-all-{{$post->id}} ez-active" id="{{$post->id}}" data-filter="all-{{$post->id}}">
+                                                        All
+                                                    </button>
+                                                    <button class="btn btn-light active-{{$post->id}} filter-like-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'like-{{$post->id}}')" id="{{$post->id}}" data-filter="like-{{$post->id}}">
+                                                        like
+                                                    </button>
+                                                    <button class="btn btn-light active-{{$post->id}} filter-love-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'love-{{$post->id}}')" id="{{$post->id}}" data-filter="love-{{$post->id}}">
+                                                        love
+                                                    </button>
+                                                    <button class="btn btn-light active-{{$post->id}} filter-haha-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'haha-{{$post->id}}')" id="{{$post->id}}" data-filter="haha-{{$post->id}}">
+                                                        haha
+                                                    </button>
+                                                    <button class="btn btn-light active-{{$post->id}} filter-sad-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'sad-{{$post->id}}')" id="{{$post->id}}" data-filter="sad-{{$post->id}}">
+                                                        sad
+                                                    </button>
+                                                    <button class="btn btn-light active-{{$post->id}} filter-angry-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'angry-{{$post->id}}')" id="{{$post->id}}" data-filter="angry-{{$post->id}}">
+                                                        angry
+                                                    </button>
+                                                </div>
+                                                <div class="likes-container mt-3">
+                                                    <div class="filter-{{$post->id}} like-{{$post->id}}">
+                                                        @foreach($post->like_stat as $like_emoji)
+                                                            <div class="people-info d-flex align-items-center">
+                                                                @if($like_emoji->publisher->personal_image != null)
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
+                                                                @else
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                @endif
+                                                                <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="filter-{{$post->id}} love-{{$post->id}}">
+                                                        @foreach($post->love_stat as $love)
+                                                            <div class="people-info d-flex align-items-center">
+                                                                @if($love->publisher->personal_image != null)
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
+                                                                @else
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                @endif
+                                                                <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="filter-{{$post->id}} haha-{{$post->id}}">
+                                                        @foreach($post->haha_stat as $haha)
+                                                            <div class="people-info d-flex align-items-center">
+                                                                @if($haha->publisher->personal_image != null)
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
+                                                                @else
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                @endif
+                                                                <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="filter-{{$post->id}} sad-{{$post->id}}">
+                                                        @foreach($post->sad_stat as $sad)
+                                                            <div class="people-info d-flex align-items-center">
+                                                                @if($sad->publisher->personal_image != null)
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
+                                                                @else
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                @endif
+                                                                <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="filter-{{$post->id}} angry-{{$post->id}}">
+                                                        @foreach($post->angry_stat as $angry)
+                                                            <div class="people-info d-flex align-items-center">
+                                                                @if($angry->publisher->personal_image != null)
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
+                                                                @else
+                                                                    <img class="profile-figure rounded-circle"
+                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                @endif
+                                                                <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
                         <div class="comments" onclick="toggleComments({{$post->id}})"><i class="far fa-comment ml-3"></i>
                                 <span id="comment-count-{{$post->id}}">
                                     @if($post->comments->count > 0)
@@ -930,21 +1077,8 @@
                                             </div>
                                             <form action="{{route('posts.store')}}" method="POST" class="container" id="share-post-form-{{$post->id}}" enctype="multipart/form-data">
 
-                                            @csrf
-                                            <!-- Select Post Type -->
-                                            {{--                                <div class="post-type d-flex justify-content-between align-items-center m-auto w-75">--}}
-                                            {{--                                    <div>Post As:</div>--}}
-                                            {{--                                    <div class="d-flex align-items-center">--}}
-                                            {{--                                        <input type="radio" name="post-type" value="post" id="post-type-post" checked />--}}
-                                            {{--                                        <span class="pl-2">Post</span>--}}
-                                            {{--                                    </div>--}}
-                                            {{--                                    <div class="d-flex align-items-center">--}}
-                                            {{--                                        <input class="m-0" type="radio" name="post-type" value="service" id="post-type-service" />--}}
-                                            {{--                                        <span class="pl-2">Service</span>--}}
-                                            {{--                                    </div>--}}
-                                            {{--                                </div>--}}
-                                            <!-- Select post Privacy -->
-                                                <input type="hidden" name="post_id" value="{{$post->id}}">
+                                                @csrf
+                                                <input type="hidden" name="post_id" value="@if($post->type == "post"){{$post->id}}@else{{$post->shared_post->id}}@endif">
                                                 <div class="post-privacy d-flex justify-content-between align-items-center m-auto w-75">
                                                     <label for="cars">Choose Post Privacy:</label>
                                                     <select id="post-privacy" name="privacy_id">
@@ -969,26 +1103,6 @@
                                                         @endforeach
                                                     </select>
                                                 </div>
-                                            {{--                                <div id="post-type-service-content" class="d-none">--}}
-                                            {{--                                    <!-- Select Service Category -->--}}
-                                            {{--                                    <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">--}}
-                                            {{--                                        <label for="cars">Choose A Category:</label>--}}
-                                            {{--                                        <select id="post-category" name="categoryId">--}}
-                                            {{--                                            @foreach($categories as $category)--}}
-                                            {{--                                                @if(App::getlocale() == 'en')--}}
-                                            {{--                                                    <option value="{{$category->id}}">{{$category->name_en}}</option>--}}
-                                            {{--                                                @else--}}
-                                            {{--                                                    <option value="{{$category->id}}">{{$category->name_ar}}</option>--}}
-                                            {{--                                                @endif--}}
-                                            {{--                                            @endforeach--}}
-                                            {{--                                        </select>--}}
-                                            {{--                                    </div>--}}
-                                            {{--                                    <!-- Select Service Price -->--}}
-                                            {{--                                    <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">--}}
-                                            {{--                                        <input class="w-100 border" type="number" placeholder="Service Price $" />--}}
-                                            {{--                                    </div>--}}
-                                            {{--                                </div>--}}
-                                            <!-- Post Desc -->
                                                 <div class="post-desc d-flex justify-content-center mt-2">
                                                     <textarea class="w-75 p-2" name="body" id="textarea" cols="200" rows="4"
                                                       placeholder="Post Description..."></textarea>
@@ -1005,15 +1119,52 @@
                                     </div>
                                 </div>
                             </div>
-                        <div class="shares" data-toggle="modal" data-target="#share-post-modal-{{$post->id}}">
-                            <i class="fas fa-share ml-3"></i>
+                        <div class="shares">
+                            <i data-toggle="modal" data-target="#share-post-modal-{{$post->id}}" class="fas fa-share ml-3"></i>
                             @if($post->shares > 0)
-                                <span>
-                                {{$post->shares}}
-                            </span>
+                                <span data-toggle="modal" data-target="#shares-modal-{{$post->id}}">
+                                    {{$post->shares}}
+                                </span>
                             @endif
                         </div>
                     </div>
+                    @if($post->publisher->id == auth()->user()->id)
+                        <div class="show-story-views-modal">
+                            <div class="modal fade" id="shares-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog" style="margin-top: 22vh">
+                                    <div class="modal-content">
+                                        <div class="modal-header d-flex justify-content-between">
+                                            <h5 class="modal-title" id="exampleModalLabel">
+                                                Users shared
+                                            </h5>
+                                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            @foreach($post->share_details as $share)
+                                                <div class="people-info d-flex align-items-center">
+                                                    @if($share->publisher->personal_image != null)
+                                                        <img class="rounded-circle" style="width: 50px;height: 50px"
+                                                             src="{{asset('media')}}/{{$share->publisher->personal_image}}"
+                                                             alt="User Profile Pic">
+                                                    @else
+                                                        <img class="rounded-circle" style="width: 50px;height: 50px"
+                                                             src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                             alt="User Profile Pic">
+                                                    @endif
+                                                    <p class="mb-0 ml-3"><b>{{$share->publisher->name}}</b></p>
+                                                </div>
+                                                @if($loop->last == false)
+                                                    <hr>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
                     <div class="post-comment-list post-comment-list-{{$post->id}} mt-2">
                         <div class="hide-commnet-list d-flex flex-row-reverse">
                             <span onclick="toggleComments({{$post->id}})"><i class="fas fa-chevron-up"></i> Hide</span>
@@ -1093,7 +1244,7 @@
                                                                     @endif
                                                                 <!-- given emotions like, wow, sad (default:Like) -->
                                                                 </span>
-                                                                <span class="like-details" id="like-details-{{$comment->id}}">You @if($comment->likes->count-1 != 0) and {{$comment->likes->count-1}} @if($comment->likes->count-1 > 1000) k @endif others @endif</span>
+                                                                <span class="like-details" id="like-details-{{$comment->id}}" data-toggle="modal" data-target="#likes-modal-{{$comment->id}}">You @if($comment->likes->count-1 != 0) and {{$comment->likes->count-1}} @if($comment->likes->count-1 > 1000) k @endif others @endif</span>
                                                             </div>
                                                         </div>
                                                     @else
@@ -1105,7 +1256,7 @@
                                                                 <span class="reaction-btn-text" id="reaction-btn-text-{{$comment->id}}">
                                                                     <div><i class="far fa-thumbs-up"></i>
                                                                         @if($comment->likes->count > 0)
-                                                                            <span>
+                                                                            <span data-toggle="modal" data-target="#likes-modal-{{$comment->id}}">
                                                                                 {{$comment->likes->count}}
                                                                             </span>
                                                                         @endif
@@ -1132,7 +1283,120 @@
                                                                   <span class="like-btn-like"></span>
                                                                     <!-- given emotions like, wow, sad (default:Like) -->
                                                                 </span>
-                                                                <span class="like-details" id="like-details-{{$comment->id}}">@if($comment->likes->count-1 > 0) and {{$comment->likes->count-1}} @if($comment->likes->count-1 > 1000) k @endif others @endif</span>
+                                                                <span class="like-details" id="like-details-{{$comment->id}}" data-toggle="modal" data-target="#likes-modal-{{$comment->id}}">@if($comment->likes->count-1 > 0) and {{$comment->likes->count-1}} @if($comment->likes->count-1 > 1000) k @endif others @endif</span>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                    @if($comment->likes->count > 0)
+                                                        <div class="likes-modal">
+                                                            <div class="modal fade" id="likes-modal-{{$comment->id}}" tabindex="-1" aria-hidden="true">
+                                                                <div class="modal-dialog" style="margin-top: 10vh;">
+                                                                    <div class="modal-content">
+                                                                        <div class="modal-header d-flex justify-content-between">
+                                                                            <span></span>
+                                                                            <h5 class="modal-title" id="exampleModalLabel">
+                                                                                Reactions
+                                                                            </h5>
+                                                                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                                                <span aria-hidden="true">&times;</span>
+                                                                            </button>
+                                                                        </div>
+                                                                        <div class="modal-body">
+                                                                            <div class="services-controller m-3 text-left">
+                                                                                <button onclick="filterCommentLikes({{$comment->id}},'all-{{$comment->id}}')" class="btn btn-light active-{{$comment->id}} filter-all-{{$comment->id}} ez-active" id="{{$comment->id}}">
+                                                                                    All
+                                                                                </button>
+                                                                                <button class="btn btn-light active-{{$comment->id}} filter-like-{{$comment->id}}" onclick="filterCommentLikes({{$comment->id}},'like-{{$comment->id}}')" id="{{$comment->id}}">
+                                                                                    like
+                                                                                </button>
+                                                                                <button class="btn btn-light active-{{$comment->id}} filter-love-{{$comment->id}}" onclick="filterCommentLikes({{$comment->id}},'love-{{$comment->id}}')" id="{{$comment->id}}">
+                                                                                    love
+                                                                                </button>
+                                                                                <button class="btn btn-light active-{{$comment->id}} filter-haha-{{$comment->id}}" onclick="filterCommentLikes({{$comment->id}},'haha-{{$comment->id}}')" id="{{$comment->id}}">
+                                                                                    haha
+                                                                                </button>
+                                                                                <button class="btn btn-light active-{{$comment->id}} filter-sad-{{$comment->id}}" onclick="filterCommentLikes({{$comment->id}},'sad-{{$comment->id}}')" id="{{$comment->id}}">
+                                                                                    sad
+                                                                                </button>
+                                                                                <button class="btn btn-light active-{{$comment->id}} filter-angry-{{$comment->id}}" onclick="filterCommentLikes({{$comment->id}},'angry-{{$comment->id}}')" id="{{$comment->id}}">
+                                                                                    angry
+                                                                                </button>
+                                                                            </div>
+                                                                            <div class="likes-container mt-3">
+                                                                                <div class="filter-{{$comment->id}} like-{{$comment->id}}">
+                                                                                    @foreach($comment->like_stat as $like_emoji)
+                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                            @if($like_emoji->publisher->personal_image != null)
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
+                                                                                            @else
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                            @endif
+                                                                                            <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                                                                        </div>
+                                                                                    @endforeach
+                                                                                </div>
+                                                                                <div class="filter-{{$comment->id}} love-{{$comment->id}}">
+                                                                                    @foreach($comment->love_stat as $love)
+                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                            @if($love->publisher->personal_image != null)
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
+                                                                                            @else
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                            @endif
+                                                                                            <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
+                                                                                        </div>
+                                                                                    @endforeach
+                                                                                </div>
+                                                                                <div class="filter-{{$comment->id}} haha-{{$comment->id}}">
+                                                                                    @foreach($comment->haha_stat as $haha)
+                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                            @if($haha->publisher->personal_image != null)
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
+                                                                                            @else
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                            @endif
+                                                                                            <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
+                                                                                        </div>
+                                                                                    @endforeach
+                                                                                </div>
+                                                                                <div class="filter-{{$comment->id}} sad-{{$comment->id}}">
+                                                                                    @foreach($comment->sad_stat as $sad)
+                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                            @if($sad->publisher->personal_image != null)
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
+                                                                                            @else
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                            @endif
+                                                                                            <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
+                                                                                        </div>
+                                                                                    @endforeach
+                                                                                </div>
+                                                                                <div class="filter-{{$comment->id}} angry-{{$comment->id}}">
+                                                                                    @foreach($comment->angry_stat as $angry)
+                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                            @if($angry->publisher->personal_image != null)
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
+                                                                                            @else
+                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                            @endif
+                                                                                            <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
+                                                                                        </div>
+                                                                                    @endforeach
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     @endif
@@ -1227,7 +1491,7 @@
                                                                                             <span class="reaction-btn-text" id="reaction-btn-text-{{$reply->id}}">
                                                                                                 <div><i class="far fa-thumbs-up"></i>
                                                                                                     @if($reply->likes->count > 0)
-                                                                                                        <span>
+                                                                                                        <span data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">
                                                                                                             {{$reply->likes->count}}
                                                                                                         </span>
                                                                                                     @endif
@@ -1254,7 +1518,120 @@
                                                                                                   <span class="like-btn-like"></span>
                                                                                                     <!-- given emotions like, wow, sad (default:Like) -->
                                                                                                 </span>
-                                                                                                <span class="like-details" id="like-details-{{$reply->id}}">@if($reply->likes->count-1 > 0) and {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) k @endif others @endif</span>
+                                                                                                <span class="like-details" id="like-details-{{$reply->id}}" data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">@if($reply->likes->count-1 > 0) and {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) k @endif others @endif</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                    @endif
+                                                                                    @if($reply->likes->count > 0)
+                                                                                        <div class="likes-modal">
+                                                                                            <div class="modal fade" id="likes-modal-{{$reply->id}}" tabindex="-1" aria-hidden="true">
+                                                                                                <div class="modal-dialog" style="margin-top: 10vh;">
+                                                                                                    <div class="modal-content">
+                                                                                                        <div class="modal-header d-flex justify-content-between">
+                                                                                                            <span></span>
+                                                                                                            <h5 class="modal-title" id="exampleModalLabel">
+                                                                                                                Reactions
+                                                                                                            </h5>
+                                                                                                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                                                                                <span aria-hidden="true">&times;</span>
+                                                                                                            </button>
+                                                                                                        </div>
+                                                                                                        <div class="modal-body">
+                                                                                                            <div class="services-controller m-3 text-left">
+                                                                                                                <button onclick="filterReplyLikes({{$reply->id}},'all-{{$reply->id}}')" class="btn btn-light active-{{$reply->id}} filter-all-{{$reply->id}} ez-active" id="{{$reply->id}}">
+                                                                                                                    All
+                                                                                                                </button>
+                                                                                                                <button class="btn btn-light active-{{$reply->id}} filter-like-{{$reply->id}}" onclick="filterReplyLikes({{$reply->id}},'like-{{$reply->id}}')" id="{{$reply->id}}">
+                                                                                                                    like
+                                                                                                                </button>
+                                                                                                                <button class="btn btn-light active-{{$reply->id}} filter-love-{{$reply->id}}" onclick="filterReplyLikes({{$reply->id}},'love-{{$reply->id}}')" id="{{$reply->id}}">
+                                                                                                                    love
+                                                                                                                </button>
+                                                                                                                <button class="btn btn-light active-{{$reply->id}} filter-haha-{{$reply->id}}" onclick="filterReplyLikes({{$reply->id}},'haha-{{$reply->id}}')" id="{{$reply->id}}">
+                                                                                                                    haha
+                                                                                                                </button>
+                                                                                                                <button class="btn btn-light active-{{$reply->id}} filter-sad-{{$reply->id}}" onclick="filterReplyLikes({{$reply->id}},'sad-{{$reply->id}}')" id="{{$reply->id}}">
+                                                                                                                    sad
+                                                                                                                </button>
+                                                                                                                <button class="btn btn-light active-{{$reply->id}} filter-angry-{{$reply->id}}" onclick="filterReplyLikes({{$reply->id}},'angry-{{$reply->id}}')" id="{{$reply->id}}">
+                                                                                                                    angry
+                                                                                                                </button>
+                                                                                                            </div>
+                                                                                                            <div class="likes-container mt-3">
+                                                                                                                <div class="filter-{{$reply->id}} like-{{$reply->id}}">
+                                                                                                                    @foreach($reply->like_stat as $like_emoji)
+                                                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                                                            @if($like_emoji->publisher->personal_image != null)
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
+                                                                                                                            @else
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                                                            @endif
+                                                                                                                            <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                                                                                                        </div>
+                                                                                                                    @endforeach
+                                                                                                                </div>
+                                                                                                                <div class="filter-{{$reply->id}} love-{{$reply->id}}">
+                                                                                                                    @foreach($reply->love_stat as $love)
+                                                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                                                            @if($love->publisher->personal_image != null)
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
+                                                                                                                            @else
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                                                            @endif
+                                                                                                                            <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
+                                                                                                                        </div>
+                                                                                                                    @endforeach
+                                                                                                                </div>
+                                                                                                                <div class="filter-{{$reply->id}} haha-{{$reply->id}}">
+                                                                                                                    @foreach($reply->haha_stat as $haha)
+                                                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                                                            @if($haha->publisher->personal_image != null)
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
+                                                                                                                            @else
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                                                            @endif
+                                                                                                                            <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
+                                                                                                                        </div>
+                                                                                                                    @endforeach
+                                                                                                                </div>
+                                                                                                                <div class="filter-{{$reply->id}} sad-{{$reply->id}}">
+                                                                                                                    @foreach($reply->sad_stat as $sad)
+                                                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                                                            @if($sad->publisher->personal_image != null)
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
+                                                                                                                            @else
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                                                            @endif
+                                                                                                                            <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
+                                                                                                                        </div>
+                                                                                                                    @endforeach
+                                                                                                                </div>
+                                                                                                                <div class="filter-{{$reply->id}} angry-{{$reply->id}}">
+                                                                                                                    @foreach($reply->angry_stat as $angry)
+                                                                                                                        <div class="people-info d-flex align-items-center">
+                                                                                                                            @if($angry->publisher->personal_image != null)
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
+                                                                                                                            @else
+                                                                                                                                <img class="profile-figure rounded-circle"
+                                                                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                                                            @endif
+                                                                                                                            <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
+                                                                                                                        </div>
+                                                                                                                    @endforeach
+                                                                                                                </div>
+                                                                                                            </div>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                </div>
                                                                                             </div>
                                                                                         </div>
                                                                                     @endif
@@ -1526,9 +1903,15 @@
                                 @endif
                             @endforeach
                         @endif
+                        <div id="load-comments-{{$post->id}}" data-value="5">
+
+                        </div>
                         <div id="added-comment-{{$post->id}}">
 
                         </div>
+                        @if(isset($another_comments) && $post->comments_count > 5)
+                            <p id="load-comments-message-{{$post->id}}" style="cursor: pointer" onclick="loadComments({{$post->id}})">load more comments</p>
+                        @endif
                     </div>
                     <button type="button" id="comment-submit-btn-{{$post->id}}" onclick="event.preventDefault();
                               addCommentSubmit({{$post->id}})" hidden></button>
@@ -1725,11 +2108,42 @@
                                               >@if($post->mentions != null) {{$post->edit}}@else{{$post->body}}@endif</textarea>
                                                 <div id="menu-edit-{{$post->id}}" class="menu" role="listbox"></div>
                                             </div>
-                                            <!-- Post Images -->
-                                            <div class="post-desc d-flex justify-content-center mt-2">
-                                                <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs" accept="image/*"
-                                                       multiple />
-                                            </div>
+
+                                            @if($post->type == "post")
+                                                <!-- Post Images -->
+                                                <div class="post-desc d-flex justify-content-center mt-2">
+                                                    <input class="form-control w-75 mt-2" type="file" accept=".mpeg,.ogg,.mp4,.webm,.3gp,.mov,.flv,.avi,.wmv,.ts,.jpg,.jpeg,.png,.svg,.gif" name="media[]" id="imgs"
+                                                           multiple />
+                                                </div>
+
+                                                @if(count($post->media) > 0)
+                                                    <p>Media</p>
+                                                    <div class="imgsContainer d-flex flex-wrap">
+                                                        @foreach($post->media as $media)
+                                                            @if($media->mediaType == 'image')
+                                                            <!-- if media img and imgs=1 -->
+                                                                <div class="p-3" style="width: 33%;">
+                                                                    <img src="{{asset('media')}}/{{$media->filename}}" alt="" width="100%">
+                                                                    <div class="w-100 text-center">
+                                                                        <input checked type="checkbox" name="checkedimages[]">
+                                                                    </div>
+                                                                </div>
+                                                            @else
+                                                                <div class="p-3" style="width: 33%;">
+                                                                    <video class="p-1" controls width="100%">
+                                                                        <source src="{{asset('media')}}/{{$media->filename}}" type="video/mp4">
+                                                                        Your browser does not support HTML video.
+                                                                    </video>
+                                                                    <div class="w-100 text-center">
+                                                                        <input checked type="checkbox" value="{{$media->filename}}" name="checkedimages[]">
+                                                                    </div>
+                                                                </div>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+
+                                            @endif
                                             <!-- Add Post Btn -->
                                             <div class="post-add-btn d-flex justify-content-center mt-4">
                                                 <button type="button" onclick="editPostSubmit({{$post->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
