@@ -894,7 +894,7 @@ body {
 
 @media (max-width: 768px) {
     .ez-body #ez-body__center-content .services-container .service {
-        width: 31%;
+        width: 100%;
     }
     .ez-body #ez-body__center-content .services-container .service-modal .modal-body {
         display: -webkit-box;
@@ -1281,13 +1281,13 @@ body {
 }
 .trade-div .call-icon{
     background-color: #fcbc22;
-    width: 60px;
+    width: 62px;
     padding: 5px 10px 5px 10px;
     border-radius: 7px;
     color: white;
 }
 
-.trade-div h3{
+.trade-div h2{
     Margin: 5px 0 5px 0;
 }
 
@@ -1618,8 +1618,20 @@ body {
     color: #ffc107;
 }
 
+.add-service{
+    border-radius: 20px;
+    height: 30px;
+    width: 100px;
+    float: right;
+    margin-right: 40px;
+}
+
 .progress { position:relative; width:100%; }
 
 .bar { background-color: #00ff00; width:0%; height:20px; }
 
 .percent { position:absolute; display:inline-block; left:50%; color: #040608;}
+
+.post-height img{
+     height: 200px;
+}

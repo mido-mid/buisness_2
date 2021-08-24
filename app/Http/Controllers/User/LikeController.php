@@ -61,18 +61,9 @@ class LikeController extends Controller
 
                 if($request->model_type == "comment"){
                     $comment = DB::table('comments')->where('id',$request->model_id)->first();
-                    $comment->publisher = User::find($comment->user_id);
-                    $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-                    $comment->replies = DB::table('comments')->where('model_id',$comment->id)->where('model_type','post')->where('comment_id',$comment->id)->get();
-                    $comment->likes = DB::table('likes')->where('model_id',$comment->id)->where('model_type','comment')->get();
-                    $comment->type = $comment->comment_id != null ? 'reply' : 'comment';
-                    $comment->replies->count = count($comment->replies);
-                    $comment->likes->count = count($comment->likes);
-                    $comment->liked = DB::table('likes')->where('model_id',$comment->id)->where('model_type','comment')->where('senderId',$user->id)->first();
 
-                    if($comment->liked){
-                        $comment->user_react = DB::table('reacts')->where('id',$comment->liked->reactId)->get();
-                    }
+                    $comment = $this->getComment($user,$comment);
+
                     $model = $comment;
 
                     $model_type = "comment";
@@ -80,45 +71,8 @@ class LikeController extends Controller
                 }
                 else{
                     $post = DB::table('posts')->where('id',$request->model_id)->first();
-                    $post->publisher = User::find($post->publisherId);
-                    $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
-                    $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
-                    $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
 
-                    $post->comments = $comments;
-                    $post->likes = $likes;
-                    $post->type = $post->post_id != null ? 'share' : 'post';
-
-                    if ($post->type == 'share'){
-                        $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
-                        if($shared_post->post_id != null) {
-                            $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
-                        }
-                        else{
-                            $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
-                        }
-                    }else{
-                        $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
-                    }
-
-                    $post->comments->count = count($comments);
-                    $post->likes->count = count($likes);
-                    $post->shares = count($shares);
-
-                    $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
-
-                    if($post->liked){
-                        $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
-                    }
-
-                    $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
-
-                    if($post->comments->count > 0) {
-                        foreach ($post->comments as $comment) {
-                            $comment->publisher = User::find($comment->user_id);
-                            $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-                        }
-                    }
+                    $post = $this->getPost($user,$post);
 
                     $model = $post;
 
@@ -136,67 +90,22 @@ class LikeController extends Controller
                 return $sections['liked'];
             }
             else{
+
                 DB::table('likes')->where('id',$liked_before->id)->delete();
 
                 if($request->model_type == "comment"){
                     $comment = DB::table('comments')->where('id',$request->model_id)->first();
-                    $comment->publisher = User::find($comment->user_id);
-                    $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-                    $comment->replies = DB::table('comments')->where('model_id',$comment->id)->where('model_type','post')->where('comment_id',$comment->id)->get();
-                    $comment->likes = DB::table('likes')->where('model_id',$comment->id)->where('model_type','comment')->get();
-                    $comment->type = $comment->comment_id != null ? 'reply' : 'comment';
-                    $comment->replies->count = count($comment->replies);
-                    $comment->likes->count = count($comment->likes);
-                    $comment->liked = DB::table('likes')->where('model_id',$comment->id)->where('model_type','comment')->where('senderId',$user->id)->first();
 
-                    if($comment->liked){
-                        $comment->user_react = DB::table('reacts')->where('id',$comment->liked->reactId)->get();
-                    }
+                    $comment = $this->getComment($user,$comment);
+
                     $model = $comment;
 
                     $model_type = "comment";
                 }
                 else{
                     $post = DB::table('posts')->where('id',$request->model_id)->first();
-                    $post->publisher = User::find($post->publisherId);
-                    $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
-                    $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
-                    $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
 
-                    $post->comments = $comments;
-                    $post->likes = $likes;
-                    $post->type = $post->post_id != null ? 'share' : 'post';
-
-                    if ($post->type == 'share'){
-                        $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
-                        if($shared_post->post_id != null) {
-                            $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
-                        }
-                        else{
-                            $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
-                        }
-                    }else{
-                        $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
-                    }
-
-                    $post->comments->count = count($comments);
-                    $post->likes->count = count($likes);
-                    $post->shares = count($shares);
-
-                    $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
-
-                    if($post->liked){
-                        $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
-                    }
-
-                    $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
-
-                    if($post->comments->count > 0) {
-                        foreach ($post->comments as $comment) {
-                            $comment->publisher = User::find($comment->user_id);
-                            $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-                        }
-                    }
+                    $post = $this->getPost($user,$post);
 
                     $model = $post;
 
@@ -226,63 +135,17 @@ class LikeController extends Controller
 
             if($request->model_type == "comment"){
                 $comment = DB::table('comments')->where('id',$request->model_id)->first();
-                $comment->publisher = User::find($comment->user_id);
-                $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-                $comment->replies = DB::table('comments')->where('model_id',$comment->id)->where('model_type','post')->where('comment_id',$comment->id)->get();
-                $comment->likes = DB::table('likes')->where('model_id',$comment->id)->where('model_type','comment')->get();
-                $comment->type = $comment->comment_id != null ? 'reply' : 'comment';
-                $comment->replies->count = count($comment->replies);
-                $comment->likes->count = count($comment->likes);
-                $comment->liked = DB::table('likes')->where('model_id',$comment->id)->where('model_type','comment')->where('senderId',$user->id)->first();
 
-                if($comment->liked){
-                    $comment->user_react = DB::table('reacts')->where('id',$comment->liked->reactId)->get();
-                }
+                $comment = $this->getComment($user,$comment);
+
                 $model = $comment;
 
                 $model_type = "comment";
             }
             else{
                 $post = DB::table('posts')->where('id',$request->model_id)->first();
-                $post->publisher = User::find($post->publisherId);
-                $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
-                $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
-                $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
 
-                $post->comments = $comments;
-                $post->likes = $likes;
-                $post->type = $post->post_id != null ? 'share' : 'post';
-
-                if ($post->type == 'share'){
-                    $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
-                    if($shared_post->post_id != null) {
-                        $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
-                    }
-                    else{
-                        $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
-                    }
-                }else{
-                    $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
-                }
-
-                $post->comments->count = count($comments);
-                $post->likes->count = count($likes);
-                $post->shares = count($shares);
-
-                $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
-
-                if($post->liked){
-                    $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
-                }
-
-                $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
-
-                if($post->comments->count > 0) {
-                    foreach ($post->comments as $comment) {
-                        $comment->publisher = User::find($comment->user_id);
-                        $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
-                    }
-                }
+                $post = $this->getPost($user,$post);
 
                 $model = $post;
 
@@ -356,5 +219,120 @@ class LikeController extends Controller
 //            return $this->returnError(402,'error happened');
             return "";
         }
+    }
+
+    private function getComment($user,$comment){
+        $comment->publisher = User::find($comment->user_id);
+        $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
+        $comment->replies = DB::table('comments')->where('model_id',$comment->id)->where('model_type','post')->where('comment_id',$comment->id)->get();
+        $comment->likes = DB::table('likes')->where('model_id',$comment->id)->where('model_type','comment')->get();
+        $comment->type = $comment->comment_id != null ? 'reply' : 'comment';
+        $comment->replies->count = count($comment->replies);
+        $comment->likes->count = count($comment->likes);
+        $comment->liked = DB::table('likes')->where('model_id',$comment->id)->where('model_type','comment')->where('senderId',$user->id)->first();
+
+        if($comment->liked){
+            $comment->user_react = DB::table('reacts')->where('id',$comment->liked->reactId)->get();
+        }
+
+        if(count($comment->likes) > 0){
+            $like_stat = [];
+            $love_stat = [];
+            $haha_stat = [];
+            $sad_stat = [];
+            $angry_stat = [];
+            foreach ($comment->likes as $like){
+                $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                                                    where likes.reactId = reacts.id
+                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = '. $like->senderId . ' AND
+                                                likes.model_id = '.$comment->id.' AND likes.model_type = "comment"
+                                                '));
+
+                $like->publisher = User::find($like->senderId);
+
+                $stat = '_stat';
+
+                array_push(${$reactname[0]->name.$stat},$like);
+            }
+
+            $comment->like_stat = $like_stat;
+            $comment->love_stat = $love_stat;
+            $comment->haha_stat = $haha_stat;
+            $comment->sad_stat = $sad_stat;
+            $comment->angry_stat = $angry_stat;
+        }
+
+        return $comment;
+    }
+
+    private function getPost($user,$post){
+        $post->publisher = User::find($post->publisherId);
+        $comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
+        $likes = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->get();
+        $shares = DB::table('posts')->where('post_id',$post->id)->get()->toArray();
+
+        $post->comments = $comments;
+        $post->likes = $likes;
+        $post->type = $post->post_id != null ? 'share' : 'post';
+
+        if ($post->type == 'share'){
+            $shared_post = DB::table('posts')->where('id',$post->post_id)->first();
+            if($shared_post->post_id != null) {
+                $post->media = DB::table('media')->where('model_id',$shared_post->post_id)->where('model_type','post')->get();
+            }
+            else{
+                $post->media = DB::table('media')->where('model_id',$post->post_id)->where('model_type','post')->get();
+            }
+        }else{
+            $post->media = DB::table('media')->where('model_id',$post->id)->where('model_type','post')->get();
+        }
+
+        $post->comments->count = count($comments);
+        $post->likes->count = count($likes);
+        $post->shares = count($shares);
+
+        $post->liked = DB::table('likes')->where('model_id',$post->id)->where('model_type','post')->where('senderId',$user->id)->first();
+
+        if($post->liked){
+            $post->user_react = DB::table('reacts')->where('id',$post->liked->reactId)->get();
+        }
+
+        $post->saved = DB::table('saved_posts')->where('post_id',$post->id)->where('user_id',$user->id)->exists();
+
+        if($post->comments->count > 0) {
+            foreach ($post->comments as $comment) {
+                $comment->publisher = User::find($comment->user_id);
+                $comment->media = DB::table('media')->where('model_id',$comment->id)->where('model_type','comment')->first();
+            }
+        }
+
+        if(count($likes) > 0){
+            $like_stat = [];
+            $love_stat = [];
+            $haha_stat = [];
+            $sad_stat = [];
+            $angry_stat = [];
+            foreach ($likes as $like){
+                $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                        where likes.reactId = reacts.id
+                    AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = '. $like->senderId . ' AND
+                    likes.model_id = '.$post->id.' AND likes.model_type = "post"
+                    '));
+
+                $like->publisher = User::find($like->senderId);
+
+                $stat = '_stat';
+
+                array_push(${$reactname[0]->name.$stat},$like);
+            }
+
+            $post->like_stat = $like_stat;
+            $post->love_stat = $love_stat;
+            $post->haha_stat = $haha_stat;
+            $post->sad_stat = $sad_stat;
+            $post->angry_stat = $angry_stat;
+        }
+
+        return $post;
     }
 }

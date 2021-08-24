@@ -3,9 +3,9 @@
 @section('content')
     <section id="ez-body__center-content" class="col-lg-10 mt-3">
         <div class="search-bar d-flex justify-content-center">
-            <input type="text" placeholder="Search" class="search-input w-75"/>
+            <input type="text" placeholder="Search" class="search-input w-75" id="search-categories" onkeyup="searchCategoriesSubmit();"/>
         </div>
-        <div class="services-container d-flex flex-wrap mt-3">
+        <div class="services-container d-flex flex-wrap mt-3" id="load-categories">
             @if(count($categories) > 0)
                 @foreach($categories as $category)
                     <div class="service card m-2">
@@ -27,7 +27,6 @@
                         </a>
                     </div>
                 @endforeach
-
             @else
                 <div class="col-md-8">
                     <div class="card">

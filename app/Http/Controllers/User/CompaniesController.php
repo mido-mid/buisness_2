@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class CompaniesController extends Controller
@@ -18,14 +19,14 @@ class CompaniesController extends Controller
     {
         //
         $companies = DB::select(DB::raw('
-                            select * from packaging_companies where packaging_companies.stateId = 4 and
-                            packaging_companies.country = "'.auth()->user()->country.'"'));
+                                select * from packaging_companies where packaging_companies.stateId = 4 and
+                                packaging_companies.country = "' . auth()->user()->country . '"'));
 
-        foreach ($companies as $company){
+        foreach ($companies as $company) {
             $phones = DB::select(DB::raw('
-                                select packaging_companies_phones.phoneNumber from packaging_companies_phones
-                                where packaging_companies_phones.packaging_company_id =
-                                '.$company->id));
+                                    select packaging_companies_phones.phoneNumber from packaging_companies_phones
+                                    where packaging_companies_phones.packaging_company_id =
+                                    ' . $company->id));
 
             $company->phones = $phones;
         }
@@ -97,5 +98,47 @@ class CompaniesController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+
+    public function search(Request $request,$search_param)
+    {
+        if($search_param != "null") {
+
+            $lang = App::getlocale();
+
+            $companies = DB::select(DB::raw('
+                                select * from packaging_companies where packaging_companies.stateId = 4 and
+                                packaging_companies.name_' . $lang . ' LIKE "%' . $search_param . '%"'));
+
+            foreach ($companies as $company) {
+                $phones = DB::select(DB::raw('
+                                    select packaging_companies_phones.phoneNumber from packaging_companies_phones
+                                    where packaging_companies_phones.packaging_company_id =
+                                    ' . $company->id));
+
+                $company->phones = $phones;
+            }
+        }
+        else {
+            $companies = DB::select(DB::raw('
+                                    select * from packaging_companies where packaging_companies.stateId = 4 and
+                                    packaging_companies.country = "' . auth()->user()->country . '"'));
+
+            foreach ($companies as $company) {
+                $phones = DB::select(DB::raw('
+                                        select packaging_companies_phones.phoneNumber from packaging_companies_phones
+                                        where packaging_companies_phones.packaging_company_id =
+                                        ' . $company->id));
+
+                $company->phones = $phones;
+            }
+        }
+
+        $view = view('includes.partialcompanies', compact('companies'));
+
+        $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+        return $sections['companies'];
     }
 }

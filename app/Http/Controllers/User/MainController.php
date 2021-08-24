@@ -12,6 +12,7 @@ use App\Models\Report;
 use App\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\View;
@@ -164,7 +165,7 @@ class MainController extends Controller
             }
         }
 
-        $expected_users = $this->getExpectedFriends($user, $expected_ids,$friends);
+        $expected_users = $this->getExpectedFriends($user,$expected_ids,$friends);
 
         $posts = $this->getPosts($limit, $offset, $user, $user_follows, $friends_posts, $user_pages, $user_groups, $user_posts, $user_sponsored_posts);
 
@@ -202,10 +203,6 @@ class MainController extends Controller
 
         $countries = DB::table('countries')->get();
 
-        foreach ($friends_info as $info) {
-            $info->name = explode(' ', $info->name)[0];
-        }
-
         $another_comments = 'exist';
 
 
@@ -230,7 +227,7 @@ class MainController extends Controller
     }
 
 
-    public function getPosts($limit, $offset, $user, $user_follows, $friends_posts, $user_pages, $user_groups, $user_posts, $user_sponsored_posts)
+    private function getPosts($limit, $offset, $user, $user_follows, $friends_posts, $user_pages, $user_groups, $user_posts, $user_sponsored_posts)
     {
 
         $pages_posts = [];
@@ -333,13 +330,13 @@ class MainController extends Controller
         shuffle($posts);
 
         foreach ($posts as $post) {
-
             if ($post->mentions != null) {
                 $post->edit = $post->body;
                 $mentions = explode(',', $post->mentions);
                 foreach ($mentions as $mention) {
+                    $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                     $post->body = str_replace('@' . $mention,
-                        '<span style="color: #ffc107">' . $mention . '</span>',
+                        '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
                         $post->body);
                 }
             }
@@ -495,8 +492,9 @@ class MainController extends Controller
                             $comment->edit = $comment->body;
                             $mentions = explode(',', $comment->mentions);
                             foreach ($mentions as $mention) {
+                                $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                                 $comment->body = str_replace('@' . $mention,
-                                    '<span style="color: #ffc107">' . $mention . '</span>',
+                                    '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
                                     $comment->body);
                             }
                         }
@@ -551,8 +549,9 @@ class MainController extends Controller
                                         $reply->edit = $reply->body;
                                         $mentions = explode(',', $reply->mentions);
                                         foreach ($mentions as $mention) {
+                                            $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                                             $reply->body = str_replace('@' . $mention,
-                                                '<span style="color: #ffc107">' . $mention . '</span>',
+                                                '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
                                                 $reply->body);
                                         }
                                     }
@@ -603,7 +602,7 @@ class MainController extends Controller
         return $posts;
     }
 
-    public function getStories($user,$limit,$offset,$ajax_request = false)
+    private function getStories($user,$limit,$offset,$ajax_request = false)
     {
 
         $friends_stories = [];
@@ -745,6 +744,16 @@ class MainController extends Controller
 //public posts having same interest of user
         $expected_posts = DB::table('posts')->whereIn('categoryId', $user_interests_array)->where('publisherId', '!=', $user->id)->where('privacyId', 1)->where('postTypeId', 2)->whereNull(['post_id', 'page_id', 'group_id'])->limit(3)->get();
         foreach ($expected_posts as $post) {
+            if ($post->mentions != null) {
+                $post->edit = $post->body;
+                $mentions = explode(',', $post->mentions);
+                foreach ($mentions as $mention) {
+                    $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                    $post->body = str_replace('@' . $mention,
+                        '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                        $post->body);
+                }
+            }
             $post->publisher = User::find($post->publisherId);
             $post->media = DB::table('media')->where('model_id', $post->id)->where('model_type', 'post')->get();
         }
@@ -860,8 +869,9 @@ class MainController extends Controller
                         $comment->edit = $comment->body;
                         $mentions = explode(',', $comment->mentions);
                         foreach ($mentions as $mention) {
+                            $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                             $comment->body = str_replace('@' . $mention,
-                                '<span style="color: #ffc107">' . $mention . '</span>',
+                                '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
                                 $comment->body);
                         }
                     }
@@ -916,8 +926,9 @@ class MainController extends Controller
                                     $reply->edit = $reply->body;
                                     $mentions = explode(',', $reply->mentions);
                                     foreach ($mentions as $mention) {
+                                        $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                                         $reply->body = str_replace('@' . $mention,
-                                            '<span style="color: #ffc107">' . $mention . '</span>',
+                                            '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
                                             $reply->body);
                                     }
                                 }
@@ -1013,6 +1024,64 @@ class MainController extends Controller
             ]);
         }
 
+    }
+
+    public function search(Request $request,$type,$search_param)
+    {
+        if($search_param != "null") {
+
+            if($type == 'groups'){
+
+                $groups = DB::select(DB::raw('
+                                select * from groups where groups.name LIKE "%' . $search_param . '%"'));
+
+                foreach ($groups as $group) {
+                    $group_members_count = DB::select(DB::raw('select count(group_members.id) as count from group_members
+                        where group_members.group_id =' . $group->id . ' and group_members.stateId = 2'
+                    ))[0]->count;
+
+                    $group->members = $group_members_count;
+                }
+
+                $view = view('includes.partialgroups', compact('groups'));
+
+                $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+                return $sections['groups'];
+            }
+            elseif ($type == 'pages'){
+                $pages = DB::select(DB::raw('
+                                select * from pages where pages.name LIKE "%' . $search_param . '%"'));
+
+                foreach ($pages as $page) {
+                    $page_likes_count = DB::select(DB::raw('select count(user_pages.id) as count from user_pages
+                        where user_pages.page_id =' . $page->id
+                    ))[0]->count;
+
+                    $page->members = $page_likes_count;
+                }
+
+                $view = view('includes.partialpages', compact('pages'));
+
+                $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+                return $sections['pages'];
+            }
+            else{
+                $users = DB::select(DB::raw('
+                                select * from users where users.name LIKE "%' . $search_param . '%"'));
+
+                $view = view('includes.partialusers', compact('users'));
+
+                $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+                return $sections['users'];
+            }
+        }
+        else {
+            $home = $this->index($request,5,0);
+            return $home;
+        }
     }
 
 }

@@ -16,6 +16,7 @@ let savePostSubmit = (id) => {
             }
             else{
                 $('#save-post-flag-' + id).attr('value',0);
+                $('.saved-post-' + id).remove();
             }
 
         },
@@ -108,9 +109,21 @@ let addPostSubmit = () => {
         cache: false,
         processData: false,
         contentType: false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $('#add-post-modal').modal('hide');
+                    $('#progress-modal').modal('show');
+                    $('#status').html('<b> Uploading -> ' + (Math.round(percentComplete * 100)) + '% </b>');
+                }
+            }, false);
+            return xhr;
+        },
         success: function (data) {
             var div = document.getElementById('addedpost');
-            $('#add-post-modal').modal('hide');
+            $('#progress-modal').modal('hide');
             $('#success-modal').modal('show');
             $('#success-modal-message').text("post created successfully");
             div.innerHTML = data + div.innerHTML;
@@ -133,9 +146,21 @@ let editPostSubmit = (id) => {
         cache: false,
         processData: false,
         contentType: false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $('#edit-post-modal-'+ id).modal('hide');
+                    $('#progress-modal').modal('show');
+                    $('#status').html('<b> Uploading -> ' + (Math.round(percentComplete * 100)) + '% </b>');
+                }
+            }, false);
+            return xhr;
+        },
         success: function (data) {
             var div = document.getElementById('post-' + id);
-            $('#edit-post-modal-'+ id).modal('hide');
+            $('#progress-modal').modal('hide');
             $('#success-modal').modal('show');
             $('#success-modal-message').text("post edited successfully");
             div.classList.remove('post-container','bg-white','mt-3','p-3');
@@ -207,8 +232,20 @@ let addCommentSubmit = (id) => {
         cache: false,
         processData: false,
         contentType: false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $('#progress-modal').modal('show');
+                    $('#status').html('<b> Uploading -> ' + (Math.round(percentComplete * 100)) + '% </b>');
+                }
+            }, false);
+            return xhr;
+        },
         success: function (data) {
-            console.log(data)
+            $('#progress-modal').modal('hide');
+            $('#img-div-comment-'+id).css('display','none');
             var div = document.getElementById('added-comment-' + id);
             if(parseInt($('#comment-count-' + id).text()) > 0) {
                 $('#comment-count-' + id).text(parseInt($('#comment-count-' + id).text()) + 1);
@@ -234,7 +271,19 @@ let editCommentSubmit = (id) => {
         cache: false,
         processData: false,
         contentType: false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $('#progress-modal').modal('show');
+                    $('#status').html('<b> Uploading -> ' + (Math.round(percentComplete * 100)) + '% </b>');
+                }
+            }, false);
+            return xhr;
+        },
         success: function (data) {
+            $('#progress-modal').modal('hide');
             var div = document.getElementById('comment-' + id);
             div.classList.remove('comment','d-flex','justify-content-between');
             div.innerHTML = data;
@@ -322,7 +371,20 @@ let addReplySubmit = (id,post_id) => {
         cache: false,
         processData: false,
         contentType: false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $('#progress-modal').modal('show');
+                    $('#status').html('<b> Uploading -> ' + (Math.round(percentComplete * 100)) + '% </b>');
+                }
+            }, false);
+            return xhr;
+        },
         success: function (data) {
+            $('#progress-modal').modal('hide');
+            $('#img-div-reply-'+id).css('display','none');
             var div = document.getElementById('added-reply-' + id);
             console.log(parseInt($('#comment-count-' + post_id).text()));
             if(parseInt($('#comment-count-' + post_id).text()) > 0) {
@@ -350,7 +412,19 @@ let editReplySubmit = (id) => {
         cache: false,
         processData: false,
         contentType: false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $('#progress-modal').modal('show');
+                    $('#status').html('<b> Uploading -> ' + (Math.round(percentComplete * 100)) + '% </b>');
+                }
+            }, false);
+            return xhr;
+        },
         success: function (data) {
+            $('#progress-modal').modal('hide');
             var div = document.getElementById('reply-' + id);
             div.classList.remove('comment','d-flex','justify-content-between');
             div.innerHTML = data;
@@ -450,9 +524,21 @@ let addStorySubmit = (publisher_id) => {
         cache: false,
         processData: false,
         contentType: false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $('#add-story-modal').modal('hide');
+                    $('#progress-modal').modal('show');
+                    $('#status').html('<b> Uploading -> ' + (Math.round(percentComplete * 100)) + '% </b>');
+                }
+            }, false);
+            return xhr;
+        },
         success: function (data) {
+            $('#progress-modal').modal('hide');
             var div = document.getElementById('show-story-modal-' + publisher_id);
-            $('#add-story-modal').modal('hide');
             $('#success-modal').modal('show');
             $('#success-modal-message').text("story added successfully");
             div.innerHTML = data;
@@ -539,14 +625,27 @@ let addServiceSubmit = () => {
         cache: false,
         processData: false,
         contentType: false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $('#add-service-modal').modal('hide');
+                    $('#progress-modal').modal('show');
+                    $('#status').html('<b> Uploading -> ' + (Math.round(percentComplete * 100)) + '% </b>');
+                }
+            }, false);
+            return xhr;
+        },
         success: function (data) {
-            var div = document.getElementById('addedservice');
-            $('#add-service-modal').modal('hide');
+            $('#progress-modal').modal('show');
+            var div = document.getElementById('all-services');
             $('#success-modal').modal('show');
             $('#success-modal-message').text("service created successfully");
             div.innerHTML = data + div.innerHTML;
-            $('#added-service-div').addClass('service card m-2');
             $('#no-service').css('display','none');
+            var added_div = document.getElementById('added-service');
+            added_div.classList.add('service','card','m-2');
         },
         error: function (data) {
             console.log(data.responseText);
@@ -566,8 +665,20 @@ let editServiceSubmit = (id) => {
         cache: false,
         processData: false,
         contentType: false,
+        xhr: function() {
+            var xhr = new window.XMLHttpRequest();
+            xhr.upload.addEventListener("progress", function(evt) {
+                if (evt.lengthComputable) {
+                    var percentComplete = evt.loaded / evt.total;
+                    $('#edit-service-modal-'+ id).modal('hide');
+                    $('#progress-modal').modal('show');
+                    $('#status').html('<b> Uploading -> ' + (Math.round(percentComplete * 100)) + '% </b>');
+                }
+            }, false);
+            return xhr;
+        },
         success: function (data) {
-            $('#edit-service-modal-'+ id).modal('hide');
+            $('#progress-modal').modal('hide');
             $('#success-modal').modal('show');
             $('#success-modal-message').text("service edited successfully");
             $('.service-id-' + id).html(data);
@@ -695,6 +806,134 @@ let loadComments = (post_id) => {
         action = 'inactive';
         loadData(limit, start);
     }
+}
+
+
+let searchCompaniesSubmit = () => {
+
+    var value = $('#search-companies').val();
+
+    if(document.getElementById("search-companies").value.length == 0){
+        value = null;
+    }
+
+    console.log(value);
+
+    $.ajax({
+        url:"search/companies/"+value,
+        type: 'GET',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success:function(data)
+        {
+            $('#load-companies').html(data);
+        },
+        error: function (data) {
+            console.log(data.responseText);
+        }
+    });
+
+}
+
+
+let searchCategoriesSubmit = () => {
+
+    var value = $('#search-categories').val();
+
+    if(document.getElementById("search-categories").value.length == 0){
+        value = null;
+    }
+
+    $.ajax({
+        url:"search/categories/"+value,
+        type: 'GET',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success:function(data)
+        {
+            console.log(data);
+            $('#load-categories').html(data);
+        },
+        error: function (data) {
+            console.log(data.responseText);
+        }
+    });
+
+}
+
+let searchServicesSubmit = () => {
+
+    var value = $('#search-services').val();
+
+    if(document.getElementById("search-services").value.length == 0){
+        value = null;
+    }
+
+    $.ajax({
+        url:"search/services/"+value,
+        type: 'GET',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success:function(data)
+        {
+            $('#load-services').html(data);
+        },
+        error: function (data) {
+            console.log(data.responseText);
+        }
+    });
+
+}
+
+let readURL = (id,input,type) => {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+
+            $('#img-div-'+type+'-'+id).css('display','block');
+            $('#img-'+type+'-'+id)
+                .attr('src', e.target.result)
+                .width(150)
+                .height(200);
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+let homeSearchSubmit = () => {
+
+    var value = $('#home-search').val();
+    var type = $('#search_type').val();
+
+    if(document.getElementById("home-search").value.length == 0){
+        value = null;
+    }
+
+    $.ajax({
+        url:"search/"+type+'/'+value,
+        type: 'GET',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success:function(data)
+        {
+            if(value != null){
+                $('#search-loading').css('display','none');
+            }
+            else{
+                $('#search-loading').css('display','block');
+            }
+            $('#home-search-results').html(data);
+        },
+        error: function (data) {
+            console.log(data.responseText);
+        }
+    });
 }
 
 
@@ -922,20 +1161,35 @@ const users = JSON.parse(window.users.user);
 
 const resolveFn = prefix => prefix === ''
     ? users
-    : users.filter(user => user.name.startsWith(prefix))
+    : users.filter(user => user.username.startsWith(prefix))
 
-const replaceFn = (user, trigger) => `${trigger}${user.name} `
+const replaceFn = (user, trigger) => `${trigger}${user.username} `
 
 const menuItemFn = (user, setItem, selected) => {
     const div = document.createElement('div')
+    var image = null;
     div.setAttribute('role', 'option')
-    div.className = 'menu-item'
+    div.className = 'item-'+user.id
+    div.classList.add('menu-item')
     if (selected) {
         div.classList.add('selected')
         div.setAttribute('aria-selected', '')
     }
-    div.textContent = user.name
     div.onclick = setItem
+
+    if(user.image != null){
+        image = 'http://127.0.0.1:8000/media/'+user.image;
+    }
+    else {
+        image = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80";
+    }
+
+    div.innerHTML = '                                                                            <div class="people-info d-flex align-items-center">\n' +
+        '                                                                                <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"\n' +
+        '                                                                                         src="'+image+'"\n' +
+        '                                                                                         alt="User Profile Pic">\n' +
+        '                                                                                <p class="mb-0 ml-3"><b>'+user.username+'</b></p>\n' +
+        '                                                                            </div>'
     return div
 }
 

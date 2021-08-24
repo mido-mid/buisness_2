@@ -14,9 +14,9 @@ use App\Models\React;
 use App\Models\State;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Ratchet\App;
 
 class ServiceController extends Controller
 {
@@ -223,7 +223,7 @@ class ServiceController extends Controller
             'body' => ['required'],
             'price' => ['nullable','numeric'],
             'media' => 'nullable',
-            'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif|max:100040',
+            'media.*' => 'mimes:jpg,jpeg,png,svg,gif|max:100040',
             'category_id' => 'required|integer',
             'country' => 'required|string'
         ];
@@ -235,6 +235,8 @@ class ServiceController extends Controller
         }
 
         $price =  $request->price != null ? $request->price : 0;
+
+
 
         if($service){
 
@@ -248,6 +250,32 @@ class ServiceController extends Controller
                 'publisherId' => $user->id,
                 'categoryId' => $request->category_id,
             ]);
+
+
+            $medias = [];
+
+            $service_media = DB::table('media')->where('model_id', $service_id)->get()->toArray();
+
+            foreach ($service_media as $media){
+                array_push($medias,$media->filename);
+            }
+
+            if ($request->has('checkedimages')){
+                $checkedimages = $request->input('checkedimages');
+            }
+            else{
+                $checkedimages = [];
+            }
+
+            $deleted_media = array_diff($medias, $checkedimages);
+
+            if (!empty($deleted_media)) {
+                foreach ($deleted_media as $media) {
+                    DB::table('media')->where('filename', $media)->delete();
+                    unlink('media/' . $media);
+                }
+            }
+
 
             if ($request->hasFile('media')) {
 
@@ -268,7 +296,6 @@ class ServiceController extends Controller
                     $filename = $file->getClientOriginalName();
                     $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
 
-
                     if ($file->move('media', $file_to_store)) {
                         Media::create([
                             'filename' => $file_to_store,
@@ -281,29 +308,6 @@ class ServiceController extends Controller
 
             }
 
-            if ($request->has('checkedimages')) {
-
-                $medias = [];
-
-                $post_media = DB::table('media')->where('model_id', $service_id)->get()->toArray();
-
-                foreach ($post_media as $media){
-                    array_push($medias,$media->filename);
-                }
-
-                $checkedimages = $request->input('checkedimages');
-
-
-                $deleted_media = array_diff($medias, $checkedimages);
-
-
-                if (!empty($deleted_media)) {
-                    foreach ($deleted_media as $media) {
-                        DB::table('media')->where('filename', $media)->delete();
-                        unlink('media/' . $media);
-                    }
-                }
-            }
 
             $countries = DB::table('countries')->get();
 
@@ -363,24 +367,22 @@ class ServiceController extends Controller
         return view('User.services.index',compact('categories'));
     }
 
-//    public function follow(Request $request) {
-//
-//        $followerId = $request->followerId;
-//        $followingId = $request->followingId;
-//
-//        $following = DB::table('following')->insert([
-//            'followerId' => $followerId,
-//            'followingId' => $followingId
-//        ]);
-//
-//        return $this->returnSuccessMessage('you are now following this user','');
-//    }
-//
-//    public function postLikes($postId){
-//        $reacts = React::get();
-//        foreach ($reacts as $react){
-//            $likes  []= [$react->name => Likes::where('postId',$postId)->where('reactId',$react->id)->get()];
-//        }
-//        return $likes;
-//    }
+    public function searchCategories(Request $request,$search_param)
+    {
+        if($search_param != "null") {
+
+            $lang = App::getlocale();
+
+            $categories = Category::whereRaw('categories.name_' . $lang . ' LIKE "%' . $search_param . '%"')->where('type','service')->get();
+        }
+        else {
+            $categories = Category::where('type','service')->get();
+        }
+
+        $view = view('includes.partialcategories', compact('categories'));
+
+        $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+        return $sections['categories'];
+    }
 }

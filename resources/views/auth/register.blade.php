@@ -27,6 +27,16 @@
                     @enderror
                 </div>
 
+                <div class="form-group{{ $errors->has('user_name') ? ' has-danger' : '' }}">
+                    <input id="name" type="text" class="form-control @error('user_name') is-invalid @enderror" name="user_name" value="{{ old('user_name') }}" required="please your enter name" placeholder="{{__('user.name')}}" autocomplete="name">
+
+                    @error('user_name')
+                    <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
                 <div class="form-group{{ $errors->has('email') ? ' has-danger' : '' }}">
                     <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required="please your email" placeholder="{{__('user.email')}}">
 

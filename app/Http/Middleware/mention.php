@@ -29,15 +29,11 @@ class mention
         foreach ($friends as $friend){
             $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
 
-            $friend_info = DB::table('users')->select('id','name','cover_image','personal_image')->where('id',$friend_id)->first();
+            $friend_info = DB::table('users')->select('id','name','user_name as username','personal_image as image')->where('id',$friend_id)->first();
 
             array_push($friends_info,$friend_info);
 
         }
-        foreach ($friends_info as $info){
-            $info->name = explode(' ',$info->name)[0];
-        }
-
 
         View::composer('layouts.app', function($view) use ($friends_info)
         {

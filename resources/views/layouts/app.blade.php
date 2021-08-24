@@ -24,9 +24,9 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <!-- Styles -->
-    <link href="{{ asset('css/styles/style.css') }}" rel="stylesheet">
     <link href="{{ asset('css/styles/style-mar.css') }}" rel="stylesheet">
     <link href="{{ asset('css/styles/styleEn.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/styles/style.css') }}" rel="stylesheet">
 
     @if(App::getLocale() == 'ar')
         <link href="{{ asset('css/styles/style.css') }}" rel="stylesheet">
@@ -81,19 +81,19 @@
                         <span>{{ \Str::limit(auth()->user()->name, 10) }}</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{{route('home')}}}"><i class="fas fa-home"></i> Home</a>
+                    <a class="nav-link active" aria-current="page" href="{{route('home')}}"><i class="fas fa-home"></i> Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="{{route('service_categories')}}"><i class="fas fa-hand-holding-usd"></i> Services</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="#"><i class="fas fa-users"></i> Groups</a>
+                    <a class="nav-link active" href="{{route('all-group')}}"><i class="fas fa-users"></i> Groups</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="{{route('companies.index')}}"><i class="fas fa-truck"></i> Delivery</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="#"><i class="far fa-copy"></i> Pages</a>
+                    <a class="nav-link active" href="{{route('all-page')}}"><i class="far fa-copy"></i> Pages</a>
                 </li>
                 <li class="nav-item" style="display: flex; align-items: center">
                     <a class="nav-link active" href="#"><i class="fas fa-bell"></i> Notifications</a>
@@ -104,7 +104,7 @@
                     <span class="badge bg-warning text-dark">3</span>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{route('savedposts')}}}"><i class="fas fa-bookmark"></i> Saved Posts</a>
+                    <a class="nav-link active" href="{{route('saved_posts')}}}"><i class="fas fa-bookmark"></i> Saved Posts</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="#"><i class="fas fa-headset"></i> Support</a>
@@ -149,13 +149,13 @@
                         <a href="{{route('service_categories')}}"><i class="fas fa-hand-holding-usd p"></i> Services</a>
                     </li>
                     <li>
-                        <a href="#"><i class="fas fa-users p"></i> Groups</a>
+                        <a href="{{route('all-group')}}"><i class="fas fa-users p"></i> Groups</a>
                     </li>
                     <li>
                         <a href="{{route('companies.index')}}"><i class="fas fa-truck p"></i> Delivery</a>
                     </li>
                     <li>
-                        <a href="#"><i class="far fa-copy p"></i> Pages</a>
+                        <a href="{{route('all-page')}}"><i class="far fa-copy p"></i> Pages</a>
                     </li>
                     <li style="
                 display: flex;
@@ -173,7 +173,7 @@
                         <span class="badge bg-warning text-dark">3</span>
                     </li>
                     <li>
-                        <a href="#"><i class="fas fa-bookmark p"></i> Saved Posts</a>
+                        <a href="{{route('saved_posts')}}"><i class="fas fa-bookmark p"></i> Saved Posts</a>
                     </li>
                     @if(auth()->user()->type == 1)
                         <li class="nav-item">
@@ -196,28 +196,6 @@
     <script src="{{ asset('js/vue.js') }}"></script>
     <script>
         window.users = @json(['user' => $friends_mention]);
-    </script>
-    <script>
-        $(document).ready(function()
-        {
-            var bar = $('.bar');
-            var percent = $('.percent');
-            $('add-post-form').ajaxForm({
-            beforeSend: function() {
-            var percentVal = '0%';
-            bar.width(percentVal)
-            percent.html(percentVal);
-            },
-            uploadProgress: function(event, position, total, percentComplete) {
-            var percentVal = percentComplete + '%';
-            bar.width(percentVal)
-            percent.html(percentVal);
-            },
-            complete: function(xhr) {
-            alert('File Has Been Uploaded Successfully');
-            }
-            });
-        });
     </script>
     <script>
 
@@ -357,6 +335,216 @@
             });
         });
     </script>
+    <script>
+        $(document).ready(function(){
+            $('.totyAllgroups').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Group_id = splittable[1];
+                var User_id = {{auth::user()->id}};
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/join-group',
+                    method:"get",
+                    data:{requestType:RequestType,group_id:Group_id, user_id:User_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        if(str[0] == 1)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.left')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'leave|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+                        if(str[0] == 2)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.left_request')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'leave|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.join')}}";
+                            document.getElementById(id).classList.remove("button-2");
+                            document.getElementById(id).classList.add("button-4");
+                            document.getElementById(id).id = 'join|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+
+                        // alert(data);
+                    }
+                });
+
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function(){
+            $('.totyAllpages').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Page_id = splittable[1];
+                var User_id = {{auth::user()->id}};
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/join-page',
+                    method:"get",
+                    data:{requestType:RequestType,page_id:Page_id, user_id:User_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        if(str[0] == 1)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.dislike')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'leave|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+                        if(str[0] == 2)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.dislike_request')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'leave|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.like')}}";
+                            document.getElementById(id).classList.remove("button-2");
+                            document.getElementById(id).classList.add("button-4");
+                            document.getElementById(id).id = 'join|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+
+                        // alert(data);
+                    }
+                });
+
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function(){
+            $('.toty2').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Page_id = splittable[1];
+                var User_id = {{auth::user()->id}};
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/join-page',
+                    method:"get",
+                    data:{requestType:RequestType,page_id:Page_id, user_id:User_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        if(str[0] == 1)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.dislike')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'leave|'+str[1]+'|2';
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+                        if(str[0] == 2)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.dislike_request')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'leave|'+str[1]+'|2';
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.like')}}";
+                            document.getElementById(id).classList.remove("button-2");
+                            document.getElementById(id).classList.add("button-4");
+                            document.getElementById(id).id = 'join|'+str[1]+'|2';
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+
+                        // alert(data);
+                    }
+                });
+
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function(){
+            $('.toty2').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Group_id = splittable[1];
+                var User_id = {{auth::user()->id}};
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/join-group',
+                    method:"get",
+                    data:{requestType:RequestType,group_id:Group_id, user_id:User_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        if(str[0] == 1)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.left')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'leave|'+str[1]+'|2';
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+                        if(str[0] == 2)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.left_request')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'leave|'+str[1]+'|2';
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.join')}}";
+                            document.getElementById(id).classList.remove("button-2");
+                            document.getElementById(id).classList.add("button-4");
+                            document.getElementById(id).id = 'join|'+str[1]+'|2';
+                            document.getElementById(str[1]).textContent = str[2];
+                        }
+
+                        // alert(data);
+                    }
+                });
+
+            });
+        });
+    </script>
+    <script src="https://www.dukelearntoprogram.com/course1/common/js/image/SimpleImage.js"></script>
     <script src="{{ asset('js/script.js') }}"></script>
     <!-- FONT AWESOME -->
     <script src="https://kit.fontawesome.com/5d2df7d4f7.js"></script>

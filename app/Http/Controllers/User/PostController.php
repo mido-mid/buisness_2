@@ -75,7 +75,7 @@ class PostController extends Controller
         if (count($mentions[0]) > 0) {
             foreach ($mentions[0] as $mention) {
                 $user_name = str_replace('@', '', $mention);
-                $user_exist = DB::table('users')->whereRaw("name like '$user_name%'")->exists();
+                $user_exist = DB::table('users')->whereRaw("user_name like '$user_name%'")->exists();
                 if ($user_exist) {
                     array_push($user_mentions, $user_name);
                 }
@@ -176,7 +176,13 @@ class PostController extends Controller
 
             $posts[] = $post;
 
-            $view = view('includes.partialpost', compact('posts', 'privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
+            if($request->group_id){
+                $group = 'exist';
+                $view = view('includes.partialpost', compact('posts','group','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
+            }
+            else{
+                $view = view('includes.partialpost', compact('posts','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
+            }
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
@@ -195,6 +201,103 @@ class PostController extends Controller
     public function show($id)
     {
         //
+        $post = Post::find($id);
+
+        $user = auth()->user();
+
+        $user_groups_ids = [];
+
+        $user_pages_ids = [];
+
+        $main = new MainController();
+
+        $privacy = DB::table('privacy_type')->get();
+
+        $categories = DB::table('categories')->where('type', 'post')->get();
+
+        $times = DB::table('sponsored_time')->get();
+
+        $reaches = DB::table('sponsored_reach')->get();
+
+        $ages = DB::table('sponsored_ages')->get();
+
+        $reacts = DB::table('reacts')->get();
+
+        $cities = DB::table('cities')->get();
+
+        $countries = DB::table('countries')->get();
+
+        $friends_info = [];
+
+        // friends posts he follows and are public and in groups you are in and in pages you liked
+        $friends = DB::table('friendships')->where(function ($q) use ($user){
+            $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+        })->where('stateId',2)->get();
+
+        foreach ($friends as $friend){
+            $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
+
+            $friend_info = DB::table('users')->select('id','name','cover_image','personal_image')->where('id',$friend_id)->first();
+
+            array_push($friends_info,$friend_info);
+
+        }
+        foreach ($friends_info as $info){
+            $info->name = explode(' ',$info->name)[0];
+        }
+
+        $user_groups = DB::select(DB::raw('select groups.*,group_members.stateId from groups,group_members
+                        where group_members.group_id = groups.id
+                        AND group_members.user_id = ' . $user->id . ' and group_members.stateId in (2,3)'));
+
+        $user_pages = DB::select(DB::raw('select pages.* from pages,user_pages
+                        where user_pages.page_id = pages.id
+                        AND user_pages.user_id = ' . $user->id));
+
+        foreach ($user_groups as $group) {
+            if ($group->stateId == 2) {
+                $group_posts = DB::table('posts')->where('group_id', $group->id)->get();
+                foreach ($group_posts as $post) {
+                    $post->reported = DB::table('reports')->where('user_id', $user->id)
+                        ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+                    if ($post->reported == false) {
+                        $post->type = $post->post_id == null ? "post" : "share";
+                        array_push($groups_posts, $post);
+                    }
+                }
+            }
+            array_push($user_groups_ids, $group->id);
+        }
+
+        foreach ($user_pages as $page) {
+            $page_posts = DB::table('posts')->where('page_id', $page->id)->get();
+            array_push($user_pages_ids, $page->id);
+            foreach ($page_posts as $post) {
+                $post->type = $post->post_id == null ? "post" : "share";
+                array_push($pages_posts, $post);
+            }
+        }
+
+
+        $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
+                        where user_categories.categoryId = categories.id
+                        AND user_categories.userId =' . $user->id . ' and categories.type = "post"'));
+
+        $user_interests_array = [];
+
+        foreach ($user_interests as $interest) {
+            array_push($user_interests_array, $interest->id);
+        }
+
+        $expected_groups = $main->getExpectedGroups($user_interests_array, $user_groups_ids);
+
+        $expected_pages = $main->getExpectedPages($user_interests_array, $user_pages_ids);
+
+        $another_comments = 'exist';
+
+        $post = $this->getPost($user,$post);
+
+        return view('User.posts.show', compact('post','expected_groups','expected_pages','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info','another_comments'));
     }
 
     /**
@@ -245,7 +348,7 @@ class PostController extends Controller
             if (count($mentions[0]) > 0) {
                 foreach ($mentions[0] as $mention) {
                     $user_name = str_replace('@', '', $mention);
-                    $user_exist = DB::table('users')->whereRaw("name like '$user_name%'")->exists();
+                    $user_exist = DB::table('users')->whereRaw("user_name like '$user_name%'")->exists();
                     if ($user_exist) {
                         array_push($user_mentions, $user_name);
                     }
@@ -274,6 +377,35 @@ class PostController extends Controller
                 'page_id' => $request->page_id,
                 'post_id' => $request->post_id
             ]);
+
+            if($post->post_id == null) {
+
+                $medias = [];
+
+                $post_media = DB::table('media')->where('model_id', $post_id)->get()->toArray();
+
+                foreach ($post_media as $media) {
+                    array_push($medias, $media->filename);
+                }
+
+                $checkedimages = $request->input('checkedimages');
+
+
+                if ($checkedimages != null){
+                    $deleted_media = array_diff($medias, $checkedimages);
+                }
+                else{
+                    $deleted_media = $medias;
+                }
+
+
+                if (!empty($deleted_media)) {
+                    foreach ($deleted_media as $media) {
+                        DB::table('media')->where('filename', $media)->delete();
+                        unlink('media/' . $media);
+                    }
+                }
+            }
 
 
             if ($request->hasFile('media')) {
@@ -308,29 +440,6 @@ class PostController extends Controller
 
             }
 
-            if ($request->has('checkedimages')) {
-
-                $medias = [];
-
-                $post_media = DB::table('media')->where('model_id', $post_id)->get()->toArray();
-
-                foreach ($post_media as $media){
-                    array_push($medias,$media->filename);
-                }
-
-                $checkedimages = $request->input('checkedimages');
-
-
-                $deleted_media = array_diff($medias, $checkedimages);
-
-
-                if (!empty($deleted_media)) {
-                    foreach ($deleted_media as $media) {
-                        DB::table('media')->where('filename', $media)->delete();
-                        unlink('media/' . $media);
-                    }
-                }
-            }
 
             $privacy = DB::table('privacy_type')->get();
 
@@ -414,40 +523,119 @@ class PostController extends Controller
         //
         $user = auth()->user();
 
+        $groups_posts = [];
+
+        $pages_posts = [];
+
+        $user_groups_ids = [];
+
+        $user_pages_ids = [];
+
+        $main = new MainController();
+
+        $privacy = DB::table('privacy_type')->get();
+
+        $categories = DB::table('categories')->where('type', 'post')->get();
+
+        $times = DB::table('sponsored_time')->get();
+
+        $reaches = DB::table('sponsored_reach')->get();
+
+        $ages = DB::table('sponsored_ages')->get();
+
+        $reacts = DB::table('reacts')->get();
+
+        $cities = DB::table('cities')->get();
+
+        $countries = DB::table('countries')->get();
+
+        $friends_info = [];
+
+        // friends posts he follows and are public and in groups you are in and in pages you liked
+        $friends = DB::table('friendships')->where(function ($q) use ($user){
+            $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+        })->where('stateId',2)->get();
+
+        foreach ($friends as $friend){
+            $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
+
+            $friend_info = DB::table('users')->select('id','name','cover_image','personal_image')->where('id',$friend_id)->first();
+
+            array_push($friends_info,$friend_info);
+
+        }
+        foreach ($friends_info as $info){
+            $info->name = explode(' ',$info->name)[0];
+        }
+
+        $user_sponsored_posts = $main->getSponsoredPosts();
+
         $saved_posts = DB::select(DB::raw('select posts.* from posts,saved_posts
                         where saved_posts.post_id = posts.id
                         AND saved_posts.user_id =' . $user->id));
 
         foreach ($saved_posts as $post) {
-            $comments = DB::table('comments')->where('model_id', $post->id)->where('type', $post->type)->get()->toArray();
-            $likes = DB::table('likes')->where('postId', $post->id)->get()->toArray();
-            $shares = DB::table('posts')->where('post_id', $post->id)->get()->toArray();
-
-            $post->comments = count($comments);
-            $post->likes = count($likes);
-            $post->shares = count($shares);
-            $post->comments_details = $comments;
-            $post->likes_details = $likes;
-
-            $post->publisher = User::find($post->publisherId);
-
-            $post_media = DB::table('media')->where('model_id', $post->id)->where('model_type', 'post')->get();
-
-            if (count($post_media) > 0) {
-                foreach ($post_media as $media) {
-                    array_push($post_media_array, asset('media/' . $media->filename));
+            $post = $this->getPost($user,$post);
+            $post->sponsored = false;
+            foreach ($user_sponsored_posts as $sponsored) {
+                if ($sponsored->id == $post->id) {
+                    $post->sponsored = true;
                 }
             }
-            $post->media = $post_media_array;
         }
 
-        $user_interests = DB::select(DB::raw('select interests.id from categories,user_interests
-                        where user_interests.interest_id = interests.id
-                        AND user_interests.user_id =' . $user->id));
+        $user_groups = DB::select(DB::raw('select groups.*,group_members.stateId from groups,group_members
+                        where group_members.group_id = groups.id
+                        AND group_members.user_id = ' . $user->id . ' and group_members.stateId in (2,3)'));
 
-        $expected_pages = Page::whereIn('interest_id', $user_interests)->limit(3);
+        $user_pages = DB::select(DB::raw('select pages.* from pages,user_pages
+                        where user_pages.page_id = pages.id
+                        AND user_pages.user_id = ' . $user->id));
 
-        return view('User.saved_posts', compact('saved_posts', 'expected_pages'));
+        foreach ($user_groups as $group) {
+            if ($group->stateId == 2) {
+                $group_posts = DB::table('posts')->where('group_id', $group->id)->get();
+                foreach ($group_posts as $post) {
+                    $post->reported = DB::table('reports')->where('user_id', $user->id)
+                        ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+                    if ($post->reported == false) {
+                        $post->type = $post->post_id == null ? "post" : "share";
+                        array_push($groups_posts, $post);
+                    }
+                }
+            }
+            array_push($user_groups_ids, $group->id);
+        }
+
+        foreach ($user_pages as $page) {
+            $page_posts = DB::table('posts')->where('page_id', $page->id)->get();
+            array_push($user_pages_ids, $page->id);
+            foreach ($page_posts as $post) {
+                $post->type = $post->post_id == null ? "post" : "share";
+                array_push($pages_posts, $post);
+            }
+        }
+
+
+        $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
+                        where user_categories.categoryId = categories.id
+                        AND user_categories.userId =' . $user->id . ' and categories.type = "post"'));
+
+        $user_interests_array = [];
+
+        foreach ($user_interests as $interest) {
+            array_push($user_interests_array, $interest->id);
+        }
+
+        $expected_posts = $main->getExpectedPosts($user, $user_interests_array);
+
+        $expected_groups = $main->getExpectedGroups($user_interests_array, $user_groups_ids);
+
+        $expected_pages = $main->getExpectedPages($user_interests_array, $user_pages_ids);
+
+        $another_comments = 'exist';
+
+        return view('User.posts.saved_posts', compact('saved_posts', 'expected_posts','expected_groups','expected_pages','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info','another_comments'));
     }
 
     public function savePost(Request $request)
@@ -532,8 +720,9 @@ class PostController extends Controller
             $post->edit = $post->body;
             $mentions = explode(',', $post->mentions);
             foreach ($mentions as $mention) {
+                $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                 $post->body = str_replace('@' . $mention,
-                    '<span style="color: #ffc107">' . $mention . '</span>',
+                    '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
                     $post->body);
             }
         }

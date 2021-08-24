@@ -5,6 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\GeneralTrait;
 use App\Models\Comment;
+use App\Models\Media;
 use App\Models\Post;
 use App\Notifications\CommentCreated;
 use App\User;
@@ -70,7 +71,7 @@ class CommentController extends Controller
         if(count($mentions[0]) > 0) {
             foreach ($mentions[0] as $mention) {
                 $user_name = str_replace('@', '', $mention);
-                $user_exist = DB::table('users')->whereRaw("name like '$user_name%'")->exists();
+                $user_exist = DB::table('users')->whereRaw("user_name like '$user_name%'")->exists();
                 if($user_exist) {
                     array_push($user_mentions, $user_name);
                 }
@@ -90,6 +91,34 @@ class CommentController extends Controller
 
 
         if($comment){
+
+            if ($request->hasFile('media')) {
+
+                $image_ext = ['jpg', 'png', 'jpeg', 'svg', 'gif','JPG'];
+
+                $file = $request->file('media');
+
+                $fileextension = $file->getClientOriginalExtension();
+
+                if (in_array($fileextension, $image_ext)) {
+                    $mediaType = 'image';
+                } else {
+                    $mediaType = 'video';
+                }
+
+                $filename = $file->getClientOriginalName();
+                $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
+
+                if ($file->move('media', $file_to_store)) {
+                    Media::create([
+                        'filename' => $file_to_store,
+                        'mediaType' => $mediaType,
+                        'model_id' => $comment->id,
+                        'model_type' => "comment"
+                    ]);
+                }
+
+            }
 
             $reacts = DB::table('reacts')->get();
 
@@ -183,7 +212,7 @@ class CommentController extends Controller
             if(count($mentions[0]) > 0) {
                 foreach ($mentions[0] as $mention) {
                     $user_name = str_replace('@', '', $mention);
-                    $user_exist = DB::table('users')->whereRaw("name like '$user_name%'")->exists();
+                    $user_exist = DB::table('users')->whereRaw("user_name like '$user_name%'")->exists();
                     if($user_exist) {
                         array_push($user_mentions, $user_name);
                     }
@@ -200,6 +229,41 @@ class CommentController extends Controller
                 'mentions' => $comment_mentions
             ]);
 
+            if ($request->hasFile('media')) {
+
+                $comment_media = DB::table('media')->where('model_id', $comment_id)->get();
+
+                foreach ($comment_media as $media) {
+                    DB::table('media')->where('filename', $media->filename)->delete();
+                    unlink('media/' . $media->filename);
+                }
+
+                $image_ext = ['jpg', 'png', 'jpeg', 'svg', 'gif', 'JPG'];
+
+                $file = $request->file('media');
+
+                $fileextension = $file->getClientOriginalExtension();
+
+                if (in_array($fileextension, $image_ext)) {
+                    $mediaType = 'image';
+                } else {
+                    $mediaType = 'video';
+                }
+
+                $filename = $file->getClientOriginalName();
+                $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
+
+
+                if ($file->move('media', $file_to_store)) {
+                    Media::create([
+                        'filename' => $file_to_store,
+                        'mediaType' => $mediaType,
+                        'model_id' => $comment->id,
+                        'model_type' => "comment"
+                    ]);
+                }
+            }
+
             $reacts = DB::table('reacts')->get();
 
             $post_comments = DB::table('comments')->where('model_id',$post->id)->where('model_type','post')->get();
@@ -212,14 +276,13 @@ class CommentController extends Controller
                 $reply = $comment;
                 $parent_comment = Comment::find($comment->comment_id);
                 $comment = $parent_comment;
-                $view = view('includes.partialreply', compact('post','comment','reacts'));
+                $view = view('includes.partialreply', compact('post','comment','reply','reacts'));
 
                 $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
                 return $sections['reply'];
             }
             else{
-                $post = $this->getPost($user,$post);
                 $another_comments = 'exist';
                 $comments[] = $comment;
                 $view = view('includes.partialcomment', compact('comments','post','reacts','another_comments'));
@@ -285,8 +348,9 @@ class CommentController extends Controller
             $comment->edit = $comment->body;
             $mentions = explode(',', $comment->mentions);
             foreach ($mentions as $mention) {
+                $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                 $comment->body = str_replace('@' . $mention,
-                    '<span style="color: #ffc107">' . $mention . '</span>',
+                    '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
                     $comment->body);
             }
         }
