@@ -61,7 +61,7 @@
 
                             <div class="show-story-views-modal">
                                 <div class="modal fade" id="show-story-views-modal-{{$inner_story->id}}" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog" style="margin-top: 22vh">
+                                    <div class="modal-dialog" style="margin-top: -10px">
                                         <div class="modal-content">
                                             <div class="modal-header d-flex justify-content-between">
                                                 <h5 class="modal-title" id="exampleModalLabel">

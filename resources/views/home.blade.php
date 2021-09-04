@@ -14,7 +14,8 @@
             </div>
         </div>
 
-        <div class="stories d-flex mt-2" id="stories-scroll">
+        <div id="show-stories">
+            <div class="stories d-flex mt-2" id="stories-scroll">
             <div class="my-story story" data-toggle="modal" data-target="#add-story-modal">
                 @if(auth()->user()->personal_image != null)
                     <img
@@ -228,6 +229,7 @@
                 </div>
             @endforeach
         </div>
+        </div>
 
         <div class="col-12" id="success-message" style="display: none">
             <div class="alert alert-success alert-dismissible fade show" id="success-status" role="alert">
@@ -305,7 +307,7 @@
                                 </div>
                                 <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
                                     <label for="cars">Choose A Category:</label>
-                                    <select id="post-category" name="category_id">
+                                    <select class="js-example-basic-multiple" id="post-category" name="category_id">
                                         @foreach($categories as $category)
                                             @if(App::getlocale() == 'en')
                                                 <option value="{{$category->id}}">{{$category->name_en}}</option>
@@ -362,7 +364,7 @@
                     </div><!-- /.modal-content -->
                 </div><!-- /.modal-dialog -->
             </div><!-- /.modal -->
-            <input type="text" onclick="applySelect2();" placeholder="Add New Post" class="w-100" data-toggle="modal"
+            <input type="text" id="add-post" onclick="applySelect2();" placeholder="Add New Post" class="w-100" data-toggle="modal"
                    data-target="#add-post-modal" />
         </div>
         <div id="addedpost">
@@ -400,13 +402,14 @@
                                     @endif
                                     {{$post->publisher->name}}
                                     </b></a>
-                                @if($post->sponsored)
-                                    <div style="font-size: small">
-                                        <span><i class="fas fa-ad"></i></span>
-                                        sponsored
-                                    </div>
+                            @endif
 
-                                @endif
+                            @if($post->sponsored)
+                                <div style="font-size: small">
+                                    <span><i class="fas fa-ad"></i></span>
+                                    sponsored
+                                </div>
+
                             @endif
 
                             @if($post->tags != null )
@@ -980,108 +983,34 @@
                                                             <button onclick="filterPostLikes({{$post->id}},'all-{{$post->id}}')" class="btn btn-light active-{{$post->id}} filter-all-{{$post->id}} ez-active" id="{{$post->id}}" data-filter="all-{{$post->id}}">
                                                                 All
                                                             </button>
-                                                            @if(count($post->like_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-like-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'like-{{$post->id}}')" id="{{$post->id}}" data-filter="like-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/like.png"/>
-                                                                    <span>{{count($post->like_stat)}}</span>
-                                                                </div>
-                                                            @endif
-                                                            @if(count($post->love_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-love-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'love-{{$post->id}}')" id="{{$post->id}}" data-filter="love-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/love.png"/>
-                                                                    <span>{{count($post->love_stat)}}</span>
-                                                                </div>
-                                                            @endif
-                                                            @if(count($post->haha_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-haha-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'haha-{{$post->id}}')" id="{{$post->id}}" data-filter="haha-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/haha.png"/>
-                                                                    <span>{{count($post->haha_stat)}}</span>
-                                                                </div>
-                                                            @endif
-                                                            @if(count($post->sad_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-sad-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'sad-{{$post->id}}')" id="{{$post->id}}" data-filter="sad-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/sad.png"/>
-                                                                    <span>{{count($post->sad_stat)}}</span>
-                                                                </div>
-                                                            @endif
-                                                            @if(count($post->angry_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-angry-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'angry-{{$post->id}}')" id="{{$post->id}}" data-filter="angry-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/angry.png"/>
-                                                                    <span>{{count($post->angry_stat)}}</span>
-                                                                </div>
-                                                            @endif
+                                                            @foreach($post->reacts_stat as $react_stat)
+                                                                @if(count($react_stat) > 0)
+                                                                    <div class="btn btn-light active-{{$post->id}} filter-{{$react_stat[0]->react_name}}-{{$post->id}}" onclick='filterPostLikes({{$post->id}},"{{$react_stat[0]->react_name}}-{{$post->id}}")' id="{{$post->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$post->id}}">
+                                                                        <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
+                                                                        <span>{{count($react_stat)}}</span>
+                                                                    </div>
+                                                                @endif
+                                                            @endforeach
                                                         </div>
                                                         <div class="likes-container mt-3">
-                                                            <div class="filter-{{$post->id}} like-{{$post->id}}">
-                                                                @foreach($post->like_stat as $like_emoji)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($like_emoji->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                                            @foreach($post->reacts_stat as $react_stat)
+                                                                @if(count($react_stat) > 0)
+                                                                    <div class="filter-{{$post->id}} {{$react_stat[0]->react_name}}-{{$post->id}}">
+                                                                        @foreach($react_stat as $react_emoji)
+                                                                            <div class="people-info d-flex align-items-center">
+                                                                                @if($react_emoji->publisher->personal_image != null)
+                                                                                    <img class="profile-figure rounded-circle"
+                                                                                         src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
+                                                                                @else
+                                                                                    <img class="profile-figure rounded-circle"
+                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                @endif
+                                                                                <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                                                                            </div>
+                                                                        @endforeach
                                                                     </div>
-                                                                @endforeach
-                                                            </div>
-                                                            <div class="filter-{{$post->id}} love-{{$post->id}}">
-                                                                @foreach($post->love_stat as $love)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($love->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                            <div class="filter-{{$post->id}} haha-{{$post->id}}">
-                                                                @foreach($post->haha_stat as $haha)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($haha->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                            <div class="filter-{{$post->id}} sad-{{$post->id}}">
-                                                                @foreach($post->sad_stat as $sad)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($sad->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                            <div class="filter-{{$post->id}} angry-{{$post->id}}">
-                                                                @foreach($post->angry_stat as $angry)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($angry->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
+                                                                @endif
+                                                            @endforeach
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1249,7 +1178,7 @@
                                                                 <span class="reaction-btn">
                                                                 <!-- Default like button -->
                                                                 <span class="reaction-btn-emo like-btn-{{$comment->user_react[0]->name}}" id="reaction-btn-emo-{{$comment->id}}"></span>
-                                                                                <!-- Default like button emotion-->
+                                                                    <!-- Default like button emotion-->
                                                                 <span class="reaction-btn-text reaction-btn-text-{{$comment->user_react[0]->name}} active" onclick="unlikeModelSubmit({{$comment->id}},{{$comment->user_react[0]->id}})" id="reaction-btn-text-{{$comment->id}}">
                                                                     {{$comment->user_react[0]->name}}
                                                                         <form id="unlike-form-{{$comment->id}}-{{$comment->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
@@ -1282,7 +1211,7 @@
                                                                       <span class="like-btn-like"></span>
                                                                         @if($comment->user_react[0]->name != "like")
                                                                             <span class="like-btn-{{$comment->user_react[0]->name}}"></span>
-                                                                        @endif
+                                                                    @endif
                                                                     <!-- given emotions like, wow, sad (default:Like) -->
                                                                     </span>
                                                                     <span class="like-details" id="like-details-{{$comment->id}}" data-toggle="modal" data-target="#likes-modal-{{$comment->id}}">You @if($comment->likes->count-1 != 0) and {{$comment->likes->count-1}} @if($comment->likes->count-1 > 1000) k @endif others @endif</span>
@@ -1293,7 +1222,7 @@
                                                                 <!-- container div for reaction system -->
                                                                 <span class="reaction-btn">
                                                                     <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$comment->id}}" style="display: none"></span>
-                                                                                        <!-- Default like button emotion-->
+                                                                    <!-- Default like button emotion-->
                                                                     <span class="reaction-btn-text" id="reaction-btn-text-{{$comment->id}}">
                                                                         <div><i class="far fa-thumbs-up"></i>
                                                                             @if($comment->likes->count > 0)
@@ -1303,18 +1232,18 @@
                                                                             @endif
                                                                         </div>
                                                                     </span>
-                                                                                        <!-- Default like button text,(Like, wow, sad..) default:Like  -->
+                                                                    <!-- Default like button text,(Like, wow, sad..) default:Like  -->
                                                                     <ul class="emojies-box">
                                                                         @foreach($reacts as $react)
                                                                             <!-- Reaction buttons container-->
-                                                                            <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$comment->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
-                                                                            <form id="like-form-{{$comment->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$comment->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
+                                                                                <form id="like-form-{{$comment->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                                                                 @csrf
                                                                                 <input type="hidden" name="model_id" value="{{$comment->id}}">
                                                                                 <input type="hidden" name="model_type" value="comment">
                                                                                 <input type="hidden" name="reactId" value="{{$react->id}}">
                                                                             </form>
-                                                                        @endforeach
+                                                                            @endforeach
                                                                     </ul>
                                                                 </span>
                                                                 <div class="like-stat" id="like-stat-{{$comment->id}}" style="display: none">
@@ -1344,111 +1273,37 @@
                                                                             </div>
                                                                             <div class="modal-body">
                                                                                 <div class="services-controller m-3 text-left">
-                                                                                    <button onclick="filterPostLikes({{$comment->id}},'all-{{$comment->id}}')" class="btn btn-light active-{{$comment->id}} filter-all-{{$comment->id}} ez-active" id="{{$comment->id}}" data-filter="all-{{$comment->id}}">
+                                                                                    <button onclick="filterPostLikes({{$comment->id}},'all-{{$comment->id}}')" class="btn btn-light active-{{$post->id}} filter-all-{{$comment->id}} ez-active" id="{{$comment->id}}" data-filter="all-{{$comment->id}}">
                                                                                         All
                                                                                     </button>
-                                                                                    @if(count($comment->like_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-like-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'like-{{$comment->id}}')" id="{{$comment->id}}" data-filter="like-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/like.png"/>
-                                                                                            <span>{{count($comment->like_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
-                                                                                    @if(count($comment->love_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-love-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'love-{{$comment->id}}')" id="{{$comment->id}}" data-filter="love-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/love.png"/>
-                                                                                            <span>{{count($comment->love_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
-                                                                                    @if(count($comment->haha_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-haha-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'haha-{{$comment->id}}')" id="{{$comment->id}}" data-filter="haha-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/haha.png"/>
-                                                                                            <span>{{count($comment->haha_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
-                                                                                    @if(count($comment->sad_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-sad-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'sad-{{$comment->id}}')" id="{{$comment->id}}" data-filter="sad-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/sad.png"/>
-                                                                                            <span>{{count($comment->sad_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
-                                                                                    @if(count($comment->angry_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-angry-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'angry-{{$comment->id}}')" id="{{$comment->id}}" data-filter="angry-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/angry.png"/>
-                                                                                            <span>{{count($comment->angry_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
+                                                                                    @foreach($comment->reacts_stat as $react_stat)
+                                                                                        @if(count($react_stat) > 0)
+                                                                                            <div class="btn btn-light active-{{$comment->id}} filter-{{$react_stat[0]->react_name}}-{{$comment->id}}" onclick='filterPostLikes({{$comment->id}},"{{$react_stat[0]->react_name}}-{{$comment->id}}")' id="{{$comment->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$comment->id}}">
+                                                                                                <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
+                                                                                                <span>{{count($react_stat)}}</span>
+                                                                                            </div>
+                                                                                        @endif
+                                                                                    @endforeach
                                                                                 </div>
                                                                                 <div class="likes-container mt-3">
-                                                                                    <div class="filter-{{$comment->id}} like-{{$comment->id}}">
-                                                                                        @foreach($comment->like_stat as $like_emoji)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($like_emoji->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                                                                    @foreach($comment->reacts_stat as $react_stat)
+                                                                                        @if(count($react_stat) > 0)
+                                                                                            <div class="filter-{{$post->id}} {{$react_stat[0]->react_name}}-{{$comment->id}}">
+                                                                                                @foreach($react_stat as $react_emoji)
+                                                                                                    <div class="people-info d-flex align-items-center">
+                                                                                                        @if($react_emoji->publisher->personal_image != null)
+                                                                                                            <img class="profile-figure rounded-circle"
+                                                                                                                 src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
+                                                                                                        @else
+                                                                                                            <img class="profile-figure rounded-circle"
+                                                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                                        @endif
+                                                                                                        <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                                                                                                    </div>
+                                                                                                @endforeach
                                                                                             </div>
-                                                                                        @endforeach
-                                                                                    </div>
-                                                                                    <div class="filter-{{$comment->id}} love-{{$comment->id}}">
-                                                                                        @foreach($comment->love_stat as $love)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($love->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
-                                                                                            </div>
-                                                                                        @endforeach
-                                                                                    </div>
-                                                                                    <div class="filter-{{$comment->id}} haha-{{$comment->id}}">
-                                                                                        @foreach($comment->haha_stat as $haha)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($haha->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
-                                                                                            </div>
-                                                                                        @endforeach
-                                                                                    </div>
-                                                                                    <div class="filter-{{$comment->id}} sad-{{$comment->id}}">
-                                                                                        @foreach($comment->sad_stat as $sad)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($sad->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
-                                                                                            </div>
-                                                                                        @endforeach
-                                                                                    </div>
-                                                                                    <div class="filter-{{$comment->id}} angry-{{$comment->id}}">
-                                                                                        @foreach($comment->angry_stat as $angry)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($angry->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
-                                                                                            </div>
-                                                                                        @endforeach
-                                                                                    </div>
+                                                                                        @endif
+                                                                                    @endforeach
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -1490,8 +1345,8 @@
                                                                                         @endif
                                                                                     @endif
                                                                                     <ul class="comment-actions mt-1">
-                                                                                        @if($reply->liked)
-                                                                                            <!-- if post is liked by user -->
+                                                                                    @if($reply->liked)
+                                                                                        <!-- if post is liked by user -->
                                                                                             <!-- <div><i class="fas fa-thumbs-up"></i><span> 20</span></div> -->
                                                                                             <!-- if post isn't liked by user -->
                                                                                             <div class="reaction-container" id="reaction-container-{{$reply->id}}">
@@ -1499,7 +1354,7 @@
                                                                                                 <span class="reaction-btn">
                                                                                                     <!-- Default like button -->
                                                                                                     <span class="reaction-btn-emo like-btn-{{$reply->user_react[0]->name}}" id="reaction-btn-emo-{{$reply->id}}"></span>
-                                                                                                                                    <!-- Default like button emotion-->
+                                                                                                    <!-- Default like button emotion-->
                                                                                                     <span class="reaction-btn-text reaction-btn-text-{{$reply->user_react[0]->name}} active" onclick="unlikeModelSubmit({{$reply->id}},{{$reply->user_react[0]->id}})" id="reaction-btn-text-{{$reply->id}}">
                                                                                                         {{$reply->user_react[0]->name}}
                                                                                                         <form id="unlike-form-{{$reply->id}}-{{$reply->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
@@ -1514,15 +1369,15 @@
                                                                                                     <ul class="emojies-box">
                                                                                                         @foreach($reacts as $react)
                                                                                                             <!-- Reaction buttons container-->
-                                                                                                            <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
-                                                                                                            <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                                <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
+                                                                                                                <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                                                                                                 @csrf
                                                                                                                 <input type="hidden" name="model_id" value="{{$reply->id}}">
                                                                                                                 <input type="hidden" name="model_type" value="comment">
                                                                                                                 <input type="hidden" name="reactId" value="{{$react->id}}">
                                                                                                                 <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="update">
                                                                                                             </form>
-                                                                                                        @endforeach
+                                                                                                            @endforeach
                                                                                                     </ul>
                                                                                                 </span>
                                                                                                 <div class="like-stat">
@@ -1532,7 +1387,7 @@
                                                                                                         <span class="like-btn-like"></span>
                                                                                                         @if($reply->user_react[0]->name != "like")
                                                                                                             <span class="like-btn-{{$reply->user_react[0]->name}}"></span>
-                                                                                                        @endif
+                                                                                                    @endif
                                                                                                     <!-- given emotions like, wow, sad (default:Like) -->
                                                                                                     </span>
                                                                                                     <span class="like-details" id="like-details-{{$reply->id}}" data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">You @if($reply->likes->count-1 != 0) and {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) k @endif others @endif</span>
@@ -1597,108 +1452,34 @@
                                                                                                                     <button onclick="filterPostLikes({{$reply->id}},'all-{{$reply->id}}')" class="btn btn-light active-{{$reply->id}} filter-all-{{$reply->id}} ez-active" id="{{$reply->id}}" data-filter="all-{{$reply->id}}">
                                                                                                                         All
                                                                                                                     </button>
-                                                                                                                    @if(count($reply->like_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-like-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'like-{{$reply->id}}')" id="{{$post->id}}" data-filter="like-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/like.png"/>
-                                                                                                                            <span>{{count($reply->like_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
-                                                                                                                    @if(count($reply->love_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-love-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'love-{{$reply->id}}')" id="{{$reply->id}}" data-filter="love-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/love.png"/>
-                                                                                                                            <span>{{count($reply->love_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
-                                                                                                                    @if(count($reply->haha_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-haha-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'haha-{{$reply->id}}')" id="{{$reply->id}}" data-filter="haha-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/haha.png"/>
-                                                                                                                            <span>{{count($reply->haha_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
-                                                                                                                    @if(count($reply->sad_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-sad-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'sad-{{$reply->id}}')" id="{{$reply->id}}" data-filter="sad-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/sad.png"/>
-                                                                                                                            <span>{{count($post->sad_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
-                                                                                                                    @if(count($reply->angry_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-angry-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'angry-{{$reply->id}}')" id="{{$reply->id}}" data-filter="angry-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/angry.png"/>
-                                                                                                                            <span>{{count($reply->angry_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
+                                                                                                                    @foreach($reply->reacts_stat as $react_stat)
+                                                                                                                        @if(count($react_stat) > 0)
+                                                                                                                            <div class="btn btn-light active-{{$reply->id}} filter-{{$react_stat[0]->react_name}}-{{$reply->id}}" onclick='filterPostLikes({{$comment->id}},"{{$react_stat[0]->react_name}}-{{$reply->id}}")' id="{{$reply->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$reply->id}}">
+                                                                                                                                <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
+                                                                                                                                <span>{{count($react_stat)}}</span>
+                                                                                                                            </div>
+                                                                                                                        @endif
+                                                                                                                    @endforeach
                                                                                                                 </div>
                                                                                                                 <div class="likes-container mt-3">
-                                                                                                                    <div class="filter-{{$reply->id}} like-{{$reply->id}}">
-                                                                                                                        @foreach($reply->like_stat as $like_emoji)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($like_emoji->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                                                                                                    @foreach($reply->reacts_stat as $react_stat)
+                                                                                                                        @if(count($react_stat) > 0)
+                                                                                                                            <div class="filter-{{$post->id}} {{$react_stat[0]->react_name}}-{{$reply->id}}">
+                                                                                                                                @foreach($react_stat as $react_emoji)
+                                                                                                                                    <div class="people-info d-flex align-items-center">
+                                                                                                                                        @if($react_emoji->publisher->personal_image != null)
+                                                                                                                                            <img class="profile-figure rounded-circle"
+                                                                                                                                                 src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
+                                                                                                                                        @else
+                                                                                                                                            <img class="profile-figure rounded-circle"
+                                                                                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                                                                        @endif
+                                                                                                                                        <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                                                                                                                                    </div>
+                                                                                                                                @endforeach
                                                                                                                             </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
-                                                                                                                    <div class="filter-{{$reply->id}} love-{{$reply->id}}">
-                                                                                                                        @foreach($reply->love_stat as $love)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($love->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
-                                                                                                                            </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
-                                                                                                                    <div class="filter-{{$reply->id}} haha-{{$reply->id}}">
-                                                                                                                        @foreach($reply->haha_stat as $haha)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($haha->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
-                                                                                                                            </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
-                                                                                                                    <div class="filter-{{$reply->id}} sad-{{$reply->id}}">
-                                                                                                                        @foreach($reply->sad_stat as $sad)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($sad->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
-                                                                                                                            </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
-                                                                                                                    <div class="filter-{{$reply->id}} angry-{{$reply->id}}">
-                                                                                                                        @foreach($reply->angry_stat as $angry)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($angry->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
-                                                                                                                            </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
+                                                                                                                        @endif
+                                                                                                                    @endforeach
                                                                                                                 </div>
                                                                                                             </div>
                                                                                                         </div>
@@ -1718,9 +1499,9 @@
                                                                                         <li data-toggle="modal" data-target="#edit-reply-modal-{{$reply->id}}">Edit</li>
                                                                                         <li onclick="confirm('{{ __("Are you sure you want to delete this reply ?") }}') ? deleteCommentSubmit({{$reply->id}},{{$post->id}}) : ''" >Delete</li>
                                                                                         <form action="{{ route('comments.destroy', $reply->id) }}" id="delete-comment-form-{{$reply->id}}" method="POST">
-                                                                                            @csrf
-                                                                                            @method('delete')
-                                                                                            <!-- ajax-->
+                                                                                        @csrf
+                                                                                        @method('delete')
+                                                                                        <!-- ajax-->
                                                                                         </form>
                                                                                     @endif
 
@@ -1751,7 +1532,7 @@
                                                                                                         <!-- Post Desc -->
                                                                                                             <div class="post-desc d-flex justify-content-center mt-2">
                                                                                                               <textarea onfocus="mentionAdd('text-edit-{{$reply->id}}','menu-edit-reply-{{$reply->id}}')" id="text-edit-{{$reply->id}}" class="w-75" name="body" cols="200" rows="4"
-                                                                                                                            placeholder="Start Typing..." >@if($reply->mentions != null){{$reply->edit}}@else{{$reply->body}}@endif</textarea>
+                                                                                                                        placeholder="Start Typing..." >@if($reply->mentions != null){{$reply->edit}}@else{{$reply->body}}@endif</textarea>
                                                                                                                 <div id="menu-edit-reply-{{$reply->id}}" class="menu" role="listbox"></div>
                                                                                                             </div>
 
@@ -1828,6 +1609,25 @@
 
                                                                 </div>
                                                             </div>
+                                                            <button type="button" id="reply-submit-btn-{{$comment->id}}" onclick="event.preventDefault();
+                                                                addReplySubmit({{$comment->id}},{{$post->id}})" hidden></button>
+                                                            <div style="display: none" id="add-reply-div-{{$comment->id}}">
+                                                                <form class="add-commnet mt-2 d-flex align-items-center" id="add-reply-form-{{$comment->id}}" onkeypress="if (event.keyCode === 13) { event.preventDefault(); $('#reply-submit-btn-{{$comment->id}}').click();}" action="{{route('comments.store')}}" method="POST" enctype="multipart/form-data">
+                                                                    @csrf
+                                                                    <input type="hidden" name="post_id" value="{{$post->id}}" />
+                                                                    <input type="hidden" name="comment_id" value="{{$comment->id}}" />
+                                                                    <input onfocus="mentionAdd('reply-text-{{$comment->id}}','menu-{{$comment->id}}')" id="reply-text-{{$comment->id}}" class="w-100 pl-2" type="text" name="body" placeholder="Add Reply" />
+                                                                    <div id="menu-{{$comment->id}}" class="menu" role="listbox"></div>
+                                                                    <div class="d-flex align-items-center pr-3">
+                                                                        <i class="fas fa-paperclip" onclick="commentAttachClick({{$comment->id}})"></i>
+                                                                        <input type="file" id="comment-attach-{{$comment->id}}" onchange="readURL({{$comment->id}},this,'reply');" name="media" accept=".jpg,.jpeg,.png,.svg,.gif" />
+                                                                    </div>
+                                                                </form>
+                                                                <div id="img-div-reply-{{$comment->id}}" style="display: none;">
+                                                                    <img id="img-reply-{{$comment->id}}" src="#" alt="your image" style="margin: 10px" />
+                                                                    <button class="btn btn-warning text-white" onclick="$('#img-div-reply-{{$comment->id}}').css('display','none')">remove image</button>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     @endif
                                                 </div>
@@ -1840,9 +1640,9 @@
                                                         <li data-toggle="modal" data-target="#edit-comment-modal-{{$comment->id}}">Edit</li>
                                                         <li onclick="confirm('{{ __("Are you sure you want to delete this comment ?") }}') ? deleteCommentSubmit({{$comment->id}},{{$post->id}}) : ''" >Delete</li>
                                                         <form action="{{ route('comments.destroy', $comment->id) }}" id="delete-comment-form-{{$comment->id}}" method="POST">
-                                                            @csrf
-                                                            @method('delete')
-                                                            <!-- ajax-->
+                                                        @csrf
+                                                        @method('delete')
+                                                        <!-- ajax-->
                                                         </form>
                                                     @endif
 
@@ -1867,10 +1667,10 @@
                                                                         </div>
                                                                         <form action="{{route('comments.update',$comment->id)}}" id="edit-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
 
-                                                                            @csrf
-                                                                            @method('put')
+                                                                        @csrf
+                                                                        @method('put')
 
-                                                                            <!-- Post Desc -->
+                                                                        <!-- Post Desc -->
                                                                             <div class="post-desc d-flex justify-content-center mt-2">
                                                                                   <textarea onfocus="mentionAdd('text-edit-{{$comment->id}}','menu-edit-comment-{{$comment->id}}')" id="text-edit-{{$comment->id}}" class="w-75" name="body" cols="200" rows="4"
                                                                                             placeholder="Start Typing..." >@if($comment->mentions != null){{$comment->edit}}@else{{$comment->body}}@endif</textarea>
@@ -1916,9 +1716,9 @@
                                                                         </div>
                                                                         <form action="{{route('userreports.store')}}" id="report-comment-form-{{$comment->id}}" method="POST" class="container" enctype="multipart/form-data">
 
-                                                                            @csrf
+                                                                        @csrf
 
-                                                                            <!-- Post Desc -->
+                                                                        <!-- Post Desc -->
                                                                             <div class="post-desc d-flex justify-content-center mt-2">
                                                                                   <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
                                                                                             placeholder="Start Typing..." ></textarea>
@@ -1942,25 +1742,6 @@
                                             </div>
                                             <div class="comment-option ml-auto pr-3 pt-2">
                                                 <i class="fas fa-ellipsis-v" onclick="toggleCommentOptions({{$comment->id}})"></i>
-                                            </div>
-                                        </div>
-                                        <button type="button" id="reply-submit-btn-{{$comment->id}}" onclick="event.preventDefault();
-                                            addReplySubmit({{$comment->id}},{{$post->id}})" hidden></button>
-                                        <div style="display: none" id="add-reply-div-{{$comment->id}}">
-                                            <form class="add-commnet mt-2 d-flex align-items-center" id="add-reply-form-{{$comment->id}}" onkeypress="if (event.keyCode === 13) { event.preventDefault(); $('#reply-submit-btn-{{$comment->id}}').click();}" action="{{route('comments.store')}}" method="POST" enctype="multipart/form-data">
-                                                @csrf
-                                                <input type="hidden" name="post_id" value="{{$post->id}}" />
-                                                <input type="hidden" name="comment_id" value="{{$comment->id}}" />
-                                                <input onfocus="mentionAdd('reply-text-{{$comment->id}}','menu-{{$comment->id}}')" id="reply-text-{{$comment->id}}" class="w-100 pl-2" type="text" name="body" placeholder="Add Reply" />
-                                                <div id="menu-{{$comment->id}}" class="menu" role="listbox"></div>
-                                                <div class="d-flex align-items-center pr-3">
-                                                    <i class="fas fa-paperclip" onclick="commentAttachClick({{$comment->id}})"></i>
-                                                    <input type="file" id="comment-attach-{{$comment->id}}" onchange="readURL({{$comment->id}},this,'reply');" name="media" accept=".jpg,.jpeg,.png,.svg,.gif" />
-                                                </div>
-                                            </form>
-                                            <div id="img-div-reply-{{$comment->id}}" style="display: none;">
-                                                <img id="img-reply-{{$comment->id}}" src="#" alt="your image" style="margin: 10px" />
-                                                <button class="btn btn-warning text-white" onclick="$('#img-div-reply-{{$comment->id}}').css('display','none')">remove image</button>
                                             </div>
                                         </div>
                                     @endif
@@ -2320,11 +2101,12 @@
                                             </div>
                                     </div>
 
-                                    <a id="friend-btn-{{$user->id}}" onclick="addFriendSubmit({{$user->id}})" class="btn btn-warning text-white">add friend</a>
-                                    <form id="friend-form-{{$user->id}}" action="{{ route('addfriend') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                    <a id="expected-friend-btn-{{$user->id}}" onclick="addFriendSubmit({{$user->id}},'expected')" class="btn btn-warning text-white">add friend</a>
+                                    <form id="expected-friend-form-{{$user->id}}" action="{{ route('addfriend') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                         @csrf
                                         <input type="hidden" name="receiverId" value="{{$user->id}}">
-                                        <input type="hidden" name="requestType" id="request-type-{{$user->id}}" value="addFriendRequest">
+                                        <input type="hidden" name="senderId" value="{{auth()->user()->id}}">
+                                        <input type="hidden" name="requestType" id="expected-request-type-{{$user->id}}" value="addFriendRequest">
                                     </form>
                                 </a>
                             </div>
@@ -2357,7 +2139,7 @@
                                     <div class="mt-2 group-info">
                                         <div>
                                             <p><b>{{$group->name}}</b></p>
-                                            <p>{{$group->members}} members</p>
+                                            <p id="members-{{$group->id}}">{{$group->members}} members</p>
                                         </div>
                                         <a id="join-btn-{{$group->id}}" onclick="joinGroupSubmit({{$group->id}})" class="btn btn-warning text-white">Join</a>
                                         <form id="join-group-form-{{$group->id}}" action="{{ route('join_group') }}" method="POST" style="display: none;">
@@ -2397,7 +2179,7 @@
                                     <div class="mt-2 group-info">
                                         <div>
                                             <p><b>{{$page->name}}</b></p>
-                                            <p>{{$page->members}} likes</p>
+                                            <p id="page-members-{{$page->id}}">{{$page->members}} likes</p>
                                         </div>
                                         <a id="like-page-btn-{{$page->id}}" onclick="likePageSubmit({{$page->id}})" class="btn btn-warning text-white">Like</a>
                                         <form id="like-page-form-{{$page->id}}" action="{{ route('like_page') }}" method="POST" style="display: none;">

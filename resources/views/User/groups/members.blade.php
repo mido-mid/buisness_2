@@ -1,13 +1,13 @@
 @extends('User.groups.layout')
 
 @section('sectionGroups')
-@if($group['privacy'] == 0 && $isAdmin == 0 && $myState == 0)
+@if($group->privacy == 0 && $isAdmin == 0 && $myState != 1)
 <div class="group-about my-3">
     <div class="group-description">
         <h3 class="heading-tertiary">{{__('groups.privacy')}}</h3>
     </div>
-</div> 
-@else 
+</div>
+@else
 <div class="group-members my-3">
     <div class="invite-friends d-flex justify-content-between">
       <h3 class="heading-tertiary">{{__('groups.invite_friends')}}</h3>
@@ -63,6 +63,7 @@
     <h3 class="heading-tertiary my-5">الاعضاء:{{count($accepteds)}}</h3>
     <ul class="members-list list-unstyled">
       @foreach($accepteds as $accepted)
+      {{-- @if($accepted->user_id != Auth::guard('web')->user()->id) --}}
       <li class="members-item" id="{{$accepted->user_id}}|{{$group['id']}}">
         <div class="group-member d-flex justify-content-between">
           <a href="#" class="group-member-link d-flex align-items-center">
@@ -73,11 +74,11 @@
             </span>
           </a>
           <div>
-            @if(Auth::guard('web')->user())
+            @if($accepted->user_id != Auth::guard('web')->user()->id)
               @if($accepted->friendship == 'guest')
-                <button class="button-4 totyFrientshep" id="add|{{$accepted->user_id}}">أضافة صديق</button>
+                <button class="button-4 totyFrientshep" id="add|{{$accepted->user_id}}">{{__('groups.add_friend')}}</button>
               @elseif($accepted->friendship == 'accepted')
-                <button class="button-2 totyFrientshep" id="remove|{{$accepted->user_id}}">{{__('groups.add_friend')}}</button>
+                <button class="button-2 totyFrientshep" id="remove|{{$accepted->user_id}}">{{__('groups.un_friend')}}</button>
               @elseif($accepted->friendship == 'pending')
                 <button class="button-2 totyFrientshep" id="remove|{{$accepted->user_id}}">{{__('groups.un_friend')}}</button>
               @elseif($accepted->friendship == 'request')
@@ -96,12 +97,11 @@
               @endif
 
               @else
-              <a class="button-4" href="/login">{{__('groups.add_friend')}}</a>
-              <a class="button-4" href="/login">{{__('groups.add_following')}}</a>
               @endif
           </div>
         </div>
       </li>
+      {{-- @endif --}}
       @endforeach
     </ul>
   </div>
@@ -167,8 +167,8 @@
   </div>
   @endif
 @endif
-@if(Auth::guard('web')->user())
-<script>
+{{-- @if(Auth::guard('web')->user()) --}}
+{{-- <script>
   $(document).ready(function(){
      $('.totyFrientshep').click(function(event){
          event.preventDefault();
@@ -258,7 +258,7 @@
                   document.getElementById(id).id = 'removeFollowing|'+str[1];
                   document.getElementById(str[1]).textContent = str[2] + "{{__('groups.follower')}}";
                 }
-                    
+
                 if(str[0] == 0)
                 {
                     document.getElementById(id).textContent =  "{{__('groups.add_following')}}";
@@ -304,17 +304,17 @@
                   document.getElementById('removeMember|'+Enemy_id+'|'+Group_id).style.display = "none";
 
                 }
-                    
+
                 if(str[0] == 0)
                 {
                   document.getElementById(Enemy_id+'|'+Group_id).style.display = "none";
                 }
-                
+
              }
          });
 
      });
  });
-</script>
-@endif
+</script> --}}
+{{-- @endif --}}
 @endsection

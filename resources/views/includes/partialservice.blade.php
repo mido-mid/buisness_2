@@ -177,12 +177,23 @@
 
                                 <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
                                     <label for="exampleInputEmail1">Target Country:</label>
-                                    <select name="country" class="js-example-basic-multiple">
+                                    <select onchange="editServiceCities(this,{{$service->id}})" name="country_id" class="js-example-basic-single">
                                         @foreach($countries as $country)
-                                            <option value="{{$country->name}}" @if($country->id == $service->country_id) selected @endif>{{$country->name}}</option>
+                                            <option value="{{$country->id}}" @if($country->id == $service->country_id) selected @endif>{{$country->name}}</option>
                                         @endforeach
                                     </select>
                                 </div>
+
+
+                                <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                    <label for="exampleInputEmail1">Target City:</label>
+                                    <select name="city_id" style="width: 200px" class="edit-city-{{$service->id}} js-example-basic-single" disabled>
+                                        @foreach($cities as $city)
+                                            <option value="{{$city->id}}" @if($city->id == $service->city_id) selected @endif>{{$city->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
                                 <!-- Post Desc -->
                                 <div class="post-desc d-flex justify-content-center mt-2">
                                                   <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"

@@ -1,26 +1,43 @@
 
 @section('pages')
 
-    @if(count($page) > 0)
+    @if(count($pages) > 0)
 
         @foreach($pages as $page)
-            <div class="service card m-2">
-                <a href="{{route('services',$category->id)}}" style="text-decoration: none">
-                    <img
-                        src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                        class="card-img-top"
-                        alt="..."
-                    />
-                    <div class="card-body">
-                        <p class="card-text">
-                            @if(App::getLocale() == 'ar')
-                                {{$category->name_ar}}
-                            @else
-                                {{$category->name_en}}
-                            @endif
-                        </p>
+            <div class="post-container bg-white mt-3 p-3" id="searched-pages-{{$page->id}}">
+                <div class="post-owner d-flex align-items-center">
+                    @if($page->profile_image)
+                        <div class="owner-img">
+                            <a style="display: inline" href="{{route('main-page',$page->id)}}"><img src="{{asset('media')}}/{{$page->profile_image}}" class="rounded-circle" /></a>
+                        </div>
+                    @else
+                        <div class="owner-img">
+                            <a style="display: inline" href="{{route('main-page',$page->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
+                        </div>
+                    @endif
+                    <div class="owner-name pl-3">
+                        <a href="{{route('main-page',$page->id)}}"><b>
+                                {{$page->name}}
+                            </b></a>
+
+                        <span style="display: block" id="page-members-{{$page->id}}">{{$page->members}} members</span>
                     </div>
-                </a>
+                    <div class="post-option ml-auto pr-3">
+                        @if($page->liked == 'delete page')
+                            <a id="delete-page-btn-{{$page->id}}" onclick="deletePageSubmit({{$page->id}})" class="btn btn-warning text-white">{{$page->liked}}</a>
+                            <form id="delete-page-form-{{$page->id}}" action="{{ route('pages.destroy',$page->id) }}" method="POST" style="display: none;">
+                                @csrf
+                            </form>
+                        @else
+                            <a id="like-page-btn-{{$page->id}}" onclick="likePageSubmit({{$page->id}})" class="btn btn-warning text-white">{{$page->liked}}</a>
+                            <form id="like-page-form-{{$page->id}}" action="{{ route('like_page') }}" method="POST" style="display: none;">
+                                @csrf
+                                <input type="hidden" name="page_id" value="{{$page->id}}">
+                                <input type="hidden" id="like-page-flag-{{$page->id}}" name="flag" value="{{$page->flag}}">
+                            </form>
+                        @endif
+                    </div>
+                </div>
             </div>
         @endforeach
     @endif

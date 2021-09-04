@@ -35,11 +35,11 @@ class PagesController extends Controller
             $pages = Page::all();
 
             foreach ($pages as $page) {
-                $user_page = DB::table('user_pages')
+                $user_page = DB::table('page_members')
                     ->where([['page_id',$page->id],['user_id',$user->id]])
                     ->first();
 
-                $page_users = DB::table('user_pages')
+                $page_users = DB::table('page_members')
                     ->where('group_id',$page->id)
                     ->count();
 
@@ -54,9 +54,9 @@ class PagesController extends Controller
             }
         }
         else{
-            $pages = DB::select(DB::raw('select pages.* from pages,user_pages
-                        where user_pages.page_id = pages.id
-                        AND user_pages.user_id =
+            $pages = DB::select(DB::raw('select pages.* from pages,page_members
+                        where page_members.page_id = pages.id
+                        AND page_members.user_id =
                         '.$user->id));
         }
 
@@ -90,9 +90,36 @@ class PagesController extends Controller
      */
     public function create()
     {
-        //
         $categroys = Category::get();
-        return view('User.pages.create', compact('categroys'));
+
+        $user_pages_ids = [];
+        $user = auth()->user();
+        $related_pages = Page::limit(3)->get();
+        $all_pages = Page::paginate(30);
+
+        $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
+                        where page_members.page_id = pages.id
+                        AND page_members.user_id = ' . $user->id));
+
+        foreach ($user_pages as $page) {
+            array_push($user_pages_ids, $page->id);
+        }
+
+
+        $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
+                        where user_categories.categoryId = categories.id
+                        AND user_categories.userId =' . $user->id . ' and categories.type = "post"'));
+
+        $user_interests_array = [];
+
+        foreach ($user_interests as $interest) {
+            array_push($user_interests_array, $interest->id);
+        }
+
+        $expected_pages = $this->getExpectedPages($user_interests_array, $user_pages_ids);
+
+        // return $expected_pages;
+        return view('User.pages.create', compact('categroys','expected_pages'));
     }
 
     /**
@@ -106,15 +133,14 @@ class PagesController extends Controller
         //
         $rules = [
             'name' => 'required',
-            'privacy' => ['required'],
         ];
 
         $this->validate($request,$rules);
-        $profile_image = time() . '.' . $request->profile_image->extension();
-        $request->profile_image->move(public_path('assets/images/pages/profile'), $profile_image);
+        $profile_image = '.0' . time() . $request->profile_image->extension();
+        $request->profile_image->move(public_path('media'), $profile_image);
 
-        $cover_image = time() . '.' . $request->cover_image->extension();
-        $request->cover_image->move(public_path('assets/images/pages/cover'), $cover_image);
+        $cover_image = '.1' . time() . $request->cover_image->extension();
+        $request->cover_image->move(public_path('media'), $cover_image);
 
         $page = Page::insertGetId([
             'name' => $request->name,
@@ -124,7 +150,7 @@ class PagesController extends Controller
             'profile_image' => $profile_image,
             'cover_image' => $cover_image,
             'rules' =>  $request->rules,
-            'privacy' => $request->privacy
+            'privacy' => 1
         ]);
         $page_admin = DB::table('page_members')->insert([
             'page_id' => $page,
@@ -134,7 +160,7 @@ class PagesController extends Controller
         ]);
 
         if($page){
-            return redirect('pages/'.$page);
+            return redirect('main-page/'.$page);
         }
         else
         {
@@ -169,7 +195,33 @@ class PagesController extends Controller
             $isAdmin = $this->isAdmin($id);
             if($isAdmin == 1)
             {
-                return view('User.pages.edit', compact('categroys','page'));
+                $user_pages_ids = [];
+                $user = auth()->user();
+                $related_pages = Page::limit(3)->get();
+                $all_pages = Page::paginate(30);
+
+                $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
+                                where page_members.page_id = pages.id
+                                AND page_members.user_id = ' . $user->id));
+
+                foreach ($user_pages as $pages) {
+                    array_push($user_pages_ids, $pages->id);
+                }
+
+
+                $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
+                                where user_categories.categoryId = categories.id
+                                AND user_categories.userId =' . $user->id . ' and categories.type = "post"'));
+
+                $user_interests_array = [];
+
+                foreach ($user_interests as $interest) {
+                    array_push($user_interests_array, $interest->id);
+                }
+
+                $expected_pages = $this->getExpectedPages($user_interests_array, $user_pages_ids);
+
+                return view('User.pages.edit', compact('categroys','page','expected_pages'));
             }
             else
             {
@@ -195,14 +247,14 @@ class PagesController extends Controller
         //
         $page = Page::find($id);
         if (isset($request->profile_image)) {
-            $profile_image = time() . '.' . $request->profile_image->extension();
-            $request->profile_image->move(public_path('assets/images/pages/profile'), $profile_image);
+            $profile_image = '.0' . time() . $request->profile_image->extension();
+            $request->profile_image->move(public_path('media'), $profile_image);
         } else {
             $profile_image = $page->profile_image;
         }
         if (isset($request->cover_image)) {
-            $cover_image = time() . '.' . $request->cover_image->extension();
-            $request->cover_image->move(public_path('assets/images/pages/cover'), $cover_image);
+            $cover_image = '.1' . time() . $request->cover_image->extension();
+            $request->cover_image->move(public_path('media'), $cover_image);
         } else {
             $cover_image  = $page->cover_image;
         }
@@ -211,12 +263,13 @@ class PagesController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'category_id' =>$request->category_id,
-            'publisher_id' => $request->publisher_id,
+            'publisher_id' => $page->publisher_id,
             'profile_image' => $profile_image,
             'cover_image' => $cover_image,
             'rules' => $request->rules,
-            'privacy' => $request->privacy
         ]);
+
+        return redirect()->route('main-page',['id'=>$page->id]);
     }
 
     /**
@@ -260,7 +313,7 @@ class PagesController extends Controller
         $flag = $request->flag;
 
         if ($flag == 0) {
-            DB::table('user_pages')->insert([
+            DB::table('page_members')->insert([
                 'page_id' => $page_id,
                 'user_id' => $user->id,
                 'isAdmin' => 0
@@ -268,9 +321,9 @@ class PagesController extends Controller
 
             return $this->returnSuccessMessage('unlike');
         } else {
-            $user_page = DB::table('user_pages')->where('page_id', $page_id)->where('user_id', $user->id)->get();
+            $user_page = DB::table('page_members')->where('page_id', $page_id)->where('user_id', $user->id)->get();
             foreach ($user_page as $upage) {
-                DB::table('user_pages')->delete($upage->id);
+                DB::table('page_members')->delete($upage->id);
             }
 
             return $this->returnSuccessMessage('like', 200);
@@ -278,7 +331,31 @@ class PagesController extends Controller
     }
 
     public function relatedPages($category){
-        $related_pages = Page::where('category_id',$category)->inRandomOrder()->limit(3)->get();
+        // $related_pages = Page::where('category_id',$category)->inRandomOrder()->limit(3)->get();
+        $user_pages_ids = [];
+        $user = auth()->user();
+
+        $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
+                        where page_members.page_id = pages.id
+                        AND page_members.user_id = ' . $user->id));
+
+        foreach ($user_pages as $page) {
+            array_push($user_pages_ids, $page->id);
+        }
+
+
+        $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
+                        where user_categories.categoryId = categories.id
+                        AND user_categories.userId =' . $user->id . ' and categories.type = "post"'));
+
+        $user_interests_array = [];
+
+        foreach ($user_interests as $interest) {
+            array_push($user_interests_array, $interest->id);
+        }
+
+        $related_pages = $this->getExpectedPages($user_interests_array, $user_pages_ids);
+
         return $related_pages;
     }
 
@@ -319,9 +396,64 @@ class PagesController extends Controller
         $related_pages = $this->relatedPages($page->category_id);
         $myState = $this->memberState($page_id);
         $isAdmin = $this->isAdmin($page_id);
-        $page_liked = DB::table('user_pages')->where('page_id', $page_id)->where('user_id', $user->id)->exists();
+        $page_liked = DB::table('page_members')->where('page_id', $page_id)->where('user_id', $user->id)->exists();
         $page_members = PageMember::where('page_id',$page_id)->get();
         $page_posts = DB::table('posts')->where('page_id', $page_id)
+            ->orderBy('created_at', 'desc')->get();
+        foreach ($page_posts as $post){
+            $post = $this->getPost($user,$post);
+            $post->sponsored = false;
+        }
+
+        $privacy = DB::table('privacy_type')->get();
+
+        $categories = DB::table('categories')->where('type', 'post')->get();
+
+        $times = DB::table('sponsored_time')->get();
+
+        $reaches = DB::table('sponsored_reach')->get();
+
+        $ages = DB::table('sponsored_ages')->get();
+
+        $reacts = DB::table('reacts')->get();
+
+        $cities = DB::table('cities')->get();
+
+        $countries = DB::table('countries')->get();
+
+        $friends_info = [];
+
+        // friends posts he follows and are public and in groups you are in and in pages you liked
+        $friends = DB::table('friendships')->where(function ($q) use ($user){
+            $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+        })->where('stateId',2)->get();
+
+        foreach ($friends as $friend){
+            $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
+
+            $friend_info = DB::table('users')->select('id','name','cover_image','personal_image')->where('id',$friend_id)->first();
+
+            array_push($friends_info,$friend_info);
+
+        }
+        foreach ($friends_info as $info){
+            $info->name = explode(' ',$info->name)[0];
+        }
+
+
+        return view('User.pages.posts',compact('page_posts','page_members','page_liked','isAdmin','myState','page','related_pages','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
+    }
+
+    public function singlePost($page_id,$post_id)
+    {
+        $user = auth()->user();
+        $page = Page::find($page_id);
+        $related_pages = $this->relatedPages($page->category_id);
+        $myState = $this->memberState($page_id);
+        $isAdmin = $this->isAdmin($page_id);
+        $page_liked = DB::table('page_members')->where('page_id', $page_id)->where('user_id', $user->id)->exists();
+        $page_members = PageMember::where('page_id',$page_id)->get();
+        $page_posts = DB::table('posts')->where('id', $post_id)
             ->orderBy('created_at', 'desc')->get();
         foreach ($page_posts as $post){
             $post = $this->getPost($user,$post);
@@ -383,20 +515,22 @@ class PagesController extends Controller
         $media_ids = [];
         $page_posts = Post::where('page_id', $id)->orderBy('created_at', 'ASC')->get();
         switch ($type) {
-            case 0:
+            case 'image':
                 $media = Media::where('mediaType', $type)->where('model_type', 'post')->get();
                 break;
-            case 1:
+            case 'video':
                 $media = Media::where('mediaType', $type)->where('model_type', 'post')->get();
                 break;
         }
-        foreach ($page_posts as $gro) {
-            $page_posts_ids[] = $gro->id;
-        }
-        foreach ($media as $med) {
-            $media_post_id = $med->model_id;
-            if (in_array($media_post_id, $page_posts_ids)) {
-                $media_ids[] = $med->id;
+        if(count($page_posts)>0){
+            foreach ($page_posts as $gro) {
+                $page_posts_ids[] = $gro->id;
+            }
+            foreach ($media as $med) {
+                $media_post_id = $med->model_id;
+                if (in_array($media_post_id, $page_posts_ids)) {
+                    $media_ids[] = $med->id;
+                }
             }
         }
         return $media_ids;
@@ -411,11 +545,27 @@ class PagesController extends Controller
         //0 image
         //1 video
         $images = [];
-        $media = $this->pageMedia(0, $id);
+        $media = $this->pageMedia('image', $id);
         for ($i = 0; $i < count($media); $i++) {
             $images[] = Media::find($media[$i]);
         }
         return view('User.pages.images',compact('page','page_members','myState', 'isAdmin', 'related_pages', 'images'));
+    }
+
+    public function videosPage($id){
+        $page = Page::find($id);
+        $related_pages = $this->relatedPages($page->category_id);
+        $myState = $this->memberState($id);
+        $isAdmin = $this->isAdmin($id);
+        $page_members = PageMember::where('page_id',$id)->get();
+        //0 image
+        //1 video
+        $videos = [];
+        $media = $this->pageMedia('video', $id);
+        for ($i = 0; $i < count($media); $i++) {
+            $videos[] = Media::find($media[$i]);
+        }
+        return view('User.pages.videos',compact('page','page_members','myState', 'isAdmin', 'related_pages', 'videos'));
     }
 
     public function joinPage(Request $request){
@@ -437,7 +587,8 @@ class PagesController extends Controller
                     $new_member = PageMember::create([
                         'user_id'=>  $user_id,
                         'page_id'=>$page_id,
-                        'state'=>1
+                        'state'=>1,
+                        'isAdmin' =>0
                     ]);
                     $page_members = PageMember::where('page_id',$page_id)->count();
                     return 1 .'|'.$page_id.'|'. 1;
@@ -448,7 +599,8 @@ class PagesController extends Controller
                     $new_member = PageMember::create([
                         'user_id'=>$user_id,
                         'page_id'=>$page_id,
-                        'state'=>2
+                        'state'=>2,
+                        'isAdmin' =>0
                     ]);
                     $page_members = PageMember::where('page_id',$page_id)->count();
                     return 2 .'|'.$page_id.'|'.$page_members;
@@ -586,18 +738,18 @@ class PagesController extends Controller
         $friendship = Friendship::where('senderId',$user)->where('receiverId',$enemy)->get();
         if(count($friendship) > 0){
             switch($friendship[0]->stateId){
-                case '2':
+                case '3':
                     return 'pending';
-                case '1':
+                case '2':
                     return 'accepted';
             }
         }else {
             $friendship = Friendship::where('senderId', $enemy)->where('receiverId', $user)->get();
             if (count($friendship) > 0) {
                 switch($friendship[0]->stateId){
-                    case '2':
+                    case '3':
                         return 'request';
-                    case '1':
+                    case '2':
                         return 'accepted';
                 }
             }else{
@@ -621,7 +773,7 @@ class PagesController extends Controller
                 Friendship::create([
                     'senderId'=>$user_id,
                     'receiverId'=>$enemy_id,
-                    'stateId'=>2
+                    'stateId'=>3
                 ]);
                 $current_following = Following::where('followerId',$user_id)->where('followingId',$enemy_id)->get();
                 if(count($current_following) == 0)
@@ -633,7 +785,7 @@ class PagesController extends Controller
                 }
 
                 $followers = Following::where('followingId',$enemy_id)->count();
-                return '2|' . $enemy_id . '|' . $followers;
+                return '3|' . $enemy_id . '|' . $followers;
                 break;
 
             case 'remove':
@@ -666,7 +818,7 @@ class PagesController extends Controller
                 $current_friendship_id = $current_friendship[0]->id;
                 $current_friendship = Friendship::find($current_friendship_id);
                 $current_friendship->update([
-                    'stateId' =>1
+                    'stateId' =>2
                 ]);
 
                 $current_following = Following::where('followerId',$user_id)->where('followingId',$enemy_id)->get();
@@ -678,7 +830,7 @@ class PagesController extends Controller
                     ]);
                 }
                 $followers = Following::where('followingId',$enemy_id)->count();
-                return 1 . $enemy_id . '|' . $followers;
+                return 2 . $enemy_id . '|' . $followers;
                 break;
         }
 
@@ -781,9 +933,9 @@ class PagesController extends Controller
         $related_pages = Page::limit(3)->get();
         $all_pages = Page::paginate(30);
 
-        $user_pages = DB::select(DB::raw('select pages.* from pages,user_pages
-                        where user_pages.page_id = pages.id
-                        AND user_pages.user_id = ' . $user->id));
+        $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
+                        where page_members.page_id = pages.id
+                        AND page_members.user_id = ' . $user->id));
 
         foreach ($user_pages as $page) {
             array_push($user_pages_ids, $page->id);
@@ -812,9 +964,9 @@ class PagesController extends Controller
         $related_pages = Page::limit(3)->get();
 
 
-        $user_pages = DB::select(DB::raw('select pages.* from pages,user_pages
-                        where user_pages.page_id = pages.id
-                        AND user_pages.user_id = ' . $user->id));
+        $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
+                        where page_members.page_id = pages.id
+                        AND page_members.user_id = ' . $user->id));
 
         foreach ($user_pages as $page) {
             array_push($user_pages_ids, $page->id);
@@ -849,8 +1001,8 @@ class PagesController extends Controller
         $expected_pages = Page::whereIn('category_id', $user_interests_array)->whereNotIn('id', $user_pages_ids)->limit(3)->get();
 
         foreach ($expected_pages as $page) {
-            $page_likes_count = DB::select(DB::raw('select count(user_pages.id) as count from user_pages
-                        where user_pages.page_id =' . $page->id
+            $page_likes_count = DB::select(DB::raw('select count(page_members.id) as count from page_members
+                        where page_members.page_id =' . $page->id
             ))[0]->count;
 
             $page->members = $page_likes_count;

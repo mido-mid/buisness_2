@@ -28,7 +28,7 @@
                 </div>
 
                 <div class="form-group{{ $errors->has('user_name') ? ' has-danger' : '' }}">
-                    <input id="name" type="text" class="form-control @error('user_name') is-invalid @enderror" name="user_name" value="{{ old('user_name') }}" required="please your enter name" placeholder="{{__('user.name')}}" autocomplete="name">
+                    <input id="name" type="text" class="form-control @error('user_name') is-invalid @enderror" name="user_name" value="{{ old('user_name') }}" required="please your enter name" placeholder="{{__('user.name')}}" autocomplete="user_name">
 
                     @error('user_name')
                     <span class="invalid-feedback" role="alert">
@@ -96,24 +96,33 @@
                     </div>
                 </div>
 
-                <div class="form-group{{ $errors->has('city') ? ' has-danger' : '' }}">
-                    <input id="city" type="text" class="form-control @error('city') is-invalid @enderror" name="city" value="{{ old('city') }}" required="please your enter city" placeholder="{{__('user.city')}}" >
-
-                    @error('city')
-                    <span class="invalid-feedback" role="alert">
-                        <strong>{{ $message }}</strong>
-                    </span>
-                    @enderror
+                <div class="form-group{{ $errors->has('country_id') ? ' has-danger' : '' }}">
+                    <select class="js-example-basic-single form-control @error('country_id') is-invalid @enderror" name="country_id" data-placeholder="{{__('user.country')}}" required>
+                        @foreach($countries as $country)
+                            <option value="{{$country->id}}">{{$country->name}}</option>
+                        @endforeach
+                    </select>
                 </div>
 
-                <div class="form-group{{ $errors->has('country') ? ' has-danger' : '' }}">
-                    <input id="country" type="text" class="form-control @error('country') is-invalid @enderror" name="country" value="{{ old('country') }}" required="please your enter country" placeholder="{{__('user.country')}}" >
 
-                    @error('country')
-                    <span class="invalid-feedback" role="alert">
-                        <strong>{{ $message }}</strong>
-                    </span>
-                    @enderror
+                <div class="form-group{{ $errors->has('city_id') ? ' has-danger' : '' }}">
+                    <select id="select-city" class="js-example-basic-single form-control @error('city_id') is-invalid @enderror" name="city_id" data-placeholder="{{__('user.city')}}" required disabled>
+                        @foreach($cities as $city)
+                            <option value="{{$city->id}}">{{$city->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group{{ $errors->has('category_id') ? ' has-danger' : '' }}">
+                    <select class="js-example-basic-multiple form-control @error('category_id') is-invalid @enderror" name="category_id[]" data-placeholder="{{__('user.category')}}" required multiple="multiple">
+                        @foreach($categories as $category)
+                            @if(App::getlocale() == 'en')
+                                <option value="{{$category->id}}">{{$category->name_en}}</option>
+                            @else
+                                <option value="{{$category->id}}">{{$category->name_ar}}</option>
+                            @endif
+                        @endforeach
+                    </select>
                 </div>
 
                 <div class="form-group{{ $errors->has('job_title') ? ' has-danger' : '' }}">

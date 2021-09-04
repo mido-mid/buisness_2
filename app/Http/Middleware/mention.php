@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 
@@ -17,25 +18,30 @@ class mention
      */
     public function handle($request, Closure $next)
     {
-        $user = auth()->user();
-
         $friends_info = [];
 
-        // friends posts he follows and are public and in groups you are in and in pages you liked
-        $friends = DB::table('friendships')->where(function ($q) use ($user){
-            $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
-        })->where('stateId',2)->get();
+        if(Auth::guard('web')->user()){
+            $user = auth()->user();
 
-        foreach ($friends as $friend){
-            $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
+            // friends posts he follows and are public and in groups you are in and in pages you liked
+            $friends = DB::table('friendships')->where(function ($q) use ($user){
+                $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+            })->where('stateId',2)->get();
 
-            $friend_info = DB::table('users')->select('id','name','user_name as username','personal_image as image')->where('id',$friend_id)->first();
+            foreach ($friends as $friend){
+                $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
 
-            array_push($friends_info,$friend_info);
+                $friend_info = DB::table('users')->select('id','name','user_name as username','personal_image as image')->where('id',$friend_id)->first();
 
+                array_push($friends_info,$friend_info);
+
+            }
+        }
+        else{
+            $friends_info = 'not authenticated';
         }
 
-        View::composer('layouts.app', function($view) use ($friends_info)
+        View::composer(['layouts.app','layouts.auth'], function($view) use ($friends_info)
         {
             $view->with('friends_mention', json_encode($friends_info));
         });

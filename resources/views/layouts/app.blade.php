@@ -355,29 +355,159 @@
                     },
                     success:function(data){
                         var str = data.split('|');
+                        var relatedId = document.getElementById(RequestType+'|'+Group_id+'|1');
+                        var grooupId = document.getElementById(RequestType+'|'+Group_id+'|0');
+
                         if(str[0] == 1)
                         {
-                            document.getElementById(id).textContent = "{{__('groups.left')}}";
-                            document.getElementById(id).classList.remove("button-4");
-                            document.getElementById(id).classList.add("button-2");
-                            document.getElementById(id).id = 'leave|'+str[1];
-                            document.getElementById(str[1]).textContent = str[2];
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|0').textContent = "{{__('groups.left')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').id = 'leave|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|1').textContent = "{{__('groups.left')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').id = 'leave|'+str[1]+'|1';
+                                document.getElementById(str[1]+'|1').textContent = str[2];
+                            }
                         }
                         if(str[0] == 2)
                         {
-                            document.getElementById(id).textContent = "{{__('groups.left_request')}}";
-                            document.getElementById(id).classList.remove("button-4");
-                            document.getElementById(id).classList.add("button-2");
-                            document.getElementById(id).id = 'leave|'+str[1];
-                            document.getElementById(str[1]).textContent = str[2];
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|0').textContent = "{{__('groups.left_request')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').id = 'leave|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|1').textContent = "{{__('groups.left_request')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').id = 'leave|'+str[1]+'|1';
+                                document.getElementById(str[1]+'|1').textContent = str[2];
+                            }
                         }
                         if(str[0] == 0)
                         {
-                            document.getElementById(id).textContent = "{{__('groups.join')}}";
-                            document.getElementById(id).classList.remove("button-2");
-                            document.getElementById(id).classList.add("button-4");
-                            document.getElementById(id).id = 'join|'+str[1];
-                            document.getElementById(str[1]).textContent = str[2];
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|0').textContent = "{{__('groups.join')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.remove("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.add("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').id = 'join|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|1').textContent = "{{__('groups.join')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.remove("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.add("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').id = 'join|'+str[1]+'|1';
+                                document.getElementById(str[1]+'|1').textContent = str[2];
+                            }
+                        }
+
+                        // alert(data);
+                    }
+                });
+
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function(){
+            $('.totyMygroups').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Group_id = splittable[1];
+                var User_id = {{auth::user()->id}};
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/join-group',
+                    method:"get",
+                    data:{requestType:RequestType,group_id:Group_id, user_id:User_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        var relatedId = document.getElementById(RequestType+'|'+Group_id+'|1');
+                        var grooupId = document.getElementById(RequestType+'|'+Group_id+'|0');
+
+                        if(str[0] == 1)
+                        {
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|0').textContent = "{{__('groups.left')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').id = 'leave|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|1').textContent = "{{__('groups.left')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').id = 'leave|'+str[1]+'|1';
+                                document.getElementById(str[1]+'|1').textContent = str[2];
+                            }
+                        }
+                        if(str[0] == 2)
+                        {
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|0').textContent = "{{__('groups.left_request')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').id = 'leave|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|1').textContent = "{{__('groups.left_request')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').id = 'leave|'+str[1]+'|1';
+                                document.getElementById(str[1]+'|1').textContent = str[2];
+                            }
+                        }
+                        if(str[0] == 0)
+                        {
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|0').textContent = "{{__('groups.join')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.remove("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.add("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').id = 'join|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').style.display = 'none';
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|1').textContent = "{{__('groups.join')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.remove("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.add("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').id = 'join|'+str[1]+'|1';
+                                document.getElementById(str[1]+'|1').style.display = 'none';
+                            }
                         }
 
                         // alert(data);
@@ -407,29 +537,150 @@
                     },
                     success:function(data){
                         var str = data.split('|');
+                        var relatedId = document.getElementById(RequestType+'|'+Page_id);
                         if(str[0] == 1)
                         {
-                            document.getElementById(id).textContent = "{{__('pages.dislike')}}";
-                            document.getElementById(id).classList.remove("button-4");
-                            document.getElementById(id).classList.add("button-2");
-                            document.getElementById(id).id = 'leave|'+str[1];
-                            document.getElementById(str[1]).textContent = str[2];
+                            document.getElementById(RequestType+'|'+Page_id+'|0').textContent = "{{__('pages.dislike')}}";
+                            document.getElementById(RequestType+'|'+Page_id+'|0').classList.remove("button-4");
+                            document.getElementById(RequestType+'|'+Page_id+'|0').classList.add("button-2");
+                            document.getElementById(RequestType+'|'+Page_id+'|0').id = 'leave|'+str[1]+'|0';
+                            document.getElementById(str[1]+'|0').textContent = str[2];
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Page_id).textContent = "{{__('pages.dislike')}}";
+                                document.getElementById(RequestType+'|'+Page_id).classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Page_id).classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Page_id).id = 'leave|'+str[1];
+                                document.getElementById(str[1]).textContent = str[2];
+                            }
                         }
                         if(str[0] == 2)
                         {
-                            document.getElementById(id).textContent = "{{__('pages.dislike_request')}}";
-                            document.getElementById(id).classList.remove("button-4");
-                            document.getElementById(id).classList.add("button-2");
-                            document.getElementById(id).id = 'leave|'+str[1];
-                            document.getElementById(str[1]).textContent = str[2];
+                            document.getElementById(RequestType+'|'+Page_id+'|0').textContent = "{{__('pages.dislike_request')}}";
+                            document.getElementById(RequestType+'|'+Page_id+'|0').classList.remove("button-4");
+                            document.getElementById(RequestType+'|'+Page_id+'|0').classList.add("button-2");
+                            document.getElementById(RequestType+'|'+Page_id+'|0').id = 'leave|'+str[1]+'|0';
+                            document.getElementById(str[1]+'|0').textContent = str[2];
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Page_id).textContent = "{{__('pages.dislike_request')}}";
+                                document.getElementById(RequestType+'|'+Page_id).classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Page_id).classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Page_id).id = 'leave|'+str[1];
+                                document.getElementById(str[1]).textContent = str[2];
+                            }
                         }
                         if(str[0] == 0)
                         {
-                            document.getElementById(id).textContent = "{{__('pages.like')}}";
-                            document.getElementById(id).classList.remove("button-2");
-                            document.getElementById(id).classList.add("button-4");
-                            document.getElementById(id).id = 'join|'+str[1];
-                            document.getElementById(str[1]).textContent = str[2];
+                            document.getElementById(RequestType+'|'+Page_id+'|0').textContent = "{{__('pages.like')}}";
+                            document.getElementById(RequestType+'|'+Page_id+'|0').classList.remove("button-2");
+                            document.getElementById(RequestType+'|'+Page_id+'|0').classList.add("button-4");
+                            document.getElementById(RequestType+'|'+Page_id+'|0').id = 'join|'+str[1]+'|0';
+                            document.getElementById(str[1]+'|0').textContent = str[2];
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Page_id).textContent = "{{__('pages.like')}}";
+                                document.getElementById(RequestType+'|'+Page_id).classList.remove("button-2");
+                                document.getElementById(RequestType+'|'+Page_id).classList.add("button-4");
+                                document.getElementById(RequestType+'|'+Page_id).id = 'join|'+str[1];
+                                document.getElementById(str[1]).textContent = str[2];
+                            }
+                        }
+
+
+                        // alert(data);
+                    }
+                });
+
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function(){
+            $('.totyMypages').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Page_id = splittable[1];
+                var User_id = {{auth::user()->id}};
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/join-page',
+                    method:"get",
+                    data:{requestType:RequestType,page_id:Page_id, user_id:User_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        var relatedId = document.getElementById(RequestType+'|'+Page_id);
+                        var grooupId = document.getElementById(RequestType+'|'+Page_id+'|0');
+
+                        if(str[0] == 1)
+                        {
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Page_id+'|0').textContent = "{{__('pages.dislike')}}";
+                                document.getElementById(RequestType+'|'+Page_id+'|0').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Page_id+'|0').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Page_id+'|0').id = 'leave|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Page_id).textContent = "{{__('pages.dislike')}}";
+                                document.getElementById(RequestType+'|'+Page_id).classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Page_id).classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Page_id).id = 'leave|'+str[1];
+                                document.getElementById(str[1]).textContent = str[2];
+                            }
+                        }
+                        if(str[0] == 2)
+                        {
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Page_id+'|0').textContent = "{{__('pages.dislike_request')}}";
+                                document.getElementById(RequestType+'|'+Page_id+'|0').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Page_id+'|0').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Page_id+'|0').id = 'leave|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Page_id).textContent = "{{__('pages.dislike_request')}}";
+                                document.getElementById(RequestType+'|'+Page_id).classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Page_id).classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Page_id).id = 'leave|'+str[1];
+                                document.getElementById(str[1]).textContent = str[2];
+                            }
+                        }
+                        if(str[0] == 0)
+                        {
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Page_id+'|0').textContent = "{{__('pages.like')}}";
+                                document.getElementById(RequestType+'|'+Page_id+'|0').classList.remove("button-2");
+                                document.getElementById(RequestType+'|'+Page_id+'|0').classList.add("button-4");
+                                document.getElementById(RequestType+'|'+Page_id+'|0').id = 'join|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').style.display = 'none';
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Page_id).textContent = "{{__('pages.like')}}";
+                                document.getElementById(RequestType+'|'+Page_id).classList.remove("button-2");
+                                document.getElementById(RequestType+'|'+Page_id).classList.add("button-4");
+                                document.getElementById(RequestType+'|'+Page_id).id = 'join|'+str[1];
+                                document.getElementById(str[1]).style.display = 'none';
+                            }
                         }
 
                         // alert(data);
@@ -442,7 +693,7 @@
 
     <script>
         $(document).ready(function(){
-            $('.toty2').click(function(event){
+            $('.totyPage').click(function(event){
                 event.preventDefault();
                 var id = $(this).attr('id');
                 var splittable = id.split('|');
@@ -544,12 +795,456 @@
             });
         });
     </script>
+
+    <script>
+        $(document).ready(function(){
+            $('.toty').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Group_id = splittable[1];
+                var User_id = {{auth::user()->id}};
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/join-group',
+                    method:"get",
+                    data:{requestType:RequestType,group_id:Group_id, user_id:User_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        var relatedId = document.getElementById(RequestType+'|'+Group_id+'|1');
+                        var grooupId = document.getElementById(RequestType+'|'+Group_id+'|0');
+
+                        if(str[0] == 1)
+                        {
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|0').textContent = "{{__('groups.left')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').id = 'leave|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|1').textContent = "{{__('groups.left')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').id = 'leave|'+str[1]+'|1';
+                                document.getElementById(str[1]+'|1').textContent = str[2];
+                            }
+                        }
+                        if(str[0] == 2)
+                        {
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|0').textContent = "{{__('groups.left_request')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').id = 'leave|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|1').textContent = "{{__('groups.left_request')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.remove("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.add("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').id = 'leave|'+str[1]+'|1';
+                                document.getElementById(str[1]+'|1').textContent = str[2];
+                            }
+                        }
+                        if(str[0] == 0)
+                        {
+                            if(grooupId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|0').textContent = "{{__('groups.join')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.remove("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').classList.add("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|0').id = 'join|'+str[1]+'|0';
+                                document.getElementById(str[1]+'|0').textContent = str[2];
+                            }
+
+                            if(relatedId)
+                            {
+                                document.getElementById(RequestType+'|'+Group_id+'|1').textContent = "{{__('groups.join')}}";
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.remove("button-2");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').classList.add("button-4");
+                                document.getElementById(RequestType+'|'+Group_id+'|1').id = 'join|'+str[1]+'|1';
+                                document.getElementById(str[1]+'|1').textContent = str[2];
+                            }
+                        }
+
+                        // alert(data);
+                    }
+                });
+
+            });
+        });
+    </script>
+    <script>
+        $(document).ready(function(){
+            $('.totyFrientshep').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Enemy_id = splittable[1];
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/frientshep-group',
+                    method:"get",
+                    data:{requestType:RequestType,enemy_id:Enemy_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        var x = 'addFollowing|'+str[1];
+                        console.log(x);
+                        if(str[0] == 2)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.un_friend')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'remove|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + " {{__('groups.follower')}} ";
+
+                            document.getElementById(x).textContent = "{{__('groups.un_following')}}";
+                            document.getElementById(x).classList.remove("button-4");
+                            document.getElementById(x).classList.add("button-2");
+                            document.getElementById(x).id = 'removeFollowing|'+str[1];
+                        }
+                        if(str[0] == 3)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.un_friend_request')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'remove|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + " {{__('groups.follower')}} ";
+
+                            document.getElementById(x).textContent = "{{__('groups.un_following')}}";
+                            document.getElementById(x).classList.remove("button-4");
+                            document.getElementById(x).classList.add("button-2");
+                            document.getElementById(x).id = 'removeFollowing|'+str[1];
+                        }
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.add_friend')}}";
+                            document.getElementById(id).classList.remove("button-2");
+                            document.getElementById(id).classList.add("button-4");
+                            document.getElementById(id).id = 'add|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + " {{__('groups.follower')}} ";
+
+                            document.getElementById('removeFollowing|'+str[1]).textContent = "{{__('groups.add_following')}}";
+                            document.getElementById('removeFollowing|'+str[1]).classList.remove("button-2");
+                            document.getElementById('removeFollowing|'+str[1]).classList.add("button-4");
+                            document.getElementById('removeFollowing|'+str[1]).id = 'addFollowing|'+str[1];
+                        }
+                    }
+                });
+
+            });
+
+            $('.totyFollowing').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Enemy_id = splittable[1];
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/following-group',
+                    method:"get",
+                    data:{requestType:RequestType,enemy_id:Enemy_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        if(str[0] == 1)
+                        {
+                            document.getElementById(id).textContent = "{{__('groups.un_following')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'removeFollowing|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + "{{__('groups.follower')}}";
+                        }
+
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(id).textContent =  "{{__('groups.add_following')}}";
+                            document.getElementById(id).classList.remove("button-2");
+                            document.getElementById(id).classList.add("button-4");
+                            document.getElementById(id).id = 'addFollowing|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + "{{__('groups.follower')}}";
+                        }
+                        //  alert(data);
+                    }
+                });
+
+            });
+
+            $('.totyAdmin').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Enemy_id = splittable[1];
+                var Group_id = splittable[2];
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/asignAdmin-group',
+                    method:"get",
+                    data:{requestType:RequestType,enemy_id:Enemy_id,group_id:Group_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        if(str[0] == 1)
+                        {
+                            // var sad =  `<li class='members-item'>` + document.getElementById(Enemy_id+'|'+Group_id).innerHTML + `</li>`;
+                            // console.log(sad);
+                            // document.getElementById('adddmin').innerHTML +=  document.getElementById(Enemy_id+'|'+Group_id).innerHTML ;
+                            // document.getElementById(Enemy_id+'|'+Group_id).style.display = "none";
+                            document.getElementById(id).textContent =  "{{__('groups.admin')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            // document.getElementById('addAdmin|'+Enemy_id+'|'+Group_id).style.display = "none";
+                            document.getElementById('removeMember|'+Enemy_id+'|'+Group_id).style.display = "none";
+
+                        }
+
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(Enemy_id+'|'+Group_id).style.display = "none";
+                        }
+
+                    }
+                });
+
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function(){
+            $('.totyRequestgroup').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Request_id = splittable[1];
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/changeRequest-group',
+                    method:"get",
+                    data:{requestType:RequestType,request_id:Request_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        document.getElementById(data).style.display = "none";
+                    }
+                });
+
+            });
+        });
+    </script>
+    {{-- page member --}}
+    <script>
+        $(document).ready(function(){
+            $('.totyFrientshepPage').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Enemy_id = splittable[1];
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/frientshep-page',
+                    method:"get",
+                    data:{requestType:RequestType,enemy_id:Enemy_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        var x = 'addFollowing|'+str[1];
+                        console.log(x);
+                        if(str[0] == 2)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.un_friend')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'remove|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + " {{__('pages.follower')}} ";
+
+                            document.getElementById(x).textContent = "{{__('pages.un_following')}}";
+                            document.getElementById(x).classList.remove("button-4");
+                            document.getElementById(x).classList.add("button-2");
+                            document.getElementById(x).id = 'removeFollowing|'+str[1];
+                        }
+                        if(str[0] == 3)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.un_friend_request')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'remove|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + " {{__('pages.follower')}} ";
+
+                            document.getElementById(x).textContent = "{{__('pages.un_following')}}";
+                            document.getElementById(x).classList.remove("button-4");
+                            document.getElementById(x).classList.add("button-2");
+                            document.getElementById(x).id = 'removeFollowing|'+str[1];
+                        }
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.add_friend')}}";
+                            document.getElementById(id).classList.remove("button-2");
+                            document.getElementById(id).classList.add("button-4");
+                            document.getElementById(id).id = 'add|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + "{{__('pages.follower')}}";
+
+                            document.getElementById('removeFollowing|'+str[1]).textContent = "{{__('pages.add_following')}}";
+                            document.getElementById('removeFollowing|'+str[1]).classList.remove("button-2");
+                            document.getElementById('removeFollowing|'+str[1]).classList.add("button-4");
+                            document.getElementById('removeFollowing|'+str[1]).id = 'addFollowing|'+str[1];
+                        }
+                    }
+                });
+
+            });
+
+            $('.totyFollowingPage').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Enemy_id = splittable[1];
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/following-page',
+                    method:"get",
+                    data:{requestType:RequestType,enemy_id:Enemy_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        if(str[0] == 1)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.un_following')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            document.getElementById(id).id = 'removeFollowing|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + "{{__('pages.follower')}}";
+                        }
+
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(id).textContent = "{{__('pages.add_following')}}";
+                            document.getElementById(id).classList.remove("button-2");
+                            document.getElementById(id).classList.add("button-4");
+                            document.getElementById(id).id = 'addFollowing|'+str[1];
+                            document.getElementById(str[1]).textContent = str[2] + "{{__('pages.follower')}}";
+                        }
+                        //  alert(data);
+                    }
+                });
+
+            });
+
+            $('.totyAdminPage').click(function(event){
+                event.preventDefault();
+                var id = $(this).attr('id');
+                var splittable = id.split('|');
+                var RequestType = splittable[0];
+                var Enemy_id = splittable[1];
+                var Page_id = splittable[2];
+                console.log(RequestType);
+                $.ajax({
+                    url:'http://127.0.0.1:8000/asignAdmin-page',
+                    method:"get",
+                    data:{requestType:RequestType,enemy_id:Enemy_id,page_id:Page_id},
+                    dataType:"text",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success:function(data){
+                        var str = data.split('|');
+                        if(str[0] == 1)
+                        {
+                            // var sad =  `<li class='members-item'>` + document.getElementById(Enemy_id+'|'+Group_id).innerHTML + `</li>`;
+                            // console.log(sad);
+                            // document.getElementById('adddmin').innerHTML +=  document.getElementById(Enemy_id+'|'+Group_id).innerHTML ;
+                            // document.getElementById(Enemy_id+'|'+Group_id).style.display = "none";
+                            document.getElementById(id).textContent = "{{__('pages.admin')}}";
+                            document.getElementById(id).classList.remove("button-4");
+                            document.getElementById(id).classList.add("button-2");
+                            // document.getElementById('addAdmin|'+Enemy_id+'|'+Group_id).style.display = "none";
+                            document.getElementById('removeMember|'+Enemy_id+'|'+Page_id).style.display = "none";
+
+                        }
+
+                        if(str[0] == 0)
+                        {
+                            document.getElementById(Enemy_id+'|'+Page_id).style.display = "none";
+                        }
+
+                    }
+                });
+
+            });
+        });
+    </script>
+
+    <script>
+        function mysearchtoty() {
+            var input = document.getElementById("search");
+            var filter = input.value.toLowerCase();
+            var nodes = document.getElementsByClassName('target');
+
+            for (i = 0; i < nodes.length; i++) {
+                if (nodes[i].innerText.toLowerCase().includes(filter)) {
+                    nodes[i].style.display = "block";
+                } else {
+                    nodes[i].style.display = "none";
+                }
+            }
+        }
+
+    </script>
     <script src="https://www.dukelearntoprogram.com/course1/common/js/image/SimpleImage.js"></script>
     <script src="{{ asset('js/script.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('.js-example-basic-single').select2();
+        });
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('.js-example-basic-multiple').select2();
+        });
+    </script>
     <!-- FONT AWESOME -->
     <script src="https://kit.fontawesome.com/5d2df7d4f7.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script src="{{ asset('js/script_mar.js') }}"></script>
 
 </body>
 </html>

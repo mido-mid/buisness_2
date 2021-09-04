@@ -4,23 +4,52 @@
     @if(count($users) > 0)
 
         @foreach($users as $user)
-            <div class="service card m-2">
-                <a href="{{route('services',$category->id)}}" style="text-decoration: none">
-                    <img
-                        src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                        class="card-img-top"
-                        alt="..."
-                    />
-                    <div class="card-body">
-                        <p class="card-text">
-                            @if(App::getLocale() == 'ar')
-                                {{$category->name_ar}}
-                            @else
-                                {{$category->name_en}}
-                            @endif
-                        </p>
+            <div class="post-container bg-white mt-3 p-3">
+                <div class="post-owner d-flex align-items-center">
+                    @if($user->personal_image)
+                        <div class="owner-img">
+                            <a style="display: inline" href="{{route('profile',$user->id)}}"><img src="{{asset('media')}}/{{$user->personal_image}}" class="rounded-circle" /></a>
+                        </div>
+                    @else
+                        <div class="owner-img">
+                            <a style="display: inline" href="{{route('profile',$user->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
+                        </div>
+                    @endif
+                    <div class="owner-name pl-3">
+                        <a href="{{route('profile',$user->id)}}"><b>
+                                {{$user->name}}
+                            </b></a>
                     </div>
-                </a>
+                    <div class="post-option ml-auto pr-3">
+                        @if($user->friendship == 'receive friend request')
+                            <div class="owner-name pl-3" id="friend-request-div-{{$user->id}}">
+                                <a id="accept-friend-request-{{$user->id}}" onclick="friendRequestSubmit({{$user->id}},'accept')" class="btn btn-warning text-white">accept friend request</a>
+                                <form id="accept-friend-request-form-{{$user->id}}" action="{{ route('addfriend') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                    @csrf
+                                    <input type="hidden" name="receiverId" value="{{$user->receiver}}">
+                                    <input type="hidden" name="senderId" value="{{$user->sender}}">
+                                    <input type="hidden" name="requestType" id="friend-request-type-{{$user->id}}" value="acceptFriendRequest">
+                                </form>
+
+                                <a id="remove-friend-request-{{$user->id}}" onclick="friendRequestSubmit({{$user->id}},'remove')" class="btn btn-warning text-white">remove friend request</a>
+                                <form id="remove-friend-request-form-{{$user->id}}" action="{{ route('addfriend') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                    @csrf
+                                    <input type="hidden" name="receiverId" value="{{$user->receiver}}">
+                                    <input type="hidden" name="senderId" value="{{$user->sender}}">
+                                    <input type="hidden" name="requestType" id="friend-request-type-{{$user->id}}" value="refuseFriendRequest">
+                                </form>
+                            </div>
+                        @else
+                            <a id="search-friend-btn-{{$user->id}}" onclick="addFriendSubmit({{$user->id}},'search')" class="btn btn-warning text-white">{{$user->friendship}}</a>
+                            <form id="search-friend-form-{{$user->id}}" action="{{ route('addfriend') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                @csrf
+                                <input type="hidden" id="receiver-{{$user->id}}" name="receiverId" value="{{$user->receiver}}">
+                                <input type="hidden" id="sender-{{$user->id}}" name="senderId" value="{{$user->sender}}">
+                                <input type="hidden" name="requestType" id="search-request-type-{{$user->id}}" value="{{$user->request_type}}">
+                            </form>
+                        @endif
+                    </div>
+                </div>
             </div>
         @endforeach
     @endif

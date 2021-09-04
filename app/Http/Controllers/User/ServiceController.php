@@ -30,11 +30,11 @@ class ServiceController extends Controller
     public function index($category_id = null)
     {
         //
-        $countries = DB::table('countries')->get();
         $categories = Category::where('type','service')->get();
+
         if($category_id != null) {
 
-            $services = Post::where('postTypeId', 1)->where('categoryId',$category_id)->where('country',auth()->user()->country)->get();
+            $services = Post::where('postTypeId', 1)->where('categoryId',$category_id)->where('country_id',auth()->user()->country_id)->where('city_id',auth()->user()->city_id)->where('publisherId','!=',auth()->user()->id)->get();
             if (count($services) > 0) {
                 foreach ($services as $service) {
                     $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
@@ -47,7 +47,7 @@ class ServiceController extends Controller
             }
         }
         else{
-            $services = Post::where('postTypeId', 1)->where('country',auth()->user()->country)->get();
+            $services = Post::where('postTypeId', 1)->where('country_id',auth()->user()->country_id)->where('city_id',auth()->user()->city_id)->where('publisherId','!=',auth()->user()->id)->get();
             if (count($services) > 0) {
                 foreach ($services as $service) {
                     $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
@@ -60,7 +60,7 @@ class ServiceController extends Controller
             }
         }
 
-        return view('User.services.show',compact('services','categories','category_id','countries'));
+        return view('User.services.show',compact('services','categories','category_id'));
     }
 
     /**
@@ -89,7 +89,8 @@ class ServiceController extends Controller
             'media' => 'nullable',
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif|max:100040',
             'category_id' => 'required|integer',
-            'country' => 'required|string'
+            'country_id' => 'required|integer',
+            'city_id' => 'required|integer',
         ];
 
         $validator = Validator::make($request->all(),$rules);
@@ -107,7 +108,8 @@ class ServiceController extends Controller
         $service = Post::create([
             'body' => $request->body,
             'price' => $price,
-            'country' => $request->country,
+            'country_id' => $request->country_id,
+            'city_id' => $request->city_id,
             'privacyId' => 1,
             'postTypeId' => 1,
             'stateId' => 2,
@@ -148,7 +150,7 @@ class ServiceController extends Controller
         }
 
         $countries = DB::table('countries')->get();
-
+        $cities = DB::table('cities')->get();
         $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
         $publisher = User::find($service->publisherId);
         $follow = DB::table('following')->Where('followerId',2)->first();
@@ -158,7 +160,7 @@ class ServiceController extends Controller
         $categories = Category::where('type','service')->get();
 
         if($service){
-            $view = view('includes.partialservice', compact('service','categories','countries'));
+            $view = view('includes.partialservice', compact('service','categories','countries','cities'));
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
@@ -175,23 +177,45 @@ class ServiceController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($category_id = null)
     {
         //
 
-        $service = Post::where('postTypeId',2)->where('id',$id)->first();
-        $user = auth()->user();
-        if( $service ) {
-            $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
-            $publisher = User::find($service->publisherId);
-            $follow = DB::table('following')->Where('followerId',2)->first();
-            $service->media = $media;
-            $service->publisher = $publisher;
-            $service->follow = $follow  ? 'true' : 'false';
-            return view('User.services.show',compact('service'));
-        }else{
-            return redirect()->route('services.show')->withStatus('no service with this id');
+        $countries = DB::table('countries')->get();
+        $cities = DB::table('cities')->get();
+        $categories = Category::where('type','service')->get();
+
+        if($category_id != null) {
+
+            $services = Post::where('postTypeId', 1)->where('categoryId',$category_id)->where('publisherId',auth()->user()->id)->get();
+            if (count($services) > 0) {
+                foreach ($services as $service) {
+                    $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
+                    $publisher = User::find($service->publisherId);
+                    $follow = DB::table('following')->Where('followerId',2)->first();
+                    $service->media = $media;
+                    $service->publisher = $publisher;
+                    $service->follow = $follow  ? 'true' : 'false';
+                    $service->cities = DB::table('cities')->where('country_id',$service->country_id)->get();
+                }
+            }
         }
+        else{
+            $services = Post::where('postTypeId', 1)->where('publisherId',auth()->user()->id)->get();
+            if (count($services) > 0) {
+                foreach ($services as $service) {
+                    $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
+                    $publisher = User::find($service->publisherId);
+                    $follow = DB::table('following')->Where('followerId',2)->first();
+                    $service->media = $media;
+                    $service->publisher = $publisher;
+                    $service->follow = $follow  ? 'true' : 'false';
+                    $service->cities = DB::table('cities')->where('country_id',$service->country_id)->get();
+                }
+            }
+        }
+
+        return view('User.services.myservices',compact('services','categories','category_id','countries','cities'));
     }
 
     /**
@@ -225,7 +249,8 @@ class ServiceController extends Controller
             'media' => 'nullable',
             'media.*' => 'mimes:jpg,jpeg,png,svg,gif|max:100040',
             'category_id' => 'required|integer',
-            'country' => 'required|string'
+            'country_id' => 'required|integer',
+            'city_id' => 'integer'
         ];
 
         $validator = Validator::make($request->all(),$rules);
@@ -243,7 +268,8 @@ class ServiceController extends Controller
             $service->update([
                 'body' => $request->body,
                 'price' => $price,
-                'country' => $request->country,
+                'country_id' => $request->country_id,
+                'city_id' => $request->city_id,
                 'privacyId' => 1,
                 'postTypeId' => 1,
                 'stateId' => 2,
@@ -310,7 +336,7 @@ class ServiceController extends Controller
 
 
             $countries = DB::table('countries')->get();
-
+            $cities = DB::table('cities')->get();
             $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
             $publisher = User::find($service->publisherId);
             $follow = DB::table('following')->Where('followerId',2)->first();
@@ -320,7 +346,7 @@ class ServiceController extends Controller
             $categories = Category::where('type','service')->get();
 
 
-            $view = view('includes.partialservice', compact('service','categories','countries'));
+            $view = view('includes.partialservice', compact('service','categories','countries','cities'));
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
@@ -384,5 +410,16 @@ class ServiceController extends Controller
         $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
         return $sections['categories'];
+    }
+
+    public function getCities($country_id){
+
+        $cities = DB::table('cities')->where('country_id',$country_id)->get();
+
+        $view = view('includes.cities',compact('cities'));
+
+        $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+        return $sections['cities'];
     }
 }

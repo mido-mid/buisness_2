@@ -29,7 +29,7 @@
 <p class="group-members-count" id="{{$group->id}}">{{count($group_members)}} {{__('groups.member')}}</p>
 <div class="group-nav py-3">
   @if(Auth::guard('web')->user())
-    <a class="button-3" href="{{route('groups.show',['group'=>$group->id])}}"> {{__('groups.main')}}</a>
+    <a class="button-3" href="{{route('main-group',['id'=>$group->id])}}"> {{__('groups.main')}}</a>
     <a class="button-3" href="{{route('members-group',['id'=>$group->id])}}">{{__('groups.members')}}</a>
     <a class="button-3" href="{{route('videos-group',['id'=>$group->id])}}">{{__('groups.videos')}}</a>
     <a class="button-3" href="{{route('images-group',['id'=>$group->id])}}">{{__('groups.images')}}</a>
@@ -46,7 +46,7 @@
             <div class="owl-carousel owl-theme">
               <div class="group-img-container text-center post-modal">
                 <h3 >{{__('groups.delet_group_confirm')}}</h3>
-                <form method="post" action="{{ route('groups.destroy', $group['id'])}}">
+                <form method="post" action="{{ route('groups.destroy', $group->id)}}">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="button-3 button-danger">{{__('groups.delet_group')}}</button>

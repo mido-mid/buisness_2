@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Providers\RouteServiceProvider;
 use App\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -42,6 +44,17 @@ class RegisterController extends Controller
         $this->middleware('guest');
     }
 
+    public function getCities($country_id){
+
+        $cities = DB::table('cities')->where('country_id',$country_id)->get();
+
+        $view = view('includes.cities',compact('cities'));
+
+        $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
+
+        return $sections['cities'];
+    }
+
     /**
      * Get a validator for an incoming registration request.
      *
@@ -58,8 +71,9 @@ class RegisterController extends Controller
             'birthDate' => ['required','date'],
             'phone' => ['required', 'digits:11', Rule::unique('users', 'phone')],
             'jobTitle' => ['required', 'string', 'max:255' , 'not_regex:/([%\$#\*<>]+)/'],
-            'city' => ['required', 'string', 'max:255' , 'not_regex:/([%\$#\*<>]+)/'],
-            'country' => ['required', 'string', 'max:255' , 'not_regex:/([%\$#\*<>]+)/'],
+            'city_id' => ['required', 'integer'],
+            'country_id' => ['required', 'integer'],
+            'category_id' => ['required', 'not_in:0'],
             'gender' => ['required', 'string'],
         ]);
     }
@@ -72,7 +86,7 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
+        $user = User::create([
             'name' => $data['name'],
             'user_name' => $data['user_name'],
             'email' => $data['email'],
@@ -81,10 +95,19 @@ class RegisterController extends Controller
             'type' => 0,
             'phone' => $data['phone'],
             'jobTitle' => $data['jobTitle'],
-            'city' => $data['city'],
-            'country' => $data['country'],
+            'city_id' => $data['city_id'],
+            'country_id' => $data['country_id'],
             'gender' => $data['gender'],
             'stateId' => 4
         ]);
+
+        foreach ($data['category_id'] as $category){
+            DB::table('user_categories')->insert([
+                'user_id' => $user->id,
+                'category_id' => $category
+            ]);
+        }
+
+        return $user;
     }
 }

@@ -5,7 +5,10 @@
 <section id="ez-body__center-content" class="col-lg-8 mt-3">
     <div class="row">
         <div class="col-lg-12">
-            <input type="text" class="search-box" placeholder="{{__('pages.search')}}">
+            <div class="row">
+                <input type="text" onkeyup="mysearchtoty()" id="search" class="search-box col-10 ml-2" placeholder="{{__('pages.search')}}">
+                <a  class="button-4 col-2 mt-5" href="/pages/create">{{__('pages.create')}}</a>
+            </div>
             <section class="group-section px-3">
               <div class="group-mygroups py-3">
                 <div class="row text-center ">
@@ -21,7 +24,7 @@
                 <div id="all-pages" class=" tabcontent" >
                   <div  class="row ">
                       @foreach($all_pages as $all_page)
-                        <div class="col-lg-4">
+                        <div class="col-lg-4 target">
                             <div class="card">
                                 <a href="{{route('main-page',$all_page->id)}}">
                                     @if($all_page->profile_image)
@@ -35,12 +38,13 @@
                                         <a href="{{route('main-page',$all_page->id)}}" style="color:black !important">
                                             <h3 class="card-title">{{$all_page->name}}</h3>
                                         </a>
-                                        <p class="card-text"><small class="text-muted" id="{{$all_page->id}}">
+                                        <p class="card-text"><small class="text-muted" id="{{$all_page->id}}|0">
                                             <?php
                                                 $member = App\models\PageMember::where('page_id',$all_page->id)->count();
                                                 echo $member;
                                             ?>
-                                            {{__('pages.member')}}</small>
+                                            </small>
+                                            {{__('pages.member')}}
                                         </p>
                                     </div>
                                     <div class="p-2">
@@ -50,18 +54,18 @@
                                             ?>
                                             @if (count($checkState)==0)
                                             <div class="p-2">
-                                                    <button class="button-4 totyAllpages" id="join|{{$all_page->id}}" >{{__('pages.like')}} </button>
+                                                    <button class="button-4 totyAllpages" id="join|{{$all_page->id}}|0" >{{__('pages.like')}} </button>
                                             </div>
 
                                             @elseif (count($checkState)>0)
                                                 @if ($checkState[0]->state == 1)
                                                     <div class="p-2">
-                                                            <button class="button-2 totyAllpages" id="leave|{{$all_page->id}}">{{__('pages.dislike')}}</button>
+                                                            <button class="button-2 totyAllpages" id="leave|{{$all_page->id}}|0">{{__('pages.dislike')}}</button>
                                                     </div>
 
                                                 @elseif ($checkState[0]->state == 2)
                                                     <div class="p-2">
-                                                        <button class="button-2 totyAllpages" id="leave|{{$all_page->id}}">{{__('pages.dislike_request')}}</button>
+                                                        <button class="button-2 totyAllpages" id="leave|{{$all_page->id}}|0">{{__('pages.dislike_request')}}</button>
                                                     </div>
 
                                                 @elseif ($checkState[0]->isAdmin == 1)
@@ -106,37 +110,59 @@
                 <h6 class="pb-2" style="font-weight: bold;font-size: 15px">Pages You May Like</h6>
                 <div class="suggested-groups">
                     @foreach($expected_pages as $page)
-                        <div class="group">
-                            <a href="{{route('main-page',$page->id)}}">
-                                <div class="group-banner">
-                                    @if($page->cover_image)
-                                        <img
-                                            width="100%"
-                                            src="{{asset('media')}}/{{$page->profile_image}}"
-                                            alt="User Profile Pic"
-                                        />
-                                    @else
-                                        <img
-                                            width="100%"
-                                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                                            alt="User Profile Pic"
-                                        />
-                                    @endif
-                                </div>
-                                <div class="mt-2 group-info">
-                                    <div>
-                                        <p><b>{{$page->name}}</b></p>
-                                        <p>{{$page->members}} likes</p>
-                                    </div>
-                                    <a id="like-page-btn-{{$page->id}}" onclick="likePageSubmit({{$page->id}})" class="btn btn-warning text-white">Like</a>
-                                    <form id="like-page-form-{{$page->id}}" action="{{ route('like_page') }}" method="POST" style="display: none;">
+                    <div class="card">
+                      <a href="/pages/{{$page->id}}">
+                          <img src="{{asset('media')}}/{{$page->profile_image}}" class="card-img-top" alt="...">
+                      </a>
+                      <div class="d-flex justify-content-between">
+                          <div class="card-body">
+                              <a href="pages/{{$page->id}}" style="color:black !important">
+                                  <h3 class="card-title">{{$page->name}}</h3>
+                              </a>
+                              <p class="card-text"><small class="text-muted" id="{{$page->id}}">
+                                  <?php
+                                      $member = App\models\PageMember::where('page_id',$page->id)->count();
+                                      echo $member;
+                                  ?>
+                                  </small>
+                                  {{__('pages.member')}}
+                              </p>
+                          </div>
+                                @if(Auth::guard('web')->user())
+                                  <?php
+                                      $checkState = App\models\PageMember::where('page_id',$page->id)->where('user_id',auth::user()->id)->get();
+                                  ?>
+                                  @if (count($checkState)==0)
+                                  <div class="p-2">
+                                          <button class="button-4 totyAllpages" id="join|{{$page->id}}" >{{__('pages.like')}} </button>
+                                  </div>
+      
+                                  @elseif (count($checkState)>0)
+                                      @if ($checkState[0]->state == 1)
+                                          <div class="p-2">
+                                                  <button class="button-2 totyAllpages" id="leave|{{$page->id}}">{{__('pages.dislike')}}</button>
+                                          </div>
+      
+                                      @elseif ($checkState[0]->state == 2)
+                                          <div class="p-2">
+                                              <button class="button-2 totyAllpages" id="leave|{{$page->id}}">{{__('pages.dislike_request')}}</button>
+                                          </div>
+      
+                                      @elseif ($checkState[0]->isAdmin == 1)
+                                          <div class="p-2">
+                                              <button class="button-2">{{__('pages.admin')}}</button>
+                                          </div>
+                                      @endif
+                                  @endif
+                                @else
+                                    <form action="/login" method="post">
                                         @csrf
-                                        <input type="hidden" name="page_id" value="{{$page->id}}">
-                                        <input type="hidden" id="like-page-flag-{{$page->id}}" name="flag" value="0">
+                                        <button class="button-4">{{__('pages.like')}}</button>
                                     </form>
-                                </div>
-                            </a>
+                                @endif
+                            </div>
                         </div>
+                    </div>
                     @endforeach
                 </div>
             </li>

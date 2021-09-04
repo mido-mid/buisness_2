@@ -4,23 +4,40 @@
     @if(count($groups) > 0)
 
         @foreach($groups as $group)
-            <div class="service card m-2">
-                <a href="{{route('services',$category->id)}}" style="text-decoration: none">
-                    <img
-                        src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                        class="card-img-top"
-                        alt="..."
-                    />
-                    <div class="card-body">
-                        <p class="card-text">
-                            @if(App::getLocale() == 'ar')
-                                {{$category->name_ar}}
-                            @else
-                                {{$category->name_en}}
-                            @endif
-                        </p>
+            <div class="post-container bg-white mt-3 p-3" id="searched-groups-{{$group->id}}">
+                <div class="post-owner d-flex align-items-center">
+                        @if($group->profile_image)
+                            <div class="owner-img">
+                                <a style="display: inline" href="{{route('main-group',$group->id)}}"><img src="{{asset('media')}}/{{$group->profile_image}}" class="rounded-circle" /></a>
+                            </div>
+                        @else
+                            <div class="owner-img">
+                                <a style="display: inline" href="{{route('main-group',$group->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
+                            </div>
+                        @endif
+                    <div class="owner-name pl-3">
+                        <a href="{{route('main-group',$group->id)}}"><b>
+                                {{$group->name}}
+                            </b></a>
+
+                        <span style="display: block" id="members-{{$group->id}}">{{$group->members}} members</span>
                     </div>
-                </a>
+                    <div class="post-option ml-auto pr-3">
+                        @if($group->joined == 'delete group')
+                            <a id="delete-group-btn-{{$group->id}}" onclick="deleteGroupSubmit({{$group->id}})" class="btn btn-warning text-white">{{$group->joined}}</a>
+                            <form id="delete-group-form-{{$group->id}}" action="{{ route('groups.destroy',$group->id) }}" method="POST" style="display: none;">
+                                @csrf
+                            </form>
+                        @else
+                            <a id="join-btn-{{$group->id}}" onclick="joinGroupSubmit({{$group->id}})" class="btn btn-warning text-white">Join</a>
+                            <form id="join-group-form-{{$group->id}}" action="{{ route('join_group') }}" method="POST" style="display: none;">
+                                @csrf
+                                <input type="hidden" name="group_id" value="{{$group->id}}">
+                                <input type="hidden" id="join-flag-{{$group->id}}" name="flag" value="{{$group->flag}}">
+                            </form>
+                        @endif
+                    </div>
+                </div>
             </div>
         @endforeach
     @endif

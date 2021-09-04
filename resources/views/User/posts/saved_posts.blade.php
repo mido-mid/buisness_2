@@ -79,7 +79,7 @@
                         @endif
                         <div class="owner-name pl-3">
                             @if($post->source == "page")
-                                <a href="{{route('profile',$post->publisher->id)}}"><b>
+                                <a href="{{route('main-page',$post->page_id)}}"><b>
                                         {{$post->page->name}}
                                     </b></a>
                             @else
@@ -89,13 +89,14 @@
                                         @endif
                                         {{$post->publisher->name}}
                                     </b></a>
-                                @if($post->sponsored)
-                                    <div style="font-size: small">
-                                        <span><i class="fas fa-ad"></i></span>
-                                        sponsored
-                                    </div>
+                            @endif
 
-                                @endif
+                            @if($post->sponsored)
+                                <div style="font-size: small">
+                                    <span><i class="fas fa-ad"></i></span>
+                                    sponsored
+                                </div>
+
                             @endif
 
                             @if($post->tags != null )
@@ -111,8 +112,10 @@
                             @endif
 
                             @if($post->source == "group")
-                                <Span><i class="fas fa-caret-right"></i></Span>
-                                {{$post->group->name}}
+                                <a href="{{route('main-group',$post->group_id)}}">
+                                    <Span><i class="fas fa-caret-right"></i></Span>
+                                    {{$post->group->name}}
+                                </a>
                             @endif
 
                             <span style="display: block">{{date('d/m/Y',strtotime($post->created_at))}}</span>
@@ -252,12 +255,12 @@
                                 @foreach($post->media as $media)
                                     @if($media->mediaType == 'image')
                                         <!-- if media img and imgs=1 -->
-                                            <div class="d-flex" style="width: 100%">
-                                                <img src="{{asset('media')}}/{{$media->filename}}" alt="opel car" />
+                                            <div class="d-flex post-height" style="width: 100%">
+                                                <img src="{{asset('media')}}/{{$media->filename}}" style="height: 400px" alt="opel car" />
                                             </div>
                                         @else
                                             <video class="p-1" controls>
-                                                <source src="{{asset('media')}}/{{$media->filename}}" type="video/mp4">
+                                                <source src="{{asset('media')}}/{{$media->filename}}" style="height: 400px" type="video/mp4">
                                                 Your browser does not support HTML video.
                                             </video>
                                         @endif
@@ -269,7 +272,7 @@
                                         @if($post->media[0]->mediaType == 'image')
                                             <!-- if media img and imgs=1 -->
                                                 <div class="d-flex" style="width: 100%">
-                                                    <img src="{{asset('media')}}/{{$post->media[0]->filename}}" alt="opel car" />
+                                                    <img src="{{asset('media')}}/{{$post->media[0]->filename}}" style="height: 400px" alt="opel car" />
                                                 </div>
                                             @else
                                                 <video class="p-1" controls>
@@ -282,7 +285,7 @@
                                             @if($post->media[1]->mediaType == 'image')
                                             <!-- if media img and imgs=1 -->
                                                 <div class="p-1 w-100" style="width: 100%">
-                                                    <img src="{{asset('media')}}/{{$post->media[1]->filename}}" alt="opel car" />
+                                                    <img src="{{asset('media')}}/{{$post->media[1]->filename}}" style="height: 400px" alt="opel car" />
                                                 </div>
                                             @else
                                                 <video class="p-1 w-100" controls>
@@ -297,7 +300,7 @@
                                             @if($post->media[2]->mediaType == 'image')
                                                 <!-- if media img and imgs=1 -->
                                                     <div class="p-1 w-100" style="width: 100%">
-                                                        <img src="{{asset('media')}}/{{$post->media[2]->filename}}" alt="opel car" />
+                                                        <img src="{{asset('media')}}/{{$post->media[2]->filename}}" style="height: 400px" alt="opel car" />
                                                     </div>
                                                 @else
                                                     <video class="p-1 w-100" controls>
@@ -311,7 +314,7 @@
                                                     @if($post->media[3]->mediaType == 'image')
                                                     <!-- if media img and imgs=1 -->
                                                         <div class="p-1 w-100" style="width: 100%">
-                                                            <img src="{{asset('media')}}/{{$post->media[3]->filename}}" alt="opel car" />
+                                                            <img src="{{asset('media')}}/{{$post->media[3]->filename}}" style="height: 400px" alt="opel car" />
                                                         </div>
                                                     @else
                                                         <video class="p-1 w-100" controls>
@@ -329,7 +332,7 @@
                                                     @if($post->media[3]->mediaType == 'image')
                                                         <!-- if media img and imgs=1 -->
                                                             <div class="p-1 w-100" style="width: 100%">
-                                                                <img src="{{asset('media')}}/{{$post->media[3]->filename}}" alt="opel car" />
+                                                                <img src="{{asset('media')}}/{{$post->media[3]->filename}}" style="height: 400px" alt="opel car" />
                                                             </div>
                                                         @else
                                                             <video class="p-1 w-100" controls>
@@ -450,7 +453,7 @@
                                                 @if($media->mediaType == 'image')
                                                     <!-- if media img and imgs=1 -->
                                                         <div class="d-flex" style="width: 100%">
-                                                            <img src="{{asset('media')}}/{{$media->filename}}" alt="opel car" />
+                                                            <img src="{{asset('media')}}/{{$media->filename}}" style="height: 400px" alt="opel car" />
                                                         </div>
                                                     @else
                                                         <video class="p-1" controls>
@@ -466,7 +469,7 @@
                                                     @if($post->shared_post->media[0]->mediaType == 'image')
                                                         <!-- if media img and imgs=1 -->
                                                             <div class="d-flex" style="width: 100%">
-                                                                <img src="{{asset('media')}}/{{$post->shared_post->media[0]->filename}}" alt="opel car" />
+                                                                <img src="{{asset('media')}}/{{$post->shared_post->media[0]->filename}}" style="height: 400px" alt="opel car" />
                                                             </div>
                                                         @else
                                                             <video class="p-1" controls>
@@ -479,7 +482,7 @@
                                                         @if($post->shared_post->media[1]->mediaType == 'image')
                                                         <!-- if media img and imgs=1 -->
                                                             <div class="p-1 w-100" style="width: 100%">
-                                                                <img src="{{asset('media')}}/{{$post->shared_post->media[1]->filename}}" alt="opel car" />
+                                                                <img src="{{asset('media')}}/{{$post->shared_post->media[1]->filename}}" style="height: 400px" alt="opel car" />
                                                             </div>
                                                         @else
                                                             <video class="p-1 w-100" controls>
@@ -494,7 +497,7 @@
                                                         @if($post->shared_post->media[2]->mediaType == 'image')
                                                             <!-- if media img and imgs=1 -->
                                                                 <div class="p-1 w-100" style="width: 100%">
-                                                                    <img src="{{asset('media')}}/{{$post->shared_post->media[2]->filename}}" alt="opel car" />
+                                                                    <img src="{{asset('media')}}/{{$post->shared_post->media[2]->filename}}" style="height: 400px" alt="opel car" />
                                                                 </div>
                                                             @else
                                                                 <video class="p-1 w-100" controls>
@@ -508,7 +511,7 @@
                                                                 @if($post->shared_post->media[3]->mediaType == 'image')
                                                                 <!-- if media img and imgs=1 -->
                                                                     <div class="p-1 w-100" style="width: 100%">
-                                                                        <img src="{{asset('media')}}/{{$post->shared_post->media[3]->filename}}" alt="opel car" />
+                                                                        <img src="{{asset('media')}}/{{$post->shared_post->media[3]->filename}}" style="height: 400px" alt="opel car" />
                                                                     </div>
                                                                 @else
                                                                     <video class="p-1 w-100" controls>
@@ -526,7 +529,7 @@
                                                                 @if($post->shared_post->media[3]->mediaType == 'image')
                                                                     <!-- if media img and imgs=1 -->
                                                                         <div class="p-1 w-100" style="width: 100%">
-                                                                            <img src="{{asset('media')}}/{{$post->shared_post->media[3]->filename}}" alt="opel car" />
+                                                                            <img src="{{asset('media')}}/{{$post->shared_post->media[3]->filename}}" style="height: 400px" alt="opel car" />
                                                                         </div>
                                                                     @else
                                                                         <video class="p-1 w-100" controls>
@@ -667,108 +670,34 @@
                                                             <button onclick="filterPostLikes({{$post->id}},'all-{{$post->id}}')" class="btn btn-light active-{{$post->id}} filter-all-{{$post->id}} ez-active" id="{{$post->id}}" data-filter="all-{{$post->id}}">
                                                                 All
                                                             </button>
-                                                            @if(count($post->like_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-like-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'like-{{$post->id}}')" id="{{$post->id}}" data-filter="like-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/like.png"/>
-                                                                    <span>{{count($post->like_stat)}}</span>
-                                                                </div>
-                                                            @endif
-                                                            @if(count($post->love_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-love-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'love-{{$post->id}}')" id="{{$post->id}}" data-filter="love-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/love.png"/>
-                                                                    <span>{{count($post->love_stat)}}</span>
-                                                                </div>
-                                                            @endif
-                                                            @if(count($post->haha_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-haha-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'haha-{{$post->id}}')" id="{{$post->id}}" data-filter="haha-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/haha.png"/>
-                                                                    <span>{{count($post->haha_stat)}}</span>
-                                                                </div>
-                                                            @endif
-                                                            @if(count($post->sad_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-sad-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'sad-{{$post->id}}')" id="{{$post->id}}" data-filter="sad-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/sad.png"/>
-                                                                    <span>{{count($post->sad_stat)}}</span>
-                                                                </div>
-                                                            @endif
-                                                            @if(count($post->angry_stat) > 0)
-                                                                <div class="btn btn-light active-{{$post->id}} filter-angry-{{$post->id}}" onclick="filterPostLikes({{$post->id}},'angry-{{$post->id}}')" id="{{$post->id}}" data-filter="angry-{{$post->id}}">
-                                                                    <img src="{{asset('media')}}/angry.png"/>
-                                                                    <span>{{count($post->angry_stat)}}</span>
-                                                                </div>
-                                                            @endif
+                                                            @foreach($post->reacts_stat as $react_stat)
+                                                                @if(count($react_stat) > 0)
+                                                                    <div class="btn btn-light active-{{$post->id}} filter-{{$react_stat[0]->react_name}}-{{$post->id}}" onclick='filterPostLikes({{$post->id}},"{{$react_stat[0]->react_name}}-{{$post->id}}")' id="{{$post->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$post->id}}">
+                                                                        <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
+                                                                        <span>{{count($react_stat)}}</span>
+                                                                    </div>
+                                                                @endif
+                                                            @endforeach
                                                         </div>
                                                         <div class="likes-container mt-3">
-                                                            <div class="filter-{{$post->id}} like-{{$post->id}}">
-                                                                @foreach($post->like_stat as $like_emoji)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($like_emoji->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                                            @foreach($post->reacts_stat as $react_stat)
+                                                                @if(count($react_stat) > 0)
+                                                                    <div class="filter-{{$post->id}} {{$react_stat[0]->react_name}}-{{$post->id}}">
+                                                                        @foreach($react_stat as $react_emoji)
+                                                                            <div class="people-info d-flex align-items-center">
+                                                                                @if($react_emoji->publisher->personal_image != null)
+                                                                                    <img class="profile-figure rounded-circle"
+                                                                                         src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
+                                                                                @else
+                                                                                    <img class="profile-figure rounded-circle"
+                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                @endif
+                                                                                <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                                                                            </div>
+                                                                        @endforeach
                                                                     </div>
-                                                                @endforeach
-                                                            </div>
-                                                            <div class="filter-{{$post->id}} love-{{$post->id}}">
-                                                                @foreach($post->love_stat as $love)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($love->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                            <div class="filter-{{$post->id}} haha-{{$post->id}}">
-                                                                @foreach($post->haha_stat as $haha)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($haha->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                            <div class="filter-{{$post->id}} sad-{{$post->id}}">
-                                                                @foreach($post->sad_stat as $sad)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($sad->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                            <div class="filter-{{$post->id}} angry-{{$post->id}}">
-                                                                @foreach($post->angry_stat as $angry)
-                                                                    <div class="people-info d-flex align-items-center">
-                                                                        @if($angry->publisher->personal_image != null)
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
-                                                                        @else
-                                                                            <img class="profile-figure rounded-circle"
-                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                        @endif
-                                                                        <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
+                                                                @endif
+                                                            @endforeach
                                                         </div>
                                                     </div>
                                                 </div>
@@ -919,7 +848,7 @@
                                                     <!-- attatched vedio -->
                                                     @if($comment->media != null)
                                                         @if($comment->media->mediaType == 'image')
-                                                            <img src="{{asset('media')}}/{{$comment->media->filename}}" class="w-100 pt-3">
+                                                            <img src="{{asset('media')}}/{{$comment->media->filename}}" style="height: 250px;width: auto" class="pt-3">
                                                         @else
                                                             <video class="pt-3" controls>
                                                                 <source src="{{asset('media')}}/{{$comment->media->filename}}" type="video/mp4">
@@ -1031,111 +960,37 @@
                                                                             </div>
                                                                             <div class="modal-body">
                                                                                 <div class="services-controller m-3 text-left">
-                                                                                    <button onclick="filterPostLikes({{$comment->id}},'all-{{$comment->id}}')" class="btn btn-light active-{{$comment->id}} filter-all-{{$comment->id}} ez-active" id="{{$comment->id}}" data-filter="all-{{$comment->id}}">
+                                                                                    <button onclick="filterPostLikes({{$comment->id}},'all-{{$comment->id}}')" class="btn btn-light active-{{$post->id}} filter-all-{{$comment->id}} ez-active" id="{{$comment->id}}" data-filter="all-{{$comment->id}}">
                                                                                         All
                                                                                     </button>
-                                                                                    @if(count($comment->like_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-like-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'like-{{$comment->id}}')" id="{{$comment->id}}" data-filter="like-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/like.png"/>
-                                                                                            <span>{{count($comment->like_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
-                                                                                    @if(count($comment->love_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-love-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'love-{{$comment->id}}')" id="{{$comment->id}}" data-filter="love-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/love.png"/>
-                                                                                            <span>{{count($comment->love_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
-                                                                                    @if(count($comment->haha_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-haha-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'haha-{{$comment->id}}')" id="{{$comment->id}}" data-filter="haha-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/haha.png"/>
-                                                                                            <span>{{count($comment->haha_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
-                                                                                    @if(count($comment->sad_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-sad-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'sad-{{$comment->id}}')" id="{{$comment->id}}" data-filter="sad-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/sad.png"/>
-                                                                                            <span>{{count($comment->sad_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
-                                                                                    @if(count($comment->angry_stat) > 0)
-                                                                                        <div class="btn btn-light active-{{$comment->id}} filter-angry-{{$comment->id}}" onclick="filterPostLikes({{$comment->id}},'angry-{{$comment->id}}')" id="{{$comment->id}}" data-filter="angry-{{$comment->id}}">
-                                                                                            <img src="{{asset('media')}}/angry.png"/>
-                                                                                            <span>{{count($comment->angry_stat)}}</span>
-                                                                                        </div>
-                                                                                    @endif
+                                                                                    @foreach($comment->reacts_stat as $react_stat)
+                                                                                        @if(count($react_stat) > 0)
+                                                                                            <div class="btn btn-light active-{{$comment->id}} filter-{{$react_stat[0]->react_name}}-{{$comment->id}}" onclick='filterPostLikes({{$comment->id}},"{{$react_stat[0]->react_name}}-{{$comment->id}}")' id="{{$comment->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$comment->id}}">
+                                                                                                <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
+                                                                                                <span>{{count($react_stat)}}</span>
+                                                                                            </div>
+                                                                                        @endif
+                                                                                    @endforeach
                                                                                 </div>
                                                                                 <div class="likes-container mt-3">
-                                                                                    <div class="filter-{{$comment->id}} like-{{$comment->id}}">
-                                                                                        @foreach($comment->like_stat as $like_emoji)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($like_emoji->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                                                                    @foreach($comment->reacts_stat as $react_stat)
+                                                                                        @if(count($react_stat) > 0)
+                                                                                            <div class="filter-{{$post->id}} {{$react_stat[0]->react_name}}-{{$comment->id}}">
+                                                                                                @foreach($react_stat as $react_emoji)
+                                                                                                    <div class="people-info d-flex align-items-center">
+                                                                                                        @if($react_emoji->publisher->personal_image != null)
+                                                                                                            <img class="profile-figure rounded-circle"
+                                                                                                                 src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
+                                                                                                        @else
+                                                                                                            <img class="profile-figure rounded-circle"
+                                                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                                        @endif
+                                                                                                        <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                                                                                                    </div>
+                                                                                                @endforeach
                                                                                             </div>
-                                                                                        @endforeach
-                                                                                    </div>
-                                                                                    <div class="filter-{{$comment->id}} love-{{$comment->id}}">
-                                                                                        @foreach($comment->love_stat as $love)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($love->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
-                                                                                            </div>
-                                                                                        @endforeach
-                                                                                    </div>
-                                                                                    <div class="filter-{{$comment->id}} haha-{{$comment->id}}">
-                                                                                        @foreach($comment->haha_stat as $haha)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($haha->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
-                                                                                            </div>
-                                                                                        @endforeach
-                                                                                    </div>
-                                                                                    <div class="filter-{{$comment->id}} sad-{{$comment->id}}">
-                                                                                        @foreach($comment->sad_stat as $sad)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($sad->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
-                                                                                            </div>
-                                                                                        @endforeach
-                                                                                    </div>
-                                                                                    <div class="filter-{{$comment->id}} angry-{{$comment->id}}">
-                                                                                        @foreach($comment->angry_stat as $angry)
-                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                @if($angry->publisher->personal_image != null)
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
-                                                                                                @else
-                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                @endif
-                                                                                                <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
-                                                                                            </div>
-                                                                                        @endforeach
-                                                                                    </div>
+                                                                                        @endif
+                                                                                    @endforeach
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -1143,7 +998,7 @@
                                                                 </div>
                                                             </div>
                                                         @endif
-                                                        <li class="ml-3 text-primary" onclick="toggleReply({{$comment->id}},'{{$comment->publisher->name}}')">Reply</li>
+                                                        <li class="ml-3 text-primary" onclick="toggleReply({{$comment->id}},'{{$comment->publisher->user_name}}')">Reply</li>
                                                     </ul>
                                                     @if($comment->replies)
                                                         <div class="replays comment-1-replays" id="comment-replies-{{$comment->id}}" style="display: none">
@@ -1169,7 +1024,7 @@
                                                                                     <!-- attatched vedio -->
                                                                                     @if($reply->media != null)
                                                                                         @if($reply->media->mediaType == 'image')
-                                                                                            <img src="{{asset('media')}}/{{$reply->media->filename}}" class="w-100 pt-3">
+                                                                                            <img src="{{asset('media')}}/{{$reply->media->filename}}" style="height: 250px;width: auto" class="pt-3">
                                                                                         @else
                                                                                             <video class="pt-3" controls>
                                                                                                 <source src="{{asset('media')}}/{{$reply->media->filename}}" type="video/mp4">
@@ -1284,108 +1139,34 @@
                                                                                                                     <button onclick="filterPostLikes({{$reply->id}},'all-{{$reply->id}}')" class="btn btn-light active-{{$reply->id}} filter-all-{{$reply->id}} ez-active" id="{{$reply->id}}" data-filter="all-{{$reply->id}}">
                                                                                                                         All
                                                                                                                     </button>
-                                                                                                                    @if(count($reply->like_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-like-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'like-{{$reply->id}}')" id="{{$post->id}}" data-filter="like-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/like.png"/>
-                                                                                                                            <span>{{count($reply->like_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
-                                                                                                                    @if(count($reply->love_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-love-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'love-{{$reply->id}}')" id="{{$reply->id}}" data-filter="love-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/love.png"/>
-                                                                                                                            <span>{{count($reply->love_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
-                                                                                                                    @if(count($reply->haha_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-haha-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'haha-{{$reply->id}}')" id="{{$reply->id}}" data-filter="haha-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/haha.png"/>
-                                                                                                                            <span>{{count($reply->haha_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
-                                                                                                                    @if(count($reply->sad_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-sad-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'sad-{{$reply->id}}')" id="{{$reply->id}}" data-filter="sad-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/sad.png"/>
-                                                                                                                            <span>{{count($post->sad_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
-                                                                                                                    @if(count($reply->angry_stat) > 0)
-                                                                                                                        <div class="btn btn-light active-{{$reply->id}} filter-angry-{{$reply->id}}" onclick="filterPostLikes({{$reply->id}},'angry-{{$reply->id}}')" id="{{$reply->id}}" data-filter="angry-{{$reply->id}}">
-                                                                                                                            <img src="{{asset('media')}}/angry.png"/>
-                                                                                                                            <span>{{count($reply->angry_stat)}}</span>
-                                                                                                                        </div>
-                                                                                                                    @endif
+                                                                                                                    @foreach($reply->reacts_stat as $react_stat)
+                                                                                                                        @if(count($react_stat) > 0)
+                                                                                                                            <div class="btn btn-light active-{{$reply->id}} filter-{{$react_stat[0]->react_name}}-{{$reply->id}}" onclick='filterPostLikes({{$comment->id}},"{{$react_stat[0]->react_name}}-{{$reply->id}}")' id="{{$reply->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$reply->id}}">
+                                                                                                                                <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
+                                                                                                                                <span>{{count($react_stat)}}</span>
+                                                                                                                            </div>
+                                                                                                                        @endif
+                                                                                                                    @endforeach
                                                                                                                 </div>
                                                                                                                 <div class="likes-container mt-3">
-                                                                                                                    <div class="filter-{{$reply->id}} like-{{$reply->id}}">
-                                                                                                                        @foreach($reply->like_stat as $like_emoji)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($like_emoji->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                                                                                                    @foreach($reply->reacts_stat as $react_stat)
+                                                                                                                        @if(count($react_stat) > 0)
+                                                                                                                            <div class="filter-{{$post->id}} {{$react_stat[0]->react_name}}-{{$reply->id}}">
+                                                                                                                                @foreach($react_stat as $react_emoji)
+                                                                                                                                    <div class="people-info d-flex align-items-center">
+                                                                                                                                        @if($react_emoji->publisher->personal_image != null)
+                                                                                                                                            <img class="profile-figure rounded-circle"
+                                                                                                                                                 src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
+                                                                                                                                        @else
+                                                                                                                                            <img class="profile-figure rounded-circle"
+                                                                                                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                                                                                        @endif
+                                                                                                                                        <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                                                                                                                                    </div>
+                                                                                                                                @endforeach
                                                                                                                             </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
-                                                                                                                    <div class="filter-{{$reply->id}} love-{{$reply->id}}">
-                                                                                                                        @foreach($reply->love_stat as $love)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($love->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
-                                                                                                                            </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
-                                                                                                                    <div class="filter-{{$reply->id}} haha-{{$reply->id}}">
-                                                                                                                        @foreach($reply->haha_stat as $haha)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($haha->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
-                                                                                                                            </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
-                                                                                                                    <div class="filter-{{$reply->id}} sad-{{$reply->id}}">
-                                                                                                                        @foreach($reply->sad_stat as $sad)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($sad->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
-                                                                                                                            </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
-                                                                                                                    <div class="filter-{{$reply->id}} angry-{{$reply->id}}">
-                                                                                                                        @foreach($reply->angry_stat as $angry)
-                                                                                                                            <div class="people-info d-flex align-items-center">
-                                                                                                                                @if($angry->publisher->personal_image != null)
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
-                                                                                                                                @else
-                                                                                                                                    <img class="profile-figure rounded-circle"
-                                                                                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                                                                                @endif
-                                                                                                                                <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
-                                                                                                                            </div>
-                                                                                                                        @endforeach
-                                                                                                                    </div>
+                                                                                                                        @endif
+                                                                                                                    @endforeach
                                                                                                                 </div>
                                                                                                             </div>
                                                                                                         </div>
@@ -1393,7 +1174,7 @@
                                                                                                 </div>
                                                                                             </div>
                                                                                         @endif
-                                                                                        <li class="ml-3 text-primary" onclick="makeReply({{$comment->id}},'{{$reply->publisher->name}}')">Reply</li>
+                                                                                        <li class="ml-3 text-primary" onclick="makeReply({{$comment->id}},'{{$reply->publisher->user_name}}')">Reply</li>
                                                                                     </ul>
                                                                                 </div>
                                                                             </div>
@@ -1515,6 +1296,25 @@
 
                                                                 </div>
                                                             </div>
+                                                            <button type="button" id="reply-submit-btn-{{$comment->id}}" onclick="event.preventDefault();
+                                                                addReplySubmit({{$comment->id}},{{$post->id}})" hidden></button>
+                                                            <div style="display: none" id="add-reply-div-{{$comment->id}}">
+                                                                <form class="add-commnet mt-2 d-flex align-items-center" id="add-reply-form-{{$comment->id}}" onkeypress="if (event.keyCode === 13) { event.preventDefault(); $('#reply-submit-btn-{{$comment->id}}').click();}" action="{{route('comments.store')}}" method="POST" enctype="multipart/form-data">
+                                                                    @csrf
+                                                                    <input type="hidden" name="post_id" value="{{$post->id}}" />
+                                                                    <input type="hidden" name="comment_id" value="{{$comment->id}}" />
+                                                                    <input onfocus="mentionAdd('reply-text-{{$comment->id}}','menu-{{$comment->id}}')" id="reply-text-{{$comment->id}}" class="w-100 pl-2" type="text" name="body" placeholder="Add Reply" />
+                                                                    <div id="menu-{{$comment->id}}" class="menu" role="listbox"></div>
+                                                                    <div class="d-flex align-items-center pr-3">
+                                                                        <i class="fas fa-paperclip" onclick="commentAttachClick({{$comment->id}})"></i>
+                                                                        <input type="file" id="comment-attach-{{$comment->id}}" onchange="readURL({{$comment->id}},this,'reply');" name="media" accept=".jpg,.jpeg,.png,.svg,.gif" />
+                                                                    </div>
+                                                                </form>
+                                                                <div id="img-div-reply-{{$comment->id}}" style="display: none;">
+                                                                    <img id="img-reply-{{$comment->id}}" src="#" alt="your image" style="margin: 10px" />
+                                                                    <button class="btn btn-warning text-white" onclick="$('#img-div-reply-{{$comment->id}}').css('display','none')">remove image</button>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     @endif
                                                 </div>
@@ -1631,21 +1431,6 @@
                                                 <i class="fas fa-ellipsis-v" onclick="toggleCommentOptions({{$comment->id}})"></i>
                                             </div>
                                         </div>
-                                        <button type="button" id="reply-submit-btn-{{$comment->id}}" onclick="event.preventDefault();
-                                            addReplySubmit({{$comment->id}},{{$post->id}})" hidden></button>
-                                        <div style="display: none" id="add-reply-div-{{$comment->id}}">
-                                            <form class="add-commnet mt-2 d-flex align-items-center" id="add-reply-form-{{$comment->id}}" onkeypress="if (event.keyCode === 13) { event.preventDefault(); $('#reply-submit-btn-{{$comment->id}}').click();}" action="{{route('comments.store')}}" method="POST" enctype="multipart/form-data">
-                                                @csrf
-                                                <input type="hidden" name="post_id" value="{{$post->id}}" />
-                                                <input type="hidden" name="comment_id" value="{{$comment->id}}" />
-                                                <input onfocus="mentionAdd('reply-text-{{$comment->id}}','menu-{{$comment->id}}')" id="reply-text-{{$comment->id}}" class="w-100 pl-2" type="text" name="body" placeholder="Add Reply" />
-                                                <div id="menu-{{$comment->id}}" class="menu" role="listbox"></div>
-                                                <div class="d-flex align-items-center pr-3">
-                                                    <i class="fas fa-paperclip" onclick="commentAttachClick({{$post->id}})"></i>
-                                                    <input type="file" id="comment-attach-{{$comment->id}}" name="media" accept=".jpg,.jpeg,.png,.svg,.gif" />
-                                                </div>
-                                            </form>
-                                        </div>
                                     @endif
                                 @endforeach
                             @endif
@@ -1668,9 +1453,13 @@
                             <div id="menu-{{$post->id}}" class="menu" role="listbox"></div>
                             <div class="d-flex align-items-center pr-3">
                                 <i class="fas fa-paperclip" onclick="commentAttachClick({{$post->id}})"></i>
-                                <input type="file" id="comment-attach-{{$post->id}}" name="media" accept=".jpg,.jpeg,.png,.svg,.gif" />
+                                <input type="file" id="comment-attach-{{$post->id}}" onchange="readURL({{$post->id}},this,'comment');" name="media" accept=".jpg,.jpeg,.png,.svg,.gif" />
                             </div>
                         </form>
+                        <div id="img-div-comment-{{$post->id}}" style="display: none;">
+                            <img id="img-comment-{{$post->id}}" src="#" alt="your image" style="margin: 10px" />
+                            <button class="btn btn-warning text-white" onclick="$('#img-div-comment-{{$post->id}}').css('display','none')">remove image</button>
+                        </div>
                         <div class="post-advertise-modal">
                             <div class="modal fade" id="advertise-post-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog" style="margin-top: 10vh">
@@ -1929,36 +1718,38 @@
                     <div class="suggested-posts mb-1">
                         @foreach($expected_posts as $post)
                             <div class="post">
-                                <section class="posted-by">
-                                    @if($post->publisher->personal_image)
-                                        <img
-                                            class="profile-figure"
-                                            src="{{asset('media')}}/{{$post->publisher->personal_image}}"
-                                            alt="User Profile Pic"
-                                        />
-                                    @else
-                                        <img
-                                            class="profile-figure"
-                                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                                            alt="User Profile Pic"
-                                        />
-                                    @endif
-                                    <span>{{$post->publisher->name}}</span>
-                                </section>
-                                <section class="post-desc">
-                                    <p>{{$post->body}}</p>
-                                </section>
-                                <section class="post-img">
-                                    @if(count($post->media) > 0)
-                                        @foreach($post->media as $media)
+                                <a href="{{route('posts.show',$post->id)}}">
+                                    <section class="posted-by">
+                                        @if($post->publisher->personal_image)
                                             <img
                                                 class="profile-figure"
-                                                src="{{asset('media')}}/{{$media->filename}}"
+                                                src="{{asset('media')}}/{{$post->publisher->personal_image}}"
                                                 alt="User Profile Pic"
                                             />
-                                        @endforeach
-                                    @endif
-                                </section>
+                                        @else
+                                            <img
+                                                class="profile-figure"
+                                                src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                alt="User Profile Pic"
+                                            />
+                                        @endif
+                                        <span>{{\Str::limit($post->publisher->name,15)}}</span>
+                                    </section>
+                                    <section class="post-desc">
+                                        <p>{{$post->body}}</p>
+                                    </section>
+                                    <section class="post-img">
+                                        @if(count($post->media) > 0)
+                                            @foreach($post->media as $media)
+                                                <img
+                                                    class="profile-figure"
+                                                    src="{{asset('media')}}/{{$media->filename}}"
+                                                    alt="User Profile Pic"
+                                                />
+                                            @endforeach
+                                        @endif
+                                    </section>
+                                </a>
                             </div>
                         @endforeach
                     </div>

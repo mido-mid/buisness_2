@@ -33,19 +33,19 @@
               @if(Auth::guard('web')->user())
                 @if($admin->user_id != Auth::guard('web')->user()->id)
                   @if($admin->friendship == 'guest')
-                    <button class="button-4 totyFrientshep" id="add|{{$admin->user_id}}">{{__('pages.add_friend')}}</button>
+                    <button class="button-4 totyFrientshepPage" id="add|{{$admin->user_id}}">{{__('pages.add_friend')}}</button>
                   @elseif($admin->friendship == 'accepted')
-                    <button class="button-2 totyFrientshep" id="remove|{{$admin->user_id}}">{{__('pages.un_friend')}}</button>
+                    <button class="button-2 totyFrientshepPage" id="remove|{{$admin->user_id}}">{{__('pages.un_friend')}}</button>
                   @elseif($admin->friendship == 'pending')
-                    <button class="button-2 totyFrientshep" id="remove|{{$admin->user_id}}">{{__('pages.un_friend')}}</button>
+                    <button class="button-2 totyFrientshepPage" id="remove|{{$admin->user_id}}">{{__('pages.un_friend')}}</button>
                   @elseif($admin->friendship == 'request')
-                    <button class="button-4 totyFrientshep" id="confirm|{{$admin->user_id}}">{{__('pages.confirm_friend')}}</button>
+                    <button class="button-4 totyFrientshepPage" id="confirm|{{$admin->user_id}}">{{__('pages.confirm_friend')}}</button>
                   @endif
 
                   @if($admin->follow == 0)
-                    <button class="button-4 totyFollowing " id="addFollowing|{{$admin->user_id}}">{{__('pages.add_following')}}</button>
+                    <button class="button-4 totyFollowingPage " id="addFollowing|{{$admin->user_id}}">{{__('pages.add_following')}}</button>
                   @elseif($admin->follow == 1)
-                    <button class="button-2 totyFollowing" id="removeFollowing|{{$admin->user_id}}">{{__('pages.un_following')}}</button>
+                    <button class="button-2 totyFollowingPage" id="removeFollowing|{{$admin->user_id}}">{{__('pages.un_following')}}</button>
                   @endif
 
                   
@@ -76,24 +76,24 @@
           <div>
             @if(Auth::guard('web')->user())
               @if($accepted->friendship == 'guest')
-                <button class="button-4 totyFrientshep" id="add|{{$accepted->user_id}}">{{__('pages.add_friend')}}</button>
+                <button class="button-4 totyFrientshepPage" id="add|{{$accepted->user_id}}">{{__('pages.add_friend')}}</button>
               @elseif($accepted->friendship == 'accepted')
-                <button class="button-2 totyFrientshep" id="remove|{{$accepted->user_id}}">{{__('pages.un_friend')}}</button>
+                <button class="button-2 totyFrientshepPage" id="remove|{{$accepted->user_id}}">{{__('pages.un_friend')}}</button>
               @elseif($accepted->friendship == 'pending')
-                <button class="button-2 totyFrientshep" id="remove|{{$accepted->user_id}}">{{__('pages.un_friend_request')}}</button>
+                <button class="button-2 totyFrientshepPage" id="remove|{{$accepted->user_id}}">{{__('pages.un_friend_request')}}</button>
               @elseif($accepted->friendship == 'request')
-                <button class="button-4 totyFrientshep" id="confirm|{{$accepted->user_id}}">{{__('pages.confirm_friend')}}</button>
+                <button class="button-4 totyFrientshepPage" id="confirm|{{$accepted->user_id}}">{{__('pages.confirm_friend')}}</button>
                 {{-- <button class="button-2 totyFrientshep" id="remove|{{$admin->user_id}}">حذف طلب الصداقة</button> --}}
               @endif
 
               @if($accepted->follow == 0)
-                <button class="button-4 totyFollowing " id="addFollowing|{{$accepted->user_id}}">{{__('pages.add_following')}}</button>
+                <button class="button-4 totyFollowingPage " id="addFollowing|{{$accepted->user_id}}">{{__('pages.add_following')}}</button>
               @elseif($accepted->follow == 1)
-                <button class="button-2 totyFollowing" id="removeFollowing|{{$accepted->user_id}}">{{__('pages.un_following')}}</button>
+                <button class="button-2 totyFollowingPage" id="removeFollowing|{{$accepted->user_id}}">{{__('pages.un_following')}}</button>
               @endif
               @if($isAdmin == 1 )
-              <button class="button-4 totyAdmin" id="addAdmin|{{$accepted->user_id}}|{{$page['id']}}">{{__('pages.as_admin')}}</button>
-              <button class="button-4 totyAdmin" id="removeMember|{{$accepted->user_id}}|{{$page['id']}}">{{__('pages.delete_member')}}</button>
+              <button class="button-4 totyAdminPage" id="addAdmin|{{$accepted->user_id}}|{{$page['id']}}">{{__('pages.as_admin')}}</button>
+              <button class="button-4 totyAdminPage" id="removeMember|{{$accepted->user_id}}|{{$page['id']}}">{{__('pages.delete_member')}}</button>
               @endif
 
               @else
@@ -132,7 +132,7 @@
                         </span>
                     </a>
                     <div>
-                      <button class="button-4 totyAdmin" id="invite|{{$friend->userResever->id}}|{{$page['id']}}">{{__('pages.invite')}}</button>
+                      <button class="button-4 totyAdminPage" id="invite|{{$friend->userResever->id}}|{{$page['id']}}">{{__('pages.invite')}}</button>
                     </div>
                   </div>
                 </li>
@@ -149,7 +149,7 @@
                         </span>
                     </a>
                     <div>
-                      <button class="button-4 totyAdmin" id="invite|{{$myfriends->userSender->id}}|{{$page['id']}}">{{__('pages.invite')}}</button>
+                      <button class="button-4 totyAdminPage" id="invite|{{$myfriends->userSender->id}}|{{$page['id']}}">{{__('pages.invite')}}</button>
                     </div>
                   </div>
                 </li>
@@ -168,154 +168,5 @@
   </div>
   @endif
 @endif
-@if(Auth::guard('web')->user())
-<script>
-  $(document).ready(function(){
-     $('.totyFrientshep').click(function(event){
-         event.preventDefault();
-         var id = $(this).attr('id');
-         var splittable = id.split('|');
-         var RequestType = splittable[0];
-         var Enemy_id = splittable[1];
-         console.log(RequestType);
-         $.ajax({
-         url:'http://127.0.0.1:8000/frientshep-page',
-             method:"get",
-             data:{requestType:RequestType,enemy_id:Enemy_id},
-             dataType:"text",
-             headers: {
-                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-             },
-             success:function(data){
-              var str = data.split('|');
-              var x = 'addFollowing|'+str[1];
-              console.log(x);
-              if(str[0] == 1)
-                    {
-                      document.getElementById(id).textContent = "{{__('pages.un_friend')}}";
-                      document.getElementById(id).classList.remove("button-4");
-                      document.getElementById(id).classList.add("button-2");
-                      document.getElementById(id).id = 'remove|'+str[1];
-                      document.getElementById(str[1]).textContent = str[2] + " {{__('pages.follower')}} ";
 
-                      document.getElementById(x).textContent = "{{__('pages.un_following')}}";
-                      document.getElementById(x).classList.remove("button-4");
-                      document.getElementById(x).classList.add("button-2");
-                      document.getElementById(x).id = 'removeFollowing|'+str[1];
-                    }
-                    if(str[0] == 2)
-                    {
-                      document.getElementById(id).textContent = "{{__('pages.un_friend_request')}}";
-                      document.getElementById(id).classList.remove("button-4");
-                      document.getElementById(id).classList.add("button-2");
-                      document.getElementById(id).id = 'remove|'+str[1];
-                      document.getElementById(str[1]).textContent = str[2] + " {{__('pages.follower')}} ";
-
-                      document.getElementById(x).textContent = "{{__('pages.un_following')}}";
-                      document.getElementById(x).classList.remove("button-4");
-                      document.getElementById(x).classList.add("button-2");
-                      document.getElementById(x).id = 'removeFollowing|'+str[1];
-                    }
-                    if(str[0] == 0)
-                    {
-                        document.getElementById(id).textContent = "{{__('pages.confirm_friend')}}";
-                        document.getElementById(id).classList.remove("button-2");
-                        document.getElementById(id).classList.add("button-4");
-                        document.getElementById(id).id = 'add|'+str[1];
-                        document.getElementById(str[1]).textContent = str[2] + "{{__('pages.follower')}}";
-
-                        document.getElementById('removeFollowing|'+str[1]).textContent = "{{__('pages.add_following')}}";
-                        document.getElementById('removeFollowing|'+str[1]).classList.remove("button-2");
-                        document.getElementById('removeFollowing|'+str[1]).classList.add("button-4");
-                        document.getElementById('removeFollowing|'+str[1]).id = 'addFollowing|'+str[1];
-                    }
-             }
-         });
-
-     });
-
-     $('.totyFollowing').click(function(event){
-         event.preventDefault();
-         var id = $(this).attr('id');
-         var splittable = id.split('|');
-         var RequestType = splittable[0];
-         var Enemy_id = splittable[1];
-         console.log(RequestType);
-         $.ajax({
-         url:'http://127.0.0.1:8000/following-page',
-             method:"get",
-             data:{requestType:RequestType,enemy_id:Enemy_id},
-             dataType:"text",
-             headers: {
-                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-             },
-             success:function(data){
-              var str = data.split('|');
-              if(str[0] == 1)
-                {
-                  document.getElementById(id).textContent = "{{__('pages.un_following')}}";
-                  document.getElementById(id).classList.remove("button-4");
-                  document.getElementById(id).classList.add("button-2");
-                  document.getElementById(id).id = 'removeFollowing|'+str[1];
-                  document.getElementById(str[1]).textContent = str[2] + "{{__('pages.follower')}}";
-                }
-                    
-                if(str[0] == 0)
-                {
-                    document.getElementById(id).textContent = "{{__('pages.add_following')}}";
-                    document.getElementById(id).classList.remove("button-2");
-                    document.getElementById(id).classList.add("button-4");
-                    document.getElementById(id).id = 'addFollowing|'+str[1];
-                    document.getElementById(str[1]).textContent = str[2] + "{{__('pages.follower')}}";
-                }
-              //  alert(data);
-             }
-         });
-
-     });
-
-     $('.totyAdmin').click(function(event){
-         event.preventDefault();
-         var id = $(this).attr('id');
-         var splittable = id.split('|');
-         var RequestType = splittable[0];
-         var Enemy_id = splittable[1];
-         var Page_id = splittable[2];
-         console.log(RequestType);
-         $.ajax({
-         url:'http://127.0.0.1:8000/asignAdmin-page',
-             method:"get",
-             data:{requestType:RequestType,enemy_id:Enemy_id,page_id:Page_id},
-             dataType:"text",
-             headers: {
-                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-             },
-             success:function(data){
-              var str = data.split('|');
-              if(str[0] == 1)
-                {
-                  // var sad =  `<li class='members-item'>` + document.getElementById(Enemy_id+'|'+Group_id).innerHTML + `</li>`;
-                  // console.log(sad);
-                  // document.getElementById('adddmin').innerHTML +=  document.getElementById(Enemy_id+'|'+Group_id).innerHTML ;
-                  // document.getElementById(Enemy_id+'|'+Group_id).style.display = "none";
-                  document.getElementById(id).textContent = "{{__('pages.admin')}}";
-                  document.getElementById(id).classList.remove("button-4");
-                  document.getElementById(id).classList.add("button-2");
-                  // document.getElementById('addAdmin|'+Enemy_id+'|'+Group_id).style.display = "none";
-                  document.getElementById('removeMember|'+Enemy_id+'|'+Page_id).style.display = "none";
-
-                }
-                    
-                if(str[0] == 0)
-                {
-                  document.getElementById(Enemy_id+'|'+Page_id).style.display = "none";
-                }
-                
-             }
-         });
-
-     });
- });
-</script>
-@endif
 @endsection

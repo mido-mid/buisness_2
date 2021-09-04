@@ -55,108 +55,34 @@
                                 <button onclick="filterPostLikes({{$model->id}},'all-{{$model->id}}')" class="btn btn-light active-{{$model->id}} filter-all-{{$model->id}} ez-active" id="{{$model->id}}" data-filter="all-{{$model->id}}">
                                     All
                                 </button>
-                                @if(count($model->like_stat) > 0)
-                                    <div class="btn btn-light active-{{$model->id}} filter-like-{{$model->id}}" onclick="filterPostLikes({{$model->id}},'like-{{$model->id}}')" id="{{$model->id}}" data-filter="like-{{$model->id}}">
-                                        <img src="{{asset('media')}}/like.png"/>
-                                        <span>{{count($model->like_stat)}}</span>
-                                    </div>
-                                @endif
-                                @if(count($model->love_stat) > 0)
-                                    <div class="btn btn-light active-{{$model->id}} filter-love-{{$model->id}}" onclick="filterPostLikes({{$model->id}},'love-{{$model->id}}')" id="{{$model->id}}" data-filter="love-{{$model->id}}">
-                                        <img src="{{asset('media')}}/love.png"/>
-                                        <span>{{count($model->love_stat)}}</span>
-                                    </div>
-                                @endif
-                                @if(count($model->haha_stat) > 0)
-                                    <div class="btn btn-light active-{{$model->id}} filter-haha-{{$model->id}}" onclick="filterPostLikes({{$model->id}},'haha-{{$model->id}}')" id="{{$model->id}}" data-filter="haha-{{$model->id}}">
-                                        <img src="{{asset('media')}}/haha.png"/>
-                                        <span>{{count($model->haha_stat)}}</span>
-                                    </div>
-                                @endif
-                                @if(count($model->sad_stat) > 0)
-                                    <div class="btn btn-light active-{{$model->id}} filter-sad-{{$model->id}}" onclick="filterPostLikes({{$model->id}},'sad-{{$model->id}}')" id="{{$model->id}}" data-filter="sad-{{$model->id}}">
-                                        <img src="{{asset('media')}}/sad.png"/>
-                                        <span>{{count($model->sad_stat)}}</span>
-                                    </div>
-                                @endif
-                                @if(count($model->angry_stat) > 0)
-                                    <div class="btn btn-light active-{{$model->id}} filter-angry-{{$model->id}}" onclick="filterPostLikes({{$model->id}},'angry-{{$model->id}}')" id="{{$model->id}}" data-filter="angry-{{$model->id}}">
-                                        <img src="{{asset('media')}}/angry.png"/>
-                                        <span>{{count($model->angry_stat)}}</span>
-                                    </div>
-                                @endif
+                                @foreach($model->reacts_stat as $react_stat)
+                                    @if(count($react_stat) > 0)
+                                        <div class="btn btn-light active-{{$model->id}} filter-{{$react_stat[0]->react_name}}-{{$model->id}}" onclick='filterPostLikes({{$model->id}},"{{$react_stat[0]->react_name}}-{{$model->id}}")' id="{{$model->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$model->id}}">
+                                            <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
+                                            <span>{{count($react_stat)}}</span>
+                                        </div>
+                                    @endif
+                                @endforeach
                             </div>
                             <div class="likes-container mt-3">
-                                <div class="filter-{{$model->id}} like-{{$model->id}}">
-                                    @foreach($model->like_stat as $like_emoji)
-                                        <div class="people-info d-flex align-items-center">
-                                            @if($like_emoji->publisher->personal_image != null)
-                                                <img class="profile-figure rounded-circle"
-                                                     src="{{asset('media')}}/{{$like_emoji->publisher->personal_image}}" />
-                                            @else
-                                                <img class="profile-figure rounded-circle"
-                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                            @endif
-                                            <p class="mb-0 ml-3"><b>{{$like_emoji->publisher->name}}</b></p>
+                                @foreach($model->reacts_stat as $react_stat)
+                                    @if(count($react_stat) > 0)
+                                        <div class="filter-{{$model->id}} {{$react_stat[0]->react_name}}-{{$model->id}}">
+                                            @foreach($react_stat as $react_emoji)
+                                                <div class="people-info d-flex align-items-center">
+                                                    @if($react_emoji->publisher->personal_image != null)
+                                                        <img class="profile-figure rounded-circle"
+                                                             src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
+                                                    @else
+                                                        <img class="profile-figure rounded-circle"
+                                                             src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                    @endif
+                                                    <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                                                </div>
+                                            @endforeach
                                         </div>
-                                    @endforeach
-                                </div>
-                                <div class="filter-{{$model->id}} love-{{$model->id}}">
-                                    @foreach($model->love_stat as $love)
-                                        <div class="people-info d-flex align-items-center">
-                                            @if($love->publisher->personal_image != null)
-                                                <img class="profile-figure rounded-circle"
-                                                     src="{{asset('media')}}/{{$love->publisher->personal_image}}" />
-                                            @else
-                                                <img class="profile-figure rounded-circle"
-                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                            @endif
-                                            <p class="mb-0 ml-3"><b>{{$love->publisher->name}}</b></p>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <div class="filter-{{$model->id}} haha-{{$model->id}}">
-                                    @foreach($model->haha_stat as $haha)
-                                        <div class="people-info d-flex align-items-center">
-                                            @if($haha->publisher->personal_image != null)
-                                                <img class="profile-figure rounded-circle"
-                                                     src="{{asset('media')}}/{{$haha->publisher->personal_image}}" />
-                                            @else
-                                                <img class="profile-figure rounded-circle"
-                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                            @endif
-                                            <p class="mb-0 ml-3"><b>{{$haha->publisher->name}}</b></p>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <div class="filter-{{$model->id}} sad-{{$model->id}}">
-                                    @foreach($model->sad_stat as $sad)
-                                        <div class="people-info d-flex align-items-center">
-                                            @if($sad->publisher->personal_image != null)
-                                                <img class="profile-figure rounded-circle"
-                                                     src="{{asset('media')}}/{{$sad->publisher->personal_image}}" />
-                                            @else
-                                                <img class="profile-figure rounded-circle"
-                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                            @endif
-                                            <p class="mb-0 ml-3"><b>{{$sad->publisher->name}}</b></p>
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <div class="filter-{{$model->id}} angry-{{$model->id}}">
-                                    @foreach($model->angry_stat as $angry)
-                                        <div class="people-info d-flex align-items-center">
-                                            @if($angry->publisher->personal_image != null)
-                                                <img class="profile-figure rounded-circle"
-                                                     src="{{asset('media')}}/{{$angry->publisher->personal_image}}" />
-                                            @else
-                                                <img class="profile-figure rounded-circle"
-                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                            @endif
-                                            <p class="mb-0 ml-3"><b>{{$angry->publisher->name}}</b></p>
-                                        </div>
-                                    @endforeach
-                                </div>
+                                    @endif
+                                @endforeach
                             </div>
                         </div>
                     </div>

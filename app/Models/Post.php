@@ -21,7 +21,8 @@ class Post extends Model
         'post_id',
         'page_id',
         'mentions',
-        'country'
+        'country_id',
+        'city_id'
     ];
 
     public function media() {

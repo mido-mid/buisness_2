@@ -340,116 +340,122 @@ class CommentController extends Controller
 
     private function getComment($user,$comment,$post){
 
-        $comment->reported = false;
+        $comment->reported = DB::table('reports')->where('user_id', $user->id)
+            ->where('model_id', $comment->id)->where('model_type', 'comment')->exists();
 
         $comment->type = $comment->comment_id != null ? 'reply' : 'comment';
 
-        if ($comment->mentions != null) {
-            $comment->edit = $comment->body;
-            $mentions = explode(',', $comment->mentions);
-            foreach ($mentions as $mention) {
-                $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
-                $comment->body = str_replace('@' . $mention,
-                    '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
-                    $comment->body);
+        if ($comment->reported == false) {
+
+            if ($comment->mentions != null) {
+                $comment->edit = $comment->body;
+                $mentions = explode(',', $comment->mentions);
+                foreach ($mentions as $mention) {
+                    $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                    $comment->body = str_replace('@' . $mention,
+                        '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                        $comment->body);
+                }
             }
-        }
-        $comment->publisher = User::find($comment->user_id);
-        $comment->media = DB::table('media')->where('model_id', $comment->id)->where('model_type', 'comment')->first();
-        $comment->replies = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->where('comment_id', $comment->id)->get();
-        $comment->likes = DB::table('likes')->where('model_id', $comment->id)->where('model_type', 'comment')->get();
-        $comment->replies->count = count($comment->replies);
-        $comment->likes->count = count($comment->likes);
-        $comment->liked = DB::table('likes')->where('model_id', $comment->id)->where('model_type', 'comment')->where('senderId', $user->id)->first();
+            $comment->publisher = User::find($comment->user_id);
+            $comment->media = DB::table('media')->where('model_id', $comment->id)->where('model_type', 'comment')->first();
+            $comment->replies = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->where('comment_id', $comment->id)->get();
+            $comment->likes = DB::table('likes')->where('model_id', $comment->id)->where('model_type', 'comment')->get();
+            $comment->replies->count = count($comment->replies);
+            $comment->likes->count = count($comment->likes);
+            $comment->liked = DB::table('likes')->where('model_id', $comment->id)->where('model_type', 'comment')->where('senderId', $user->id)->first();
 
-        if ($comment->liked) {
-            $comment->user_react = DB::table('reacts')->where('id', $comment->liked->reactId)->get();
-        }
+            if ($comment->liked) {
+                $comment->user_react = DB::table('reacts')->where('id', $comment->liked->reactId)->get();
+            }
 
-        if(count($comment->likes) > 0){
-            $like_stat = [];
-            $love_stat = [];
-            $haha_stat = [];
-            $sad_stat = [];
-            $angry_stat = [];
-            foreach ($comment->likes as $like){
-                $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
-                                                    where likes.reactId = reacts.id
-                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = '. $like->senderId . ' AND
-                                                likes.model_id = '.$comment->id.' AND likes.model_type = "comment"
-                                                '));
-
-                $like->publisher = User::find($like->senderId);
+            if (count($comment->likes) > 0) {
+                $reacts = DB::table('reacts')->get();
 
                 $stat = '_stat';
 
-                array_push(${$reactname[0]->name.$stat},$like);
-            }
-
-            $comment->like_stat = $like_stat;
-            $comment->love_stat = $love_stat;
-            $comment->haha_stat = $haha_stat;
-            $comment->sad_stat = $sad_stat;
-            $comment->angry_stat = $angry_stat;
-        }
-
-        if (count($comment->replies) > 0) {
-            foreach ($comment->replies as $reply) {
-
-                $reply->reported = DB::table('reports')->where('user_id', $user->id)
-                    ->where('model_id', $reply->id)->where('model_type', 'comment')->exists();
-
-                if ($reply->reported == false) {
-
-                    if ($reply->mentions != null) {
-                        $reply->edit = $reply->body;
-                        $mentions = explode(',', $reply->mentions);
-                        foreach ($mentions as $mention) {
-                            $reply->body = str_replace('@' . $mention,
-                                '<span style="color: #ffc107">' . $mention . '</span>',
-                                $reply->body);
-                        }
-                    }
-                    $reply->publisher = User::find($reply->user_id);
-                    $reply->media = DB::table('media')->where('model_id', $reply->id)->where('model_type', 'comment')->first();
-                    $reply->likes = DB::table('likes')->where('model_id', $reply->id)->where('model_type', 'comment')->get();
-                    $reply->likes->count = count($reply->likes);
-                    $reply->liked = DB::table('likes')->where('model_id', $reply->id)->where('model_type', 'comment')->where('senderId', $user->id)->first();
-
-                    if ($reply->liked) {
-                        $reply->user_react = DB::table('reacts')->where('id', $reply->liked->reactId)->get();
-                    }
-
-                    if(count($reply->likes) > 0){
-                        $like_stat = [];
-                        $love_stat = [];
-                        $haha_stat = [];
-                        $sad_stat = [];
-                        $angry_stat = [];
-                        foreach ($reply->likes as $like){
-                            $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                foreach ($reacts as $react){
+                    ${$react->name.$stat} = [];
+                }
+                foreach ($comment->likes as $like) {
+                    $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
                                                     where likes.reactId = reacts.id
-                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = '. $like->senderId . ' AND
-                                                likes.model_id = '.$reply->id.' AND likes.model_type = "comment"
+                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                                                likes.model_id = ' . $comment->id . ' AND likes.model_type = "comment"
                                                 '));
 
-                            $like->publisher = User::find($like->senderId);
+                    $like->publisher = User::find($like->senderId);
+                    $like->react_name = $reactname[0]->name;
+
+                    array_push(${$reactname[0]->name . $stat}, $like);
+                }
+
+                $comment->reacts_stat = [];
+
+                foreach ($reacts as $react){
+                    array_push($comment->reacts_stat,${$react->name.$stat});
+                }
+            }
+
+            if (count($comment->replies) > 0) {
+                foreach ($comment->replies as $reply) {
+
+                    $reply->reported = DB::table('reports')->where('user_id', $user->id)
+                        ->where('model_id', $reply->id)->where('model_type', 'comment')->exists();
+
+                    if ($reply->reported == false) {
+
+                        if ($reply->mentions != null) {
+                            $reply->edit = $reply->body;
+                            $mentions = explode(',', $reply->mentions);
+                            foreach ($mentions as $mention) {
+                                $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                                $reply->body = str_replace('@' . $mention,
+                                    '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                                    $reply->body);
+                            }
+                        }
+                        $reply->publisher = User::find($reply->user_id);
+                        $reply->media = DB::table('media')->where('model_id', $reply->id)->where('model_type', 'comment')->first();
+                        $reply->likes = DB::table('likes')->where('model_id', $reply->id)->where('model_type', 'comment')->get();
+                        $reply->likes->count = count($reply->likes);
+                        $reply->liked = DB::table('likes')->where('model_id', $reply->id)->where('model_type', 'comment')->where('senderId', $user->id)->first();
+
+                        if ($reply->liked) {
+                            $reply->user_react = DB::table('reacts')->where('id', $reply->liked->reactId)->get();
+                        }
+
+                        if (count($reply->likes) > 0) {
+                            $reacts = DB::table('reacts')->get();
 
                             $stat = '_stat';
 
-                            array_push(${$reactname[0]->name.$stat},$like);
-                        }
+                            foreach ($reacts as $react){
+                                ${$react->name.$stat} = [];
+                            }
+                            foreach ($reply->likes as $like) {
+                                $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                                                    where likes.reactId = reacts.id
+                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                                                likes.model_id = ' . $reply->id . ' AND likes.model_type = "comment"
+                                                '));
 
-                        $reply->like_stat = $like_stat;
-                        $reply->love_stat = $love_stat;
-                        $reply->haha_stat = $haha_stat;
-                        $reply->sad_stat = $sad_stat;
-                        $reply->angry_stat = $angry_stat;
+                                $like->publisher = User::find($like->senderId);
+                                $like->react_name = $reactname[0]->name;
+
+                                array_push(${$reactname[0]->name . $stat}, $like);
+                            }
+
+                            $reply->reacts_stat = [];
+
+                            foreach ($reacts as $react){
+                                array_push($reply->reacts_stat,${$react->name.$stat});
+                            }
+                        }
                     }
                 }
             }
         }
-
         return $comment;
     }
 }

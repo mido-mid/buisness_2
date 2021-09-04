@@ -48,13 +48,13 @@
 
 <div class="page-nav py-3">
   @if(Auth::guard('web')->user())
-    <a class="button-3" href="{{route('pages.show',['page'=>$page->id])}}"> {{__('pages.main')}}</a>
+    <a class="button-3" href="{{route('main-page',['id'=>$page->id])}}"> {{__('pages.main')}}</a>
     <a class="button-3" href="{{route('members-page',['id'=>$page->id])}}">{{__('pages.members')}}</a>
     <a class="button-3" href="{{route('videos-page',['id'=>$page->id])}}">{{__('pages.videos')}}</a>
     <a class="button-3" href="{{route('images-page',['id'=>$page->id])}}">{{__('pages.images')}}</a>
     <a class="button-3" href="{{route('about-page',['id'=>$page->id])}}">{{__('pages.about')}}</a>
     @if($isAdmin == 1)
-      <a class="button-3" href="{{route('requests-page',['id'=>$page->id])}}">{{__('pages.requests_page')}}</a>
+      {{-- <a class="button-3" href="{{route('requests-page',['id'=>$page->id])}}">{{__('pages.requests_page')}}</a> --}}
       <a class="button-3" href="/pages/{{$page->id}}/edit">{{__('pages.edit')}}</a>
       <button class="button-4"  data-toggle="modal" data-target="#confirm">{{__('pages.delet_page')}}</button>
       <!-- Confirm delete-->

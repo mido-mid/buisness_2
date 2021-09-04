@@ -14,12 +14,15 @@
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
 
-    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" />
+
+    <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
     <link
         rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"
-    />
+        href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
+
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
     <!-- Styles -->
     <link href="{{ asset('css/styles/style.css') }}" rel="stylesheet">
@@ -101,14 +104,12 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+    <script src="{{ asset('assets') }}/libs/jquery/jquery.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="{{ asset('js/app.js') }}"></script>
-    <script src="{{ asset('js/index.js') }}"></script>
+    <script src="{{ asset('assets') }}/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
             integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
             crossorigin="anonymous"></script>
-    <script src="{{ asset('assets') }}/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('assets') }}/libs/jquery/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
     <!-- BOOTSTRAP WITH POPPER -->
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
@@ -116,6 +117,19 @@
             crossorigin="anonymous"></script>
     <!-- FONT AWESOME -->
     <script src="https://kit.fontawesome.com/5d2df7d4f7.js"></script>
+    <script src="{{ asset('js/app.js') }}"></script>
+    <script src="{{ asset('js/index.js') }}"></script>
+    <script src="{{ asset('js/script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        window.users = @json(['user' => $friends_mention]);
+    </script>
+    <script>
+        $(document).ready(function() {
+            $('.js-example-basic-single').select2();
+            $('.js-example-basic-multiple').select2();
+        });
+    </script>
     <script>
         $(".toggle-password").click(function() {
             var input = $($(this).attr("toggle"));
@@ -130,16 +144,38 @@
     </script>
 
     <script>
-        $(function() {
-            $('.selectpicker').selectpicker();
-        });
-    </script>
-
-    <script>
         const phoneInputField = document.querySelector("#phone");
         const phoneInput = window.intlTelInput(phoneInputField, {
             utilsScript:
                 "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+        });
+    </script>
+
+    <script>
+        $(document).ready(function(){
+            $('select[name="country_id"]').on('change',function(){
+                var country_id= $(this).val();
+                if (country_id) {
+                    $.ajax({
+                        url: "getcities/"+country_id,
+                        type: "GET",
+                        cache: false,
+                        processData: false,
+                        contentType: false,
+                        success: function(data){
+                            $('select[name="city_id"]').empty();
+                            $('select[name="city_id"]').html(data);
+                            document.getElementById('select-city').disabled = false;
+                        },
+                        error: function (data) {
+                            console.log(data.responseText);
+                        }
+                    });
+                }else {
+                    $('select[name="city_id"]').empty();
+                }
+            });
+
         });
     </script>
     @auth

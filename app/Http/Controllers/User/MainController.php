@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
+use App\Country;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\GeneralTrait;
 use App\Models\Comment;
@@ -11,6 +12,7 @@ use App\Models\Post;
 use App\Models\Report;
 use App\User;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -29,24 +31,62 @@ class MainController extends Controller
      */
     public function index(Request $request, $take = null, $start = null)
     {
+
+//        $countries_allowed = ['Egypt','Saudi Arabia','Iraq','Algeria','Syria','Tunisia','Yemen',
+//            'Qatar','United Arab Emirates','Morocco','Jordan','Oman','Bahrain','Lebanon','Sudan',
+//            'Libya','Palestinian Territory','Kuwait'];
+//
+//        $url = 'https://countriesnow.space/api/v0.1/countries';
+//        $response = file_get_contents($url);
+//        $newsData = json_decode($response);
+//        $records = $newsData->data;
+//        //0 20
+//        for($i=0;$i<count($records);$i++){
+//            $country = $records[$i]->country;
+//            if(in_array($country, $countries_allowed)) {
+//                if(DB::table('countries')->where('name',$country)->doesntExist()) {
+//                    $cities = $records[$i]->cities;
+//                    $oneCountry = Country::create([
+//                        'name' => $country,
+//                    ]);
+//                    foreach ($cities as $city) {
+//                        DB::table('cities')->insert([
+//                            'name' => $city,
+//                            'country_id' => $oneCountry->id
+//                        ]);
+//                    }
+//                }
+//            }
+//        }
+
         $user = auth()->user();
 
         $friends_posts = [];
         $expected_ids = [];
-        $groups_posts = [];
-        $pages_posts = [];
         $user_groups_ids = [];
         $user_pages_ids = [];
         $friends_info = [];
         $limit = 5;
         $offset = 0;
 
-        $user_sponsored_posts = $this->getSponsoredPosts();
 
         if ($request->ajax()) {
             $limit = $take;
             $offset = $start;
         }
+
+        $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
+                        where user_categories.categoryId = categories.id
+                        AND user_categories.userId =' . $user->id . ' and categories.type = "post"'));
+
+        $user_interests_array = [];
+
+        foreach ($user_interests as $interest) {
+            array_push($user_interests_array, $interest->id);
+        }
+
+
+        $user_sponsored_posts = $this->getSponsoredPosts($user_interests_array,$limit,$offset);
 
 
         // friends posts he follows and are public and in groups you are in and in pages you liked
@@ -63,13 +103,13 @@ class MainController extends Controller
 
         array_push($friends_ids, $user->id);
 
-        $user_groups = DB::select(DB::raw('select groups.*,group_members.stateId from groups,group_members
+        $user_groups = DB::select(DB::raw('select groups.*,group_members.state from groups,group_members
                         where group_members.group_id = groups.id
-                        AND group_members.user_id = ' . $user->id . ' and group_members.stateId in (2,3)'));
+                        AND group_members.user_id = ' . $user->id));
 
-        $user_pages = DB::select(DB::raw('select pages.* from pages,user_pages
-                        where user_pages.page_id = pages.id
-                        AND user_pages.user_id = ' . $user->id));
+        $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
+                        where page_members.page_id = pages.id
+                        AND page_members.user_id = ' . $user->id));
 
         $user_follows = DB::select(DB::raw('select users.* from users,following
                         where following.followingId = users.id
@@ -142,27 +182,11 @@ class MainController extends Controller
 
 
         foreach ($user_groups as $group) {
-            if ($group->stateId == 2) {
-                $group_posts = DB::table('posts')->where('group_id', $group->id)->get();
-                foreach ($group_posts as $post) {
-                    $post->reported = DB::table('reports')->where('user_id', $user->id)
-                        ->where('model_id', $post->id)->where('model_type', 'post')->exists();
-                    if ($post->reported == false) {
-                        $post->type = $post->post_id == null ? "post" : "share";
-                        array_push($groups_posts, $post);
-                    }
-                }
-            }
             array_push($user_groups_ids, $group->id);
         }
 
         foreach ($user_pages as $page) {
-            $page_posts = DB::table('posts')->where('page_id', $page->id)->get();
             array_push($user_pages_ids, $page->id);
-            foreach ($page_posts as $post) {
-                $post->type = $post->post_id == null ? "post" : "share";
-                array_push($pages_posts, $post);
-            }
         }
 
         $expected_users = $this->getExpectedFriends($user,$expected_ids,$friends);
@@ -170,16 +194,6 @@ class MainController extends Controller
         $posts = $this->getPosts($limit, $offset, $user, $user_follows, $friends_posts, $user_pages, $user_groups, $user_posts, $user_sponsored_posts);
 
         $stories = $this->getStories($user,5,0);
-
-        $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
-                        where user_categories.categoryId = categories.id
-                        AND user_categories.userId =' . $user->id . ' and categories.type = "post"'));
-
-        $user_interests_array = [];
-
-        foreach ($user_interests as $interest) {
-            array_push($user_interests_array, $interest->id);
-        }
 
         $expected_posts = $this->getExpectedPosts($user, $user_interests_array);
 
@@ -244,7 +258,7 @@ class MainController extends Controller
 
         foreach ($user_groups as $group) {
 
-            if ($group->stateId == 2) {
+            if ($group->state == 1) {
                 $group_posts = DB::table('posts')->where('group_id', $group->id)
                     ->limit($limit)
                     ->offset($offset)
@@ -254,7 +268,14 @@ class MainController extends Controller
                         ->where('model_id', $post->id)->where('model_type', 'post')->exists();
                     if ($post->reported == false) {
                         $post->sponsored = false;
-                        array_push($groups_posts, $post);
+                        foreach ($user_sponsored_posts as $sponsored) {
+                            if ($sponsored->id == $post->id) {
+                                $post->sponsored = true;
+                            }
+                        }
+                        if ($post->sponsored == false) {
+                            array_push($groups_posts, $post);
+                        }
                     }
                 }
             }
@@ -273,7 +294,14 @@ class MainController extends Controller
                     ->where('model_id', $post->id)->where('model_type', 'post')->exists();
                 if ($post->reported == false) {
                     $post->sponsored = false;
-                    array_push($pages_posts, $post);
+                    foreach ($user_sponsored_posts as $sponsored) {
+                        if ($sponsored->id == $post->id) {
+                            $post->sponsored = true;
+                        }
+                    }
+                    if ($post->sponsored == false) {
+                        array_push($pages_posts, $post);
+                    }
                 }
             }
             array_push($user_pages_ids, $page->id);
@@ -357,11 +385,15 @@ class MainController extends Controller
             $post->type = $post->post_id != null ? 'share' : 'post';
 
             if (count($likes) > 0) {
-                $like_stat = [];
-                $love_stat = [];
-                $haha_stat = [];
-                $sad_stat = [];
-                $angry_stat = [];
+
+                $reacts = DB::table('reacts')->get();
+
+                $stat = '_stat';
+
+                foreach ($reacts as $react){
+                    ${$react->name.$stat} = [];
+                }
+
                 foreach ($likes as $like) {
                     $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
                         where likes.reactId = reacts.id
@@ -370,17 +402,16 @@ class MainController extends Controller
                     '));
 
                     $like->publisher = User::find($like->senderId);
-
-                    $stat = '_stat';
+                    $like->react_name = $reactname[0]->name;
 
                     array_push(${$reactname[0]->name . $stat}, $like);
                 }
 
-                $post->like_stat = $like_stat;
-                $post->love_stat = $love_stat;
-                $post->haha_stat = $haha_stat;
-                $post->sad_stat = $sad_stat;
-                $post->angry_stat = $angry_stat;
+                $post->reacts_stat = [];
+
+                foreach ($reacts as $react){
+                    array_push($post->reacts_stat,${$react->name.$stat});
+                }
             }
 
             if ($post->page_id != null) {
@@ -511,11 +542,13 @@ class MainController extends Controller
                         }
 
                         if (count($comment->likes) > 0) {
-                            $like_stat = [];
-                            $love_stat = [];
-                            $haha_stat = [];
-                            $sad_stat = [];
-                            $angry_stat = [];
+                            $reacts = DB::table('reacts')->get();
+
+                            $stat = '_stat';
+
+                            foreach ($reacts as $react){
+                                ${$react->name.$stat} = [];
+                            }
                             foreach ($comment->likes as $like) {
                                 $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
                                                     where likes.reactId = reacts.id
@@ -524,17 +557,16 @@ class MainController extends Controller
                                                 '));
 
                                 $like->publisher = User::find($like->senderId);
-
-                                $stat = '_stat';
+                                $like->react_name = $reactname[0]->name;
 
                                 array_push(${$reactname[0]->name . $stat}, $like);
                             }
 
-                            $comment->like_stat = $like_stat;
-                            $comment->love_stat = $love_stat;
-                            $comment->haha_stat = $haha_stat;
-                            $comment->sad_stat = $sad_stat;
-                            $comment->angry_stat = $angry_stat;
+                            $comment->reacts_stat = [];
+
+                            foreach ($reacts as $react){
+                                array_push($comment->reacts_stat,${$react->name.$stat});
+                            }
                         }
 
                         if (count($comment->replies) > 0) {
@@ -566,11 +598,13 @@ class MainController extends Controller
                                     }
 
                                     if (count($reply->likes) > 0) {
-                                        $like_stat = [];
-                                        $love_stat = [];
-                                        $haha_stat = [];
-                                        $sad_stat = [];
-                                        $angry_stat = [];
+                                        $reacts = DB::table('reacts')->get();
+
+                                        $stat = '_stat';
+
+                                        foreach ($reacts as $react){
+                                            ${$react->name.$stat} = [];
+                                        }
                                         foreach ($reply->likes as $like) {
                                             $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
                                                     where likes.reactId = reacts.id
@@ -579,17 +613,16 @@ class MainController extends Controller
                                                 '));
 
                                             $like->publisher = User::find($like->senderId);
-
-                                            $stat = '_stat';
+                                            $like->react_name = $reactname[0]->name;
 
                                             array_push(${$reactname[0]->name . $stat}, $like);
                                         }
 
-                                        $reply->like_stat = $like_stat;
-                                        $reply->love_stat = $love_stat;
-                                        $reply->haha_stat = $haha_stat;
-                                        $reply->sad_stat = $sad_stat;
-                                        $reply->angry_stat = $angry_stat;
+                                        $reply->reacts_stat = [];
+
+                                        foreach ($reacts as $react){
+                                            array_push($reply->reacts_stat,${$react->name.$stat});
+                                        }
                                     }
                                 }
                             }
@@ -708,24 +741,33 @@ class MainController extends Controller
     }
 
 
-    public function getSponsoredPosts()
+    public function getSponsoredPosts($user_interests,$limit = null ,$offset = null)
     {
         $user_sponsored_posts = [];
 
-        $all_sponsored_posts = DB::select(DB::raw('select sponsored.gender,sponsored.created_at as sponsored_at,sponsored_time.duration,posts.*,sponsored_reach.reach,countries.name as country_name,cities.name as city_name,sponsored_ages.from,sponsored_ages.to from
-                                        posts,sponsored,sponsored_reach,sponsored_ages,countries,cities,sponsored_time
+        if($limit == null){
+            $all_sponsored_posts = DB::select(DB::raw('select categories.id as sponsor_category,sponsored.gender,sponsored.created_at as sponsored_at,sponsored_time.duration,posts.*,sponsored_reach.reach,countries.id as country_id,cities.id as city_id,sponsored_ages.from,sponsored_ages.to from
+                                        posts,sponsored,sponsored_reach,sponsored_ages,countries,cities,sponsored_time,categories
                                         where sponsored.postId = posts.id and sponsored.reachId = sponsored_reach.id
                                         and sponsored.age_id = sponsored_ages.id and sponsored.country_id = countries.id
-                                        and sponsored.city_id = cities.id and sponsored.timeId = sponsored_time.id ORDER BY posts.created_at DESC'));
+                                        and sponsored.city_id = cities.id and sponsored.timeId = sponsored_time.id and sponsored.category_id = categories.id ORDER BY posts.created_at DESC'));
+        }
+        else{
+            $all_sponsored_posts = DB::select(DB::raw('select categories.id as sponsor_category,sponsored.gender,sponsored.created_at as sponsored_at,sponsored_time.duration,posts.*,sponsored_reach.reach,countries.id as country_id,cities.id as city_id,sponsored_ages.from,sponsored_ages.to from
+                                        posts,sponsored,sponsored_reach,sponsored_ages,countries,cities,sponsored_time,categories
+                                        where sponsored.postId = posts.id and sponsored.reachId = sponsored_reach.id
+                                        and sponsored.age_id = sponsored_ages.id and sponsored.country_id = countries.id
+                                        and sponsored.city_id = cities.id and sponsored.timeId = sponsored_time.id and sponsored.category_id = categories.id ORDER BY posts.created_at DESC limit '.$limit.' offset '.$offset));
+        }
 
         foreach ($all_sponsored_posts as $post) {
             $post_users = DB::table('users')->whereBetween('age', [$post->from, $post->to])
-                ->where('country', $post->country_name)
-                ->where('city', $post->city_name)
+                ->where('country_id', $post->country_id)
+                ->where('city_id', $post->city_id)
                 ->where('gender', $post->gender)
                 ->limit($post->reach)->pluck('id')->toArray();
 
-            if (in_array(auth()->user()->id, $post_users) != false && Carbon::parse($post->sponsored_at)->addDays($post->duration) >= Carbon::today()) {
+            if (in_array(auth()->user()->id, $post_users) != false && Carbon::parse($post->sponsored_at)->addDays($post->duration) >= Carbon::today() && in_array($post->sponsor_category,$user_interests)) {
                 $post->reported = DB::table('reports')->where('user_id', auth()->user()->id)
                     ->where('model_id', $post->id)->where('model_type', 'post')->exists();
                 if ($post->reported == false) {
@@ -767,7 +809,7 @@ class MainController extends Controller
 
         foreach ($expected_groups as $group) {
             $group_members_count = DB::select(DB::raw('select count(group_members.id) as count from group_members
-                        where group_members.group_id =' . $group->id . ' and group_members.stateId = 2'
+                        where group_members.group_id =' . $group->id . ' and group_members.state = 1'
             ))[0]->count;
 
             $group->members = $group_members_count;
@@ -782,8 +824,8 @@ class MainController extends Controller
         $expected_pages = Page::whereIn('category_id', $user_interests_array)->whereNotIn('id', $user_pages_ids)->limit(3)->get();
 
         foreach ($expected_pages as $page) {
-            $page_likes_count = DB::select(DB::raw('select count(user_pages.id) as count from user_pages
-                        where user_pages.page_id =' . $page->id
+            $page_likes_count = DB::select(DB::raw('select count(page_members.id) as count from page_members
+                        where page_members.page_id =' . $page->id
             ))[0]->count;
 
             $page->members = $page_likes_count;
@@ -1028,6 +1070,7 @@ class MainController extends Controller
 
     public function search(Request $request,$type,$search_param)
     {
+        $auth_user = auth()->user();
         if($search_param != "null") {
 
             if($type == 'groups'){
@@ -1037,8 +1080,45 @@ class MainController extends Controller
 
                 foreach ($groups as $group) {
                     $group_members_count = DB::select(DB::raw('select count(group_members.id) as count from group_members
-                        where group_members.group_id =' . $group->id . ' and group_members.stateId = 2'
+                        where group_members.group_id =' . $group->id . ' and group_members.state = 1'
                     ))[0]->count;
+
+//                    $joined_group = DB::select(DB::raw('select stateId from group_members
+//                        where group_members.group_id =' . $group->id . ' and group_members.user_id = ' . $user->id))[0]->stateId;
+
+                    $joined_group = DB::table('group_members')->select('state')->where('user_id',$auth_user->id)
+                        ->where('group_id',$group->id)->first();
+
+                    if($joined_group){
+                        if ($joined_group->state == 0){
+                            $group->joined = 'request rejected';
+                            $group->flag = 0;
+                        }
+                        elseif ($joined_group->state == 1){
+                            $group->joined = 'exit group';
+                            $group->flag = 1;
+
+                            if($joined_group->isAdmin == 1){
+                                $group->joined = 'delete group';
+                            }
+                            else{
+                                $group->joined = 'exit group';
+                                $group->flag = 1;
+                            }
+                        }
+                        elseif($joined_group->state == 2){
+                            $group->joined = 'cancel request';
+                            $group->flag = 1;
+                        }
+                        else{
+                            $group->joined = 'accept invitation';
+                            $group->flag = 0;
+                        }
+                    }
+                    else{
+                        $group->joined = 'join';
+                        $group->flag = 0;
+                    }
 
                     $group->members = $group_members_count;
                 }
@@ -1054,9 +1134,27 @@ class MainController extends Controller
                                 select * from pages where pages.name LIKE "%' . $search_param . '%"'));
 
                 foreach ($pages as $page) {
-                    $page_likes_count = DB::select(DB::raw('select count(user_pages.id) as count from user_pages
-                        where user_pages.page_id =' . $page->id
+                    $page_likes_count = DB::select(DB::raw('select count(page_members.id) as count from page_members
+                        where page_members.page_id =' . $page->id
                     ))[0]->count;
+
+
+                    $liked_page = DB::table('page_members')->where('user_id',$auth_user->id)
+                        ->where('page_id',$page->id)->first();
+
+                        if ($liked_page != null){
+                            if($liked_page->isAdmin == 1){
+                                $page->liked = 'delete page';
+                            }
+                            else{
+                                $page->liked = 'unlike';
+                                $page->flag = 1;
+                            }
+                        }
+                        else{
+                            $page->liked = 'like';
+                            $page->flag = 0;
+                        }
 
                     $page->members = $page_likes_count;
                 }
@@ -1070,6 +1168,53 @@ class MainController extends Controller
             else{
                 $users = DB::select(DB::raw('
                                 select * from users where users.name LIKE "%' . $search_param . '%"'));
+
+                foreach ($users as $user){
+                    $isfriend = DB::table('friendships')->where(function ($q) use ($user) {
+                        $q->where('senderId', auth()->user()->id)->Where('receiverId', $user->id);
+                    })->orwhere(function ($q) use ($user) {
+                        $q->where('senderId', $user->id)->Where('receiverId', auth()->user()->id);
+                    })->first();
+
+                    if($isfriend) {
+                        $auth_user_status = $isfriend->receiverId == auth()->user()->id ? 'receiver' : 'sender';
+                        if ($auth_user_status == 'sender') {
+                            if ($isfriend->stateId == 2) {
+                                $user->friendship = 'unfriend';
+                                $user->request_type = 'removeFriendRequest';
+                                $user->sender = auth()->user()->id;
+                                $user->receiver = $user->id;
+                            }
+                            else {
+                                $user->friendship = 'remove friend request';
+                                $user->request_type = 'removeFriendRequest';
+                                $user->sender = auth()->user()->id;
+                                $user->receiver = $user->id;
+                            }
+                        }
+                        else{
+                            if ($isfriend->stateId == 2) {
+
+                                $user->friendship = 'unfriend';
+                                $user->request_type = 'removeFriendRequest';
+                                $user->sender = $user->id;
+                                $user->receiver = auth()->user()->id;
+                            }
+                            else {
+                                $user->friendship = 'receive friend request';
+                                $user->sender = $user->id;
+                                $user->receiver = auth()->user()->id;
+                            }
+                        }
+                    }
+                    else{
+                        $user->friendship = 'add friend';
+                        $user->request_type = 'addFriendRequest';
+                        $user->sender = auth()->user()->id;
+                        $user->receiver = $user->id;
+                    }
+
+                }
 
                 $view = view('includes.partialusers', compact('users'));
 

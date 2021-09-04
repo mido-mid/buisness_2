@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class PageMember extends Model
 {
-    protected $table="user_pages";
+    protected $table="page_members";
     protected $fillable = [
         'user_id',
         'page_id',

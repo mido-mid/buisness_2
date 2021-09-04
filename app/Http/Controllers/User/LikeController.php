@@ -235,31 +235,32 @@ class LikeController extends Controller
             $comment->user_react = DB::table('reacts')->where('id',$comment->liked->reactId)->get();
         }
 
-        if(count($comment->likes) > 0){
-            $like_stat = [];
-            $love_stat = [];
-            $haha_stat = [];
-            $sad_stat = [];
-            $angry_stat = [];
-            foreach ($comment->likes as $like){
+        if (count($comment->likes) > 0) {
+            $reacts = DB::table('reacts')->get();
+
+            $stat = '_stat';
+
+            foreach ($reacts as $react){
+                ${$react->name.$stat} = [];
+            }
+            foreach ($comment->likes as $like) {
                 $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
                                                     where likes.reactId = reacts.id
-                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = '. $like->senderId . ' AND
-                                                likes.model_id = '.$comment->id.' AND likes.model_type = "comment"
+                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                                                likes.model_id = ' . $comment->id . ' AND likes.model_type = "comment"
                                                 '));
 
                 $like->publisher = User::find($like->senderId);
+                $like->react_name = $reactname[0]->name;
 
-                $stat = '_stat';
-
-                array_push(${$reactname[0]->name.$stat},$like);
+                array_push(${$reactname[0]->name . $stat}, $like);
             }
 
-            $comment->like_stat = $like_stat;
-            $comment->love_stat = $love_stat;
-            $comment->haha_stat = $haha_stat;
-            $comment->sad_stat = $sad_stat;
-            $comment->angry_stat = $angry_stat;
+            $comment->reacts_stat = [];
+
+            foreach ($reacts as $react){
+                array_push($comment->reacts_stat,${$react->name.$stat});
+            }
         }
 
         return $comment;
@@ -306,31 +307,34 @@ class LikeController extends Controller
             }
         }
 
-        if(count($likes) > 0){
-            $like_stat = [];
-            $love_stat = [];
-            $haha_stat = [];
-            $sad_stat = [];
-            $angry_stat = [];
-            foreach ($likes as $like){
+        if (count($likes) > 0) {
+
+            $reacts = DB::table('reacts')->get();
+
+            $stat = '_stat';
+
+            foreach ($reacts as $react){
+                ${$react->name.$stat} = [];
+            }
+
+            foreach ($likes as $like) {
                 $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
                         where likes.reactId = reacts.id
-                    AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = '. $like->senderId . ' AND
-                    likes.model_id = '.$post->id.' AND likes.model_type = "post"
+                    AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                    likes.model_id = ' . $post->id . ' AND likes.model_type = "post"
                     '));
 
                 $like->publisher = User::find($like->senderId);
+                $like->react_name = $reactname[0]->name;
 
-                $stat = '_stat';
-
-                array_push(${$reactname[0]->name.$stat},$like);
+                array_push(${$reactname[0]->name . $stat}, $like);
             }
 
-            $post->like_stat = $like_stat;
-            $post->love_stat = $love_stat;
-            $post->haha_stat = $haha_stat;
-            $post->sad_stat = $sad_stat;
-            $post->angry_stat = $angry_stat;
+            $post->reacts_stat = [];
+
+            foreach ($reacts as $react){
+                array_push($post->reacts_stat,${$react->name.$stat});
+            }
         }
 
         return $post;

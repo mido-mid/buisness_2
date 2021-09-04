@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
+Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath','mention']], function () {
 
     Route::get('/', function () {
         return view('welcome');
@@ -21,9 +21,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
     Auth::routes(['verify' => true]);
 
+    Route::get('getcities/{country_id}', 'Auth\RegisterController@getCities');
 
-    Route::group(['middleware' => ['auth','mention']],function() {
 
+    Route::group(['middleware' => ['auth']],function() {
+        Route::get('getcities/{country_id}', 'User\ServiceController@getCities');
         Route::get('home', 'User\MainController@index')->name('home');
         Route::post('joingroup', 'User\GroupsController@enterGroup')->name('join_group');
         Route::post('likepage', 'User\PagesController@likePage')->name('like_page');
@@ -52,6 +54,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('/notifications','User\NotificationsController@index')->name('notifications');
         Route::get('services/categories', 'User\ServiceController@getCategories')->name('service_categories');
         Route::get('services/{category_id?}', 'User\ServiceController@index')->name('services');
+        Route::get('myservices/{category?}', 'User\ServiceController@show')->name('myservices.show');
         Route::resource('services','User\ServiceController');
         Route::get('/mark-all-read/{user}', function (User $user) {
             $user->unreadNotifications->markAsRead();
@@ -79,6 +82,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::any('all-group','User\GroupsController@allGroup')->name('all-group');
         Route::any('my-group','User\GroupsController@myGroup')->name('my-group');
         Route::get('main-group/{id}','User\GroupsController@groupPosts')->name('main-group');
+        Route::get('main-group/{id}/{postId}','User\GroupsController@singlePost')->name('single-post-group');
 
 
         #region groups
@@ -89,7 +93,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('videos-page/{id}','User\PagesController@videosPage')->name('videos-page');
         Route::get('requests-page/{id}','User\PagesController@requestsPage')->name('requests-page');
         Route::any('changeRequest-page','User\PagesController@changePage')->name('changeRequest-page');
-        Route::any('adminLeft-page/{id}','User\PagesController@adminLeft')->name('adminLeft');
+        Route::any('adminLeft-page/{id}','User\PagesController@adminLeft')->name('adminLeftPage');
         Route::get('members-page/{id}','User\PagesController@membersPage')->name('members-page');
         Route::any('frientshep-page','User\PagesController@frirndshipPage')->name('frientshep-page');
         Route::any('following-page','User\PagesController@followingPage')->name('following-page');
@@ -97,6 +101,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::any('all-page','User\PagesController@allPage')->name('all-page');
         Route::any('my-page','User\PagesController@myPage')->name('my-page');
         Route::get('main-page/{id}','User\PagesController@pagePosts')->name('main-page');
+        Route::get('main-page/{id}/{postId}','User\PagesController@singlePost')->name('single-post-page');
 
 
     });

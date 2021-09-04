@@ -23,25 +23,45 @@ let savePostSubmit = (id) => {
     });
 }
 
-let addFriendSubmit = (id) => {
+let addFriendSubmit = (id,type) => {
 
     $.ajax({
-        url: $('#friend-form-' + id).attr('action'),
+        url: $('#'+type+'-friend-form-' + id).attr('action'),
         type: 'POST',
-        data: new FormData(document.getElementById("friend-form-" + id)),
+        data: new FormData(document.getElementById(type+"-friend-form-" + id)),
         dataType: 'JSON',
         cache: false,
         processData: false,
         contentType: false,
         success: function (data) {
-            console.log(data.msg);
-            $('#friend-btn-' + id).text(data.msg);
+            $('#'+type+'-friend-btn-' + id).text(data.msg);
             if(data.msg == "add friend") {
-                $('#request-type-' + id).attr('value', 'addFriendRequest')
+                $('#'+type+'-request-type-' + id).attr('value', 'addFriendRequest')
+                $('#sender-'+id).attr('name',data.sender);
+                $('#receiver-'+id).attr('name',data.receiver);
             }
             else{
-                $('#request-type-' + id).attr('value', 'removeFriendRequest')
+                $('#'+type+'-request-type-' + id).attr('value', 'removeFriendRequest')
             }
+        },
+        error: function (data) {
+            console.log(data.responseText);
+        }
+    });
+}
+
+let friendRequestSubmit = (id,type) => {
+
+    $.ajax({
+        url: $('#'+type+'-friend-request-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById(type + "-friend-request-form-" + id)),
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            var div = document.getElementById('friend-request-div-'+id);
+            div.innerHTML = data;
         },
         error: function (data) {
             console.log(data.responseText);
@@ -65,9 +85,15 @@ let joinGroupSubmit = (id) => {
             $('#join-btn-' + id).text(data.msg);
             if(data.msg == "join") {
                 $('#join-flag-' + id).attr('value',0)
+                if(parseInt($('#members-' + id).text()) > 0) {
+                    $('#members-' + id).text(parseInt($('#members-' + id).text()) - 1 + ' members');
+                }
             }
             else{
                 $('#join-flag-' + id).attr('value',1)
+                if(data.msg == "exit group") {
+                    $('#members-' + id).text(parseInt($('#members-' + id).text()) + 1 + ' members');
+                }
             }
         },
         error: function (data) {
@@ -89,13 +115,23 @@ let likePageSubmit = (id) => {
         contentType: false,
         success: function (data) {
             $('#like-page-btn-' + id).text(data.msg);
-            if(data.msg == "join") {
+            if(data.msg == "like") {
                 $('#like-page-flag-' + id).attr('value',0)
+                if(parseInt($('#page-members-' + id).text()) > 0) {
+                    $('#page-members-' + id).text(parseInt($('#page-members-' + id).text()) - 1 + ' likes');
+                }
             }
             else{
                 $('#like-page-flag-' + id).attr('value',1)
+                $('#page-members-' + id).text(parseInt($('#page-members-' + id).text()) + 1 + ' likes');
             }
         },
+        error: function (data) {
+            console.log(data.responseText);
+            var errormsg = $.parseJSON(data.responseText);
+            $('#error-message').css('display','block');
+            $('#error-status').text(errormsg.msg);
+        }
     });
 }
 
@@ -724,6 +760,7 @@ let textAreaChange = (id) => {
 
 let applySelect2 = () => {
     $('.js-example-basic-multiple').select2();
+    $('.js-example-basic-single').select2();
 }
 
 
@@ -863,30 +900,45 @@ let searchCategoriesSubmit = () => {
 
 }
 
-let searchServicesSubmit = () => {
 
-    var value = $('#search-services').val();
-
-    if(document.getElementById("search-services").value.length == 0){
-        value = null;
-    }
+let deleteGroupSubmit = (id) => {
 
     $.ajax({
-        url:"search/services/"+value,
-        type: 'GET',
+        url: $('#delete-group-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("delete-group-form-" + id)),
+        dataType: 'JSON',
         cache: false,
         processData: false,
         contentType: false,
-        success:function(data)
-        {
-            $('#load-services').html(data);
+        success: function (data) {
+            $('#searched-group-' + id).remove();
         },
         error: function (data) {
             console.log(data.responseText);
         }
     });
-
 }
+
+let deletePageSubmit = (id) => {
+
+    $.ajax({
+        url: $('#delete-page-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("delete-page-form-" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#searched-page-' + id).remove();
+        },
+        error: function (data) {
+            console.log(data.responseText);
+        }
+    });
+}
+
 
 let readURL = (id,input,type) => {
     if (input.files && input.files[0]) {
@@ -922,11 +974,16 @@ let homeSearchSubmit = () => {
         contentType: false,
         success:function(data)
         {
+            console.log(data)
             if(value != null){
                 $('#search-loading').css('display','none');
+                $('#show-stories').css('display','none');
+                $('#add-post').css('display','none');
             }
             else{
                 $('#search-loading').css('display','block');
+                $('#show-stories').css('display','block');
+                $('#add-post').css('display','block');
             }
             $('#home-search-results').html(data);
         },
@@ -936,6 +993,56 @@ let homeSearchSubmit = () => {
     });
 }
 
+
+
+let addServiceCities = (input) => {
+
+    var country_id= input.value
+    if (country_id) {
+        $.ajax({
+            url: "getcities/"+country_id,
+            type: "GET",
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function(data){
+                $('.select-city').empty();
+                $('.select-city').html(data);
+                $('.select-city').prop('disabled',false);
+            },
+            error: function (data) {
+                console.log(data.responseText);
+            }
+        });
+    }else {
+        $('select[name="city_id"]').empty();
+    }
+}
+
+
+let editServiceCities = (input,id) => {
+
+    var country_id= input.value
+    if (country_id) {
+        $.ajax({
+            url: "getcities/"+country_id,
+            type: "GET",
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function(data){
+                $('.edit-city-' + id).empty();
+                $('.edit-city-' + id).html(data);
+                $('.edit-city-' + id).prop('disabled',false);
+            },
+            error: function (data) {
+                console.log(data.responseText);
+            }
+        });
+    }else {
+        $('select[name="city_id"]').empty();
+    }
+}
 
 const properties = [
     'direction',
