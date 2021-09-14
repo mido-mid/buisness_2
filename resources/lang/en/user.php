@@ -5,9 +5,10 @@ return [
     "login" => "login",
     "new_user" => "new user",
     "welcome" => "welcome back",
-    "email" => "enter your email",
-    "name" => "enter your name",
-    "password" => "enter password",
+    "email" => "your email",
+    "name" => "your name",
+    "username" => "your username",
+    "password" => "password",
     "confirm_password" => "confirm password",
     "country" => "country",
     "city" => "city",
@@ -23,20 +24,6 @@ return [
     "register" => "register",
 
 
-    //general
-    "search" => "search",
-    "delete" => "delete",
-    "edit" => "edit",
-    "like" => "like",
-    "comment" => "comment",
-    "share" => "share",
-    "interesting_posts" => "posts you may like" ,
-    "interesting_groups" => "groups you would like to join",
-    "expected_friends" => "friends you may know",
-    "interesting__pages" => "pages you may be interested in",
-    "follow" => "follow",
-    "join" => "join",
-
     //sidebar and navbar
     "buisness" => "Buisness",
     "home" => "Home",
@@ -44,23 +31,18 @@ return [
     "pages" => "Pages",
     "services" => "Services",
     "notifications" => "Notifications",
-    "companies" => "Packaging Companies",
-    "chat" => "Chat",
+    "delivery" => "Delivery",
+    "messages" => "Chat",
     "saved_posts" => "Saved Posts",
     "language" => "Language",
-    "contact" => "Contact Us",
+    "support" => "Contact Us",
     "logout" => "Logout",
+    "dashboard" => "Dashboard",
 
-    //services
-    "publisher" => "publisher",
-    "contact_publisher" => "contact publisher",
+    //general
+    "search" => "search",
+    "edit" => "Edit",
+    "delete" => "Delete",
+    "add" => "add"
 
-    //home
-    "add_post" => "add new post",
-    "save_post" => "save post",
-    "sponsor_post" => "sponsor",
-
-
-    //notifications
-    "select_notification_to_open" => "select a notification to open"
 ];

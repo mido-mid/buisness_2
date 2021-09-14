@@ -1,7 +1,14 @@
 @extends('User.pages.layout')
 
 @section('sectionPages')
-
+@section('sectionPages')
+@if( $isAdmin == 0 && $myState == 0)
+<div class="group-about my-3">
+    <div class="group-description">
+        <h3 class="heading-tertiary">{{__('pages.privacy')}}</h3>
+    </div>
+</div> 
+@else
 <div class="page-images my-3">
     <div class="row">
         @foreach($videos as $video)
@@ -18,6 +25,6 @@
     {{-- </div> --}}
     
   </div>
-
+@endif
   
 @endsection

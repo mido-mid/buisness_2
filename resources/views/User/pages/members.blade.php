@@ -1,12 +1,12 @@
 @extends('User.pages.layout')
- 
+
 @section('sectionPages')
-@if($page['privacy'] == 0 && $isAdmin == 0 && $myState == 0)
+@if( $isAdmin == 0 && $myState == 0)
 <div class="group-about my-3">
     <div class="group-description">
         <h3 class="heading-tertiary">{{__('pages.privacy')}}</h3>
     </div>
-</div> 
+</div>
 @else
 <div class="page-members my-3">
     <div class="invite-friends d-flex justify-content-between">
@@ -48,14 +48,14 @@
                     <button class="button-2 totyFollowingPage" id="removeFollowing|{{$admin->user_id}}">{{__('pages.un_following')}}</button>
                   @endif
 
-                  
+
                 @endif
                 @else
                 <a class="button-4" href="/login">{{__('pages.add_friend')}}</a>
                 <a class="button-4" href="/login">{{__('pages.add_following')}}</a>
 
               @endif
-              
+
             </div>
           </div>
       </li>
@@ -122,7 +122,8 @@
             <div class="group-members my-3">
               <ul class="members-list list-unstyled">
                 @foreach($myData->friends as $friend)
-                @if($friend->stateId == 1 && $friend->userResever->pagemember['state'] != '1' && $friend->userResever->pagemember['state'] != '3'  && $friend->userResever->groupmember['isAdmin'] != '1')
+                @isset($friend->userResever)
+                @if($friend->stateId == 2 && $friend->userResever->pagemember['state'] != '1' && $friend->userResever->pagemember['state'] != '3'  && $friend->userResever->groupmember['isAdmin'] != '1')
                 <li class="members-item" id="{{$friend->userResever->id}}|{{$page['id']}}">
                   <div class="group-member d-flex justify-content-between">
                     <a href="#" class="group-member-link d-flex align-items-center">
@@ -137,14 +138,16 @@
                   </div>
                 </li>
                 @endif
+                @endisset
                 @endforeach
                 @foreach($myData->myfriends as $myfriends)
-                @if($myfriends->stateId == 1 && $myfriends->userSender->pagemember['state'] != '1' && $myfriends->userSender->pagemember['state'] != '2' && $myfriends->userSender->groupmember['state'] != '3' && $myfriends->userResever->groupmember['isAdmin'] != '1')
+                @isset($myfriends->userSender)
+                @if($myfriends->stateId == 2 && $myfriends->userSender->pagemember['state'] != '1' && $myfriends->userSender->pagemember['state'] != '2' && $myfriends->userSender->groupmember['state'] != '3' && $myfriends->userSender->groupmember['isAdmin'] != '1')
                 <li class="members-item" id="{{$myfriends->userSender->id}}|{{$page['id']}}">
-                  <div class="page-member d-flex justify-content-between">
-                    <a href="#" class="page-member-link d-flex align-items-center">
+                  <div class="group-member d-flex justify-content-between">
+                    <a href="#" class="group-member-link d-flex align-items-center">
                       <img src="{{asset('assets/images/users')}}/{{$myfriends->userSender->personal_image}}" alt="#" class="member-img img-fluid">
-                      <span class="d-inline-block page-member-link_span">
+                      <span class="d-inline-block group-member-link_span">
                           <p class="user-name">{{$myfriends->userSender->name}}</p>
                         </span>
                     </a>
@@ -154,6 +157,7 @@
                   </div>
                 </li>
                 @endif
+                @endisset
                 @endforeach
               </ul>
             </div>

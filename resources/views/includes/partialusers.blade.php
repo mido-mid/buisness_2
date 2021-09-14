@@ -21,6 +21,13 @@
                             </b></a>
                     </div>
                     <div class="post-option ml-auto pr-3">
+                        <a id="search-block-btn-{{$user->id}}" onclick="addBlockSubmit({{$user->id}})" class="btn btn-warning text-white">{{$user->block}}</a>
+                        <form id="search-block-form-{{$user->id}}" action="{{ route('addfriend') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                            @csrf
+                            <input type="hidden" id="block-receiver-{{$user->id}}" name="receiverId" value="{{$user->id}}">
+                            <input type="hidden" id="block-sender-{{$user->id}}" name="senderId" value="{{auth()->user()->id}}">
+                            <input type="hidden" name="requestType" id="block-request-type-{{$user->id}}" value="{{$user->block_type}}">
+                        </form>
                         @if($user->friendship == 'receive friend request')
                             <div class="owner-name pl-3" id="friend-request-div-{{$user->id}}">
                                 <a id="accept-friend-request-{{$user->id}}" onclick="friendRequestSubmit({{$user->id}},'accept')" class="btn btn-warning text-white">accept friend request</a>

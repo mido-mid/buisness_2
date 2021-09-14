@@ -17,7 +17,7 @@ class banned
     {
         $user = auth()->user();
 
-            if($user->stateId == "banned"){
+        if($user->stateId == "allowed"){
             return $next($request);
         }
         return back()->withStatus('you are banned please contact the support to know the reason');

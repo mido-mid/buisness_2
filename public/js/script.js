@@ -70,6 +70,32 @@ let friendRequestSubmit = (id,type) => {
 }
 
 
+let addBlockSubmit = (id) => {
+
+    $.ajax({
+        url: $('#search-block-form-' + id).attr('action'),
+        type: 'POST',
+        data: new FormData(document.getElementById("search-block-form-" + id)),
+        dataType: 'JSON',
+        cache: false,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            $('#search-block-btn-' + id).text(data.msg);
+            if(data.msg == "block") {
+                $('#block-request-type-' + id).attr('value', 'addBlockRequest')
+            }
+            else{
+                $('#block-request-type-' + id).attr('value', 'removeBlockRequest')
+            }
+        },
+        error: function (data) {
+            console.log(data.responseText);
+        }
+    });
+}
+
+
 let joinGroupSubmit = (id) => {
 
     $.ajax({
@@ -165,7 +191,6 @@ let addPostSubmit = () => {
             div.innerHTML = data + div.innerHTML;
         },
         error: function (data) {
-            console.log(data.responseText);
             var errormsg = $.parseJSON(data.responseText);
             $('#error-message').css('display','block');
             $('#error-status').text(errormsg.msg);
@@ -574,6 +599,7 @@ let addStorySubmit = (publisher_id) => {
         },
         success: function (data) {
             $('#progress-modal').modal('hide');
+            $('#story-' + publisher_id).css('display','block');
             var div = document.getElementById('show-story-modal-' + publisher_id);
             $('#success-modal').modal('show');
             $('#success-modal-message').text("story added successfully");

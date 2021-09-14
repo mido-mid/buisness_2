@@ -8,6 +8,7 @@ html {
   /* 1rem = 10px */ }
 
 body {
+  background: #f0f2f5;
   overflow-x: hidden;
   direction: rtl !important;
   text-align: right;
@@ -143,6 +144,21 @@ body {
     border: 1px solid #fcbc22;
     color: #000;
     background-color: #fff; }
+.button-5 {
+  border: 1px solid #fcbc22;
+  display: inline-block;
+  padding: .6rem 1.2rem;
+  border-radius: 4px;
+  font-size: 1.4rem;
+  color: #000;
+  transition: all .4s;
+  background: #FFFFFF; }
+.button-5:focus {
+  outline: 0; }
+.button-5:hover {
+  border: 1px solid #fcbc22;
+  color: #FFFFFF;
+  background-color: #fcbc22; }
 
 .link-1:link, .link-1:visited {
   text-decoration: none;
@@ -231,10 +247,10 @@ body {
     margin-right: 2rem; }
 
 .group-new-group {
-  position: absolute;
   left: 50%;
-  top: 30%;
-  transform: translate(-50%, -50%);
+  top: 10%;
+  padding:5% 0 5% 0;
+  transform: translate(-50%, 0);
   width: 50%; }
   .group-new-group form input,
   .group-new-group form select {
@@ -348,7 +364,7 @@ body {
       .group-section .group-members .members-list .members-item .group-member .group-member-link .member-img {
         height: 5rem;
         width: 5rem;
-        border-radius: 50%; }
+        border-radius: 50% !important; }
       .group-section .group-members .members-list .members-item .group-member .group-member-link .user-name,
       .group-section .group-members .members-list .members-item .group-member .group-member-link .user-followers {
         margin-bottom: 0; }
@@ -488,7 +504,7 @@ body {
       .page-section .page-members .members-list .members-item .page-member .page-member-link .member-img {
         height: 5rem;
         width: 5rem;
-        border-radius: 50%; }
+        border-radius: 50% !important; }
       .page-section .page-members .members-list .members-item .page-member .page-member-link .user-name,
       .page-section .page-members .members-list .members-item .page-member .page-member-link .user-followers {
         margin-bottom: 0; }
@@ -508,3 +524,101 @@ body {
     .page-section .page-mypages .card .card-title {
       font-weight: 600;
       font-size: 1.4rem; }
+.pointer{
+  cursor: pointer;
+}
+.post-modal{
+  position: relative;
+}
+  .post-modal img{
+    border-radius: 5px ;
+    width: 100%
+  }
+  .post-modal div{
+    background: rgba(0,0,0,0.5) ;
+    width: 100%;
+    position: absolute;
+    margin-top:-15.8%;
+  }
+
+.owl-prev{
+  right: 0px;
+}
+.owl-next{
+  left: 0px;
+}
+.owl-prev , .owl-next{
+  position: absolute;
+  top : 30%;
+}
+.owl-prev span, .owl-next span{
+  font-size: 80px;
+  color: black;
+}
+.owl-dots{
+  display: none;
+}
+.uimage-div{
+  padding: .5rem 1rem;
+  font-size: 1.25rem;
+  border-radius: .3rem;
+  border:dashed 2px #fcbc22;
+  width: 100%;
+
+
+}
+.upload-img{
+  display: inline-block;
+  background-color: indigo;
+  color: white;
+  padding: 0.5rem;
+  font-family: sans-serif;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+.select-image-input{
+ height: 0rem !important;
+  opacity: 0;
+}
+.select-image-label{
+  background-color: #fcbc22;
+  color: #FFFFFF;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.group-new-group textarea{
+  resize: none;
+  height: 110px;
+  border-radius: 5px;
+  outline: none;
+  direction: rtl;
+}
+.group-new-group textarea:focus{
+  border-color: #fcbc22;
+  box-shadow: 0 0 0 0.2rem #fcbc22;
+}
+.button-danger{
+  background-color: #c9302c;
+}
+.button-danger:hover{
+  background-color: #c9302c;
+  color: #FFFFFF;
+}
+
+.modal-post{
+  position: absolute;
+  top:20%
+}
+.circle{
+  border-radius: 50%;
+}
+.link-cust{
+  text-decoration: none;
+  color: black;
+  }
+  .link-cust:hover{
+    text-decoration: none;
+    color: black;
+  }

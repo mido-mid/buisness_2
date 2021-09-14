@@ -20,78 +20,6 @@ class GroupsController extends Controller
 {
 
     use GeneralTrait;
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    // public function index()
-    // {
-    //     return redirect()->route()
-    // }
-    // public function index($flag)
-    // {
-
-    //     $user = auth()->user();
-
-    //     if($flag == 0) {
-    //         $groups = Group::all();
-
-    //         foreach ($groups as $group) {
-    //             $user_group = DB::table('group_members')
-    //                 ->where([['group_id',$group->id],['user_id',1],['state',1]])
-    //                 ->first();
-
-    //             $groups_users = DB::table('group_members')
-    //                 ->where('group_id',$group->id)->where('state',1)
-    //                 ->count();
-
-    //             $group->users = $groups_users;
-
-    //             if ($user_group) {
-    //                 $group['entered'] = 1;
-    //             }
-    //             else{
-    //                 $group['entered'] = 0;
-    //             }
-    //         }
-    //     }
-    //     else{
-    //         $groups = DB::select(DB::raw('select groups.* from groups,group_members
-    //                     where group_members.group_id = groups.id
-    //                     AND group_members.user_id = 1 and group_members.state = 1'));
-
-    //         foreach ($groups as $group) {
-    //             $groups_users = DB::table('group_members')
-    //                 ->where('group_id',$group->id)->where('state',1)
-    //                 ->count();
-
-    //             $group->users = $groups_users;
-    //         }
-    //     }
-
-    //     $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
-    //                     where user_categories.categoryId = categories.id
-    //                     AND user_categories.userId = 1 and categories.type = 0'));
-
-    //     $user_interests_array = [];
-
-    //     foreach ($user_interests as $interest){
-    //         array_push($user_interests_array,$interest->id);
-    //     }
-
-    //     $expected_groups = Group::whereIn('category_id',$user_interests_array)->limit(3);
-
-    //     foreach ($expected_groups as $group) {
-    //         $groups_users = DB::table('group_members')
-    //             ->where('group_id',$group->id)->where('state',1)
-    //             ->count();
-
-    //         $group->users = $groups_users;
-    //     }
-
-    //     return view('User.groups.index');
-    // }
 
     /**
      * Show the form for creating a new resource.
@@ -168,7 +96,7 @@ class GroupsController extends Controller
         $group_admin = DB::table('group_members')->insert([
             'group_id' => $group,
             'user_id' => Auth::guard('web')->user()->id,
-            'state' => 0,
+            'state' => 1,
             'isAdmin'=>1
         ]);
 
@@ -386,11 +314,11 @@ class GroupsController extends Controller
     {
         $user_groups_ids = [];
         $user = auth()->user();
-        $group = Group::find($group_id);
+        $myggroup = Group::find($group_id);
         $myState = $this->memberState($group_id);
         $isAdmin = $this->isAdmin($group_id);
         $joined_group = DB::table('group_members')->where('group_id', $group_id)->where('user_id', $user->id)->exists();
-        $group_members = GroupMember::where('group_id',$group_id)->get();
+        $group_members = GroupMember::where('group_id',$group_id)->where('state',1)->get();
         $group_posts = DB::table('posts')->where('group_id', $group_id)
             ->orderBy('created_at', 'desc')->get();
 
@@ -458,18 +386,18 @@ class GroupsController extends Controller
 
         $expected_groups = $this->getExpectedGroups($user_interests_array, $user_groups_ids);
 
-        return view('User.groups.posts',compact('group_posts','group_members','joined_group','group','expected_groups','myState','isAdmin','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
+        return view('User.groups.posts',compact('group_posts','group_members','joined_group','myggroup','expected_groups','myState','isAdmin','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
     }
 
     public function singlePost($group_id,$post_id)
     {
         $user_groups_ids = [];
         $user = auth()->user();
-        $group = Group::find($group_id);
+        $myggroup = Group::find($group_id);
         $myState = $this->memberState($group_id);
         $isAdmin = $this->isAdmin($group_id);
         $joined_group = DB::table('group_members')->where('group_id', $group_id)->where('user_id', $user->id)->exists();
-        $group_members = GroupMember::where('group_id',$group_id)->get();
+        $group_members = GroupMember::where('group_id',$group_id)->where('state',1)->get();
         $group_posts = DB::table('posts')->where('id', $post_id)
             ->orderBy('created_at', 'desc')->get();
 
@@ -535,16 +463,16 @@ class GroupsController extends Controller
 
         $expected_groups = $this->getExpectedGroups($user_interests_array, $user_groups_ids);
 
-        return view('User.groups.posts',compact('group_posts','group_members','joined_group','group','expected_groups','myState','isAdmin','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
+        return view('User.groups.posts',compact('group_posts','group_members','joined_group','myggroup','expected_groups','myState','isAdmin','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
     }
 
     public function aboutGroup($id){
         $user_groups_ids = [];
         $user = auth()->user();
-        $group = Group::find($id);
+        $myggroup = Group::find($id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $group_members = GroupMember::where('group_id',$id)->get();
+        $group_members = GroupMember::where('group_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
 
         $user_groups = DB::select(DB::raw('select groups.*,group_members.state from groups,group_members
                         where group_members.group_id = groups.id
@@ -567,7 +495,7 @@ class GroupsController extends Controller
 
         $expected_groups = $this->getExpectedGroups($user_interests_array, $user_groups_ids);
 
-        return view('User.groups.about',compact('group','group_members','myState', 'isAdmin', 'expected_groups'));
+        return view('User.groups.about',compact('myggroup','group_members','myState', 'isAdmin', 'expected_groups'));
     }
 
     public function groupMedia($type, $id)
@@ -603,11 +531,11 @@ class GroupsController extends Controller
     public function imagesGroup($id){
         $user_groups_ids = [];
         $user = auth()->user();
-        $group = Group::find($id);
-        $related_groups = $this->relatedGroups($group->category_id);
+        $myggroup = Group::find($id);
+        $related_groups = $this->relatedGroups($myggroup->category_id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $group_members = GroupMember::where('group_id',$id)->get();
+        $group_members = GroupMember::where('group_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
         //0 image
         //1 video
         $images = [];
@@ -638,16 +566,16 @@ class GroupsController extends Controller
 
         $expected_groups = $this->getExpectedGroups($user_interests_array, $user_groups_ids);
 
-        return view('User.groups.images',compact('group','group_members','myState', 'isAdmin', 'expected_groups', 'images'));
+        return view('User.groups.images',compact('myggroup','group_members','myState', 'isAdmin', 'expected_groups', 'images'));
     }
 
     public function videosGroup($id){
         $user_groups_ids = [];
         $user = auth()->user();
-        $group = Group::find($id);
+        $myggroup = Group::find($id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $group_members = GroupMember::where('group_id',$id)->get();
+        $group_members = GroupMember::where('group_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
         //0 image
         //1 video
         $videos = [];
@@ -679,7 +607,7 @@ class GroupsController extends Controller
 
         $expected_groups = $this->getExpectedGroups($user_interests_array, $user_groups_ids);
 
-        return view('User.groups.videos',compact('group','group_members','myState', 'isAdmin', 'expected_groups', 'videos'));
+        return view('User.groups.videos',compact('myggroup','group_members','myState', 'isAdmin', 'expected_groups', 'videos'));
     }
 
     public function enterGroup(Request $request) {
@@ -696,7 +624,7 @@ class GroupsController extends Controller
                 DB::table('group_members')->insert([
                     'group_id' => $group_id,
                     'user_id' => $user->id,
-                    'state' => 3,
+                    'state' => 2,
                     'isAdmin'=>0
 
                 ]);
@@ -706,7 +634,7 @@ class GroupsController extends Controller
                 DB::table('group_members')->insert([
                     'group_id' => $group_id,
                     'user_id' => $user->id,
-                    'state' => 2,
+                    'state' => 1,
                     'isAdmin'=>0
                 ]);
                 return $this->returnSuccessMessage('exit group');
@@ -810,10 +738,10 @@ class GroupsController extends Controller
     {
         $user = auth()->user();
         $user_groups_ids = [];
-        $group = Group::find($id);
+        $myggroup = Group::find($id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $group_members = GroupMember::where('group_id',$id)->get();
+        $group_members = GroupMember::where('group_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
         $group_requests = GroupMember::where('group_id',$id)->where('state',2)->get();
 
 
@@ -838,7 +766,7 @@ class GroupsController extends Controller
 
         $expected_groups = $this->getExpectedGroups($user_interests_array, $user_groups_ids);
 
-        return view('User.groups.requests',compact('group','group_members','myState', 'isAdmin', 'expected_groups','group_requests'));
+        return view('User.groups.requests',compact('myggroup','group_members','myState', 'isAdmin', 'expected_groups','group_requests'));
     }
 
     public function changeRequest(Request $request)
@@ -865,7 +793,7 @@ class GroupsController extends Controller
         {
             $admin = GroupMember::where('user_id',Auth::guard('web')->user()->id)->get();
             $admin[0]->delete();
-            return redirect('groups');
+            return redirect('all-group');
         }
         else
         {
@@ -877,17 +805,17 @@ class GroupsController extends Controller
     {
         $user_groups_ids = [];
         $user = auth()->user();
-        $group = Group::find($id);
+        $myggroup = Group::find($id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $group_members = GroupMember::where('group_id',$id)->get();
+        $group_members = GroupMember::where('group_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
         //$admins = GroupMember::where('group_id',$id)->where('isAdmin',1)->get();
 
         $accepteds = [];
         $admins = [];
         // $myFriends =[];
 
-        $accepteds = GroupMember::where('group_id', $id)->where('state', 1)->get();
+        $accepteds = GroupMember::where('group_id', $id)->where('state', 1)->where('isAdmin','!=', 1)->get();
         $admins = GroupMember::where('group_id', $id)->where('isAdmin',1)->get();
 
         $user_groups = DB::select(DB::raw('select groups.*,group_members.state from groups,group_members
@@ -925,11 +853,11 @@ class GroupsController extends Controller
                 $enemyy->friendship = $this->CheckUserFriendshipState(Auth::guard('web')->user()->id,$enemy_id);
                 $enemyy->follow = $this->CheckUserFollowingState(Auth::guard('web')->user()->id,$enemy_id);
             }
-            return view('User.groups.members',compact('group','group_members', 'myData', 'admins', 'accepteds', 'myState', 'isAdmin', 'expected_groups'));
+            return view('User.groups.members',compact('myggroup','group_members', 'myData', 'admins', 'accepteds', 'myState', 'isAdmin', 'expected_groups'));
         }
         else
         {
-            return view('User.groups.members',compact('group','group_members', 'admins', 'accepteds', 'myState', 'isAdmin', 'expected_groups'));
+            return view('User.groups.members',compact('myggroup','group_members', 'admins', 'accepteds', 'myState', 'isAdmin', 'expected_groups'));
         }
     }
 
@@ -1100,7 +1028,7 @@ class GroupsController extends Controller
                 $current_member = GroupMember::find($current_member[0]->id);
                 $current_member->update([
                     'isAdmin' =>1,
-                    'state' =>0,
+                    'state' =>1,
                 ]);
 
                 return 1;
@@ -1244,6 +1172,7 @@ class GroupsController extends Controller
             }
         }
 
+
         if ($post->mentions != null) {
             $post->edit = $post->body;
             $mentions = explode(',', $post->mentions);
@@ -1254,7 +1183,6 @@ class GroupsController extends Controller
                     $post->body);
             }
         }
-
         $post->publisher = User::find($post->publisherId);
         $comments = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->whereNull('comment_id')
             ->limit(5)
@@ -1297,13 +1225,17 @@ class GroupsController extends Controller
             $post->reacts_stat = [];
 
             foreach ($reacts as $react){
-                $post->reacts_stat[] = ${$react->name.$stat};
+                array_push($post->reacts_stat,${$react->name.$stat});
             }
         }
 
         if ($post->page_id != null) {
             $post->source = "page";
             $page = DB::table('pages')->where('id', $post->page_id)->first();
+            $post->isPageAdmin = DB::table('page_members')->where('page_id', $post->page_id)
+                ->where('user_id',auth()->user()->id)
+                ->where('isAdmin',1)
+                ->first();
             $post->page = $page;
         } elseif ($post->group_id != null) {
             $post->source = "group";

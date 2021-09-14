@@ -3,7 +3,7 @@
 @section('content')
     <section id="ez-body__center-content" class="col-lg-10 mt-3">
         <header class="header">
-            <img src="{{asset('media')}}/{{$group->cover_image}}" alt="group-header" class="d-block w-100 h-100 pointer" data-toggle="modal" data-target="#cover">
+            <img src="{{asset('media')}}/{{$myggroup->cover_image}}" alt="group-header" class="d-block w-100 h-100 pointer" data-toggle="modal" data-target="#cover">
         </header>
         <div class="row">
             <div class="col-lg-9">
@@ -23,7 +23,7 @@
                 <div class="modal-body" >
                   <div class="owl-carousel owl-theme">
                     <div class="group-img-container text-center post-modal">
-                      <img src="{{asset('media')}}/{{$group->cover_image}}" alt="group-header" class="d-block w-100 h-100">
+                      <img src="{{asset('media')}}/{{$myggroup->cover_image}}" alt="group-header" class="d-block w-100 h-100">
                     </div>
                   </div>
                 </div>

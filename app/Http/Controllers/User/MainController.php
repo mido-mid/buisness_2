@@ -141,7 +141,10 @@ class MainController extends Controller
                     if ($post->page_id == null and $post->group_id == null) {
                         $post->reported = DB::table('reports')->where('user_id', $user->id)
                             ->where('model_id', $post->id)->where('model_type', 'post')->exists();
-                        if ($post->reported == false) {
+
+                        $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$post->publisherId)->exists();
+
+                        if ($post->reported == false && $isblocked == false) {
                             foreach ($user_sponsored_posts as $sponsored) {
                                 if ($sponsored->id == $post->id) {
                                     $post->sponsored = true;
@@ -168,8 +171,11 @@ class MainController extends Controller
                     $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
                 })->where(function ($q) use ($friend_of_friend_id) {
                     $q->where('senderId', $friend_of_friend_id)->orWhere('receiverId', $friend_of_friend_id);
-                })->whereIn('stateId', [1, 3])->exists();
-                if ($friend_request == false) {
+                })->whereIn('stateId', [2,3])->exists();
+
+                $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$friend_of_friend_id)->exists();
+
+                if ($friend_request == false && $isblocked == false) {
                     array_push($expected_ids, $friend_of_friend_id);
                 }
             }
@@ -189,7 +195,7 @@ class MainController extends Controller
             array_push($user_pages_ids, $page->id);
         }
 
-        $expected_users = $this->getExpectedFriends($user,$expected_ids,$friends);
+        $expected_users = $this->getExpectedFriends($user,$expected_ids);
 
         $posts = $this->getPosts($limit, $offset, $user, $user_follows, $friends_posts, $user_pages, $user_groups, $user_posts, $user_sponsored_posts);
 
@@ -239,7 +245,6 @@ class MainController extends Controller
 
         return view('home', compact('posts', 'stories', 'expected_users', 'expected_groups', 'expected_pages', 'expected_posts', 'privacy', 'categories', 'times', 'ages', 'reaches', 'reacts', 'friends_info', 'cities', 'countries', 'another_comments'));
     }
-
 
     private function getPosts($limit, $offset, $user, $user_follows, $friends_posts, $user_pages, $user_groups, $user_posts, $user_sponsored_posts)
     {
@@ -325,7 +330,10 @@ class MainController extends Controller
                     if ($post->page_id == null and $post->group_id == null) {
                         $post->reported = DB::table('reports')->where('user_id', $user->id)
                             ->where('model_id', $post->id)->where('model_type', 'post')->exists();
-                        if ($post->reported == false) {
+
+                        $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$post->publisherId)->exists();
+
+                        if ($post->reported == false && $isblocked == false) {
                             foreach ($user_sponsored_posts as $sponsored) {
                                 if ($sponsored->id == $post->id) {
                                     $post->sponsored = true;
@@ -417,6 +425,10 @@ class MainController extends Controller
             if ($post->page_id != null) {
                 $post->source = "page";
                 $page = DB::table('pages')->where('id', $post->page_id)->first();
+                $post->isPageAdmin = DB::table('page_members')->where('page_id', $post->page_id)
+                    ->where('user_id',auth()->user()->id)
+                    ->where('isAdmin',1)
+                    ->first();
                 $post->page = $page;
             } elseif ($post->group_id != null) {
                 $post->source = "group";
@@ -652,22 +664,23 @@ class MainController extends Controller
 
             $friend_stories = DB::table('stories')->where('publisherId', $friend_id)->where('privacyId', 1)->get();
 
-            if (count($friend_stories) > 0) {
-                $friend_stories->publisher = User::find($friend_id);
+            $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$friend_id)->exists();
 
-                array_push($friends_stories, $friend_stories);
+            if (count($friend_stories) > 0) {
+                if($isblocked == false){
+                    $friend_stories->publisher = User::find($friend_id);
+                    array_push($friends_stories, $friend_stories);
+                }
             }
         }
 
         if($ajax_request == false){
             $user_stories = DB::table('stories')->where('publisherId', $user->id)->get();
 
-            if (count($user_stories) > 0) {
-                $user_stories->publisher = User::find($user->id);
-            }
             $auth_user_stories = [];
 
-            if($ajax_request == false){
+            if (count($user_stories) > 0) {
+                $user_stories->publisher = User::find($user->id);
                 array_push($auth_user_stories, $user_stories);
             }
 
@@ -676,6 +689,7 @@ class MainController extends Controller
         else{
             $stories = $friends_stories;
         }
+
 
         if (count($stories)){
             foreach ($stories as $story) {
@@ -691,55 +705,57 @@ class MainController extends Controller
         return $stories;
     }
 
-
-    public function getExpectedFriends($user, $expected_ids,$friends)
+    public function getExpectedFriends($user, $expected_ids)
     {
 
         $expected_friends = [];
 
         $expected_people = array_unique($expected_ids);
 
-        foreach ($expected_people as $id) {
-            $user_id = $user->id;
-            $friendship = DB::table('friendships')->where(function ($q) use ($id) {
-                $q->where('senderId', $id)->orWhere('receiverId', $id);
-            })->where(function ($q) use ($user_id) {
-                $q->where('senderId', $user_id)->orWhere('receiverId', $user_id);
-            })->whereIn('stateId', [1, 3])->first();
-            if ($friendship == null) {
-                $friends_of_friend_info = DB::table('users')->where('id', $id)->first();
-                array_push($expected_friends, $friends_of_friend_info);
+        if (count($expected_people) == 0) {
+            $expected_people = DB::table('users')->where('country_id', auth()->user()->country)->where('id', '!=', auth()->user()->id)->get();
+            foreach ($expected_people as $expected_user) {
+                $expected_user_id = $expected_user->id;
+                $friendship = DB::table('friendships')->where(function ($q) use ($expected_user_id) {
+                    $q->where('senderId', $expected_user_id)->orWhere('receiverId', $expected_user_id);
+                })->where(function ($q) {
+                    $q->where('senderId', auth()->user()->id)->orWhere('receiverId', auth()->user()->id);
+                })->whereIn('stateId', [2,3])->first();
+
+                $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$expected_user_id)->exists();
+                if ($friendship == null && $isblocked == false) {
+                    $expected_user->followers = DB::table('following')->where('followingId', $expected_user_id)->count();
+                    array_push($expected_friends, $expected_user);
+                }
             }
         }
+        else {
 
+            foreach ($expected_people as $expected_user) {
+                $expected_user_id = $expected_user;
+                $user_id = $user->id;
+                //            $friendship = DB::table('friendships')->where(function ($q) use ($id) {
+                //                $q->where('senderId', $id)->orWhere('receiverId', $id);
+                //            })->where(function ($q) use ($user_id) {
+                //                $q->where('senderId', $user_id)->orWhere('receiverId', $user_id);
+                //            })->whereIn('stateId', [2,3])->first();
+                //            if ($friendship == null) {
+                $isblocked = DB::table('blocks')->where('senderId', $user_id)->where('receiverId', $expected_user_id)->exists();
 
-        foreach ($expected_friends as $friend) {
-            $friend->followers = DB::table('following')->where('followingId', $friend->id)->count();
+                if ($isblocked == false) {
+                    $friends_of_friend_info = DB::table('users')->where('id', $expected_user_id)->first();
+                    $friends_of_friend_info->followers = DB::table('following')->where('followingId', $expected_user_id)->count();
+                    array_push($expected_friends, $friends_of_friend_info);
+                }
+            }
         }
 
         shuffle($expected_friends);
 
         $expected_users = array_slice($expected_friends, 0, 3);
 
-        if (count($friends) == 0) {
-            $expected_people = DB::table('users')->where('country', auth()->user()->country)->where('id', '!=', auth()->user()->id)->get();
-            foreach ($expected_people as $expected_user) {
-                $expected_user_id = $expected_user->id;
-                $expected_user->followers = DB::table('following')->where('followingId', $expected_user->id)->count();
-                $friendship = DB::table('friendships')->where(function ($q) use ($expected_user_id) {
-                    $q->where('senderId', $expected_user_id)->orWhere('receiverId', $expected_user_id);
-                })->where(function ($q) {
-                    $q->where('senderId', auth()->user()->id)->orWhere('receiverId', auth()->user()->id);
-                })->whereIn('stateId', [1, 3])->first();
-                if ($friendship == null) {
-                    array_push($expected_users, $expected_user);
-                }
-            }
-        }
-
         return $expected_users;
     }
-
 
     public function getSponsoredPosts($user_interests,$limit = null ,$offset = null)
     {
@@ -785,19 +801,27 @@ class MainController extends Controller
 
 //public posts having same interest of user
         $expected_posts = DB::table('posts')->whereIn('categoryId', $user_interests_array)->where('publisherId', '!=', $user->id)->where('privacyId', 1)->where('postTypeId', 2)->whereNull(['post_id', 'page_id', 'group_id'])->limit(3)->get();
+        $allowed_expected_posts = [];
         foreach ($expected_posts as $post) {
-            if ($post->mentions != null) {
-                $post->edit = $post->body;
-                $mentions = explode(',', $post->mentions);
-                foreach ($mentions as $mention) {
-                    $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
-                    $post->body = str_replace('@' . $mention,
-                        '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
-                        $post->body);
+            $post->reported = DB::table('reports')->where('user_id', auth()->user()->id)
+                ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+
+            $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$post->publisherId)->exists();
+
+            if ($post->reported == false && $isblocked == false) {
+                if ($post->mentions != null) {
+                    $post->edit = $post->body;
+                    $mentions = explode(',', $post->mentions);
+                    foreach ($mentions as $mention) {
+                        $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                        $post->body = str_replace('@' . $mention,
+                            '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                            $post->body);
+                    }
                 }
+                $post->publisher = User::find($post->publisherId);
+                array_push($allowed_expected_posts, $post);
             }
-            $post->publisher = User::find($post->publisherId);
-            $post->media = DB::table('media')->where('model_id', $post->id)->where('model_type', 'post')->get();
         }
 
         return $expected_posts;
@@ -815,6 +839,10 @@ class MainController extends Controller
             $group->members = $group_members_count;
         }
 
+        if(count($expected_groups) == 0){
+            $expected_groups = Group::whereNotIn('id', $user_groups_ids)->limit(3)->get();
+        }
+
         return $expected_groups;
     }
 
@@ -829,6 +857,10 @@ class MainController extends Controller
             ))[0]->count;
 
             $page->members = $page_likes_count;
+        }
+
+        if(count($expected_pages) == 0){
+            $expected_pages = Page::whereNotIn('id', $user_pages_ids)->limit(3)->get();
         }
 
         return $expected_pages;
@@ -1176,7 +1208,9 @@ class MainController extends Controller
                         $q->where('senderId', $user->id)->Where('receiverId', auth()->user()->id);
                     })->first();
 
-                    if($isfriend) {
+                    $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$user->id)->exists();
+
+                    if ($isfriend) {
                         $auth_user_status = $isfriend->receiverId == auth()->user()->id ? 'receiver' : 'sender';
                         if ($auth_user_status == 'sender') {
                             if ($isfriend->stateId == 2) {
@@ -1184,36 +1218,40 @@ class MainController extends Controller
                                 $user->request_type = 'removeFriendRequest';
                                 $user->sender = auth()->user()->id;
                                 $user->receiver = $user->id;
-                            }
-                            else {
+                            } else {
                                 $user->friendship = 'remove friend request';
                                 $user->request_type = 'removeFriendRequest';
                                 $user->sender = auth()->user()->id;
                                 $user->receiver = $user->id;
                             }
-                        }
-                        else{
+                        } else {
                             if ($isfriend->stateId == 2) {
 
                                 $user->friendship = 'unfriend';
                                 $user->request_type = 'removeFriendRequest';
                                 $user->sender = $user->id;
                                 $user->receiver = auth()->user()->id;
-                            }
-                            else {
+                            } else {
                                 $user->friendship = 'receive friend request';
                                 $user->sender = $user->id;
                                 $user->receiver = auth()->user()->id;
                             }
                         }
-                    }
-                    else{
+                    } else {
                         $user->friendship = 'add friend';
                         $user->request_type = 'addFriendRequest';
                         $user->sender = auth()->user()->id;
                         $user->receiver = $user->id;
                     }
 
+                    if($isblocked == false) {
+                        $user->block = 'block';
+                        $user->block_type = 'addBlockRequest';
+                    }
+                    else{
+                        $user->block = 'remove block';
+                        $user->block_type = 'removeBlockRequest';
+                    }
                 }
 
                 $view = view('includes.partialusers', compact('users'));

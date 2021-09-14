@@ -41,7 +41,7 @@
                                           </a>
                                           <p class="card-text"><small class="text-muted" id="{{$my_page->page->id}}|0">
                                               <?php
-                                                  $member = App\models\PageMember::where('page_id',$my_page->page->id)->count();
+                                                  $member = App\models\PageMember::where('page_id',$my_page->page->id)->where('state',1)->where('isAdmin','!=', 1)->count();
                                                   echo $member;
                                               ?>
                                               </small>
@@ -59,7 +59,7 @@
                                               </div>
 
                                               @elseif (count($checkState)>0)
-                                                  @if ($checkState[0]->state == 1)
+                                                  @if ($checkState[0]->state == 1 && $checkState[0]->isAdmin != 1)
                                                       <div class="p-2">
                                                               <button class="button-2 totyMypages" id="leave|{{$my_page->page->id}}|0">{{__('pages.dislike')}}</button>
                                                       </div>
@@ -120,7 +120,7 @@
                               </a>
                               <p class="card-text"><small class="text-muted" id="{{$page->id}}">
                                   <?php
-                                      $member = App\models\PageMember::where('page_id',$page->id)->count();
+                                      $member = App\models\PageMember::where('page_id',$page->id)->where('state',1)->where('isAdmin','!=', 1)->count();
                                       echo $member;
                                   ?>
                                   </small>
@@ -137,7 +137,7 @@
                                   </div>
       
                                   @elseif (count($checkState)>0)
-                                      @if ($checkState[0]->state == 1)
+                                      @if ($checkState[0]->state == 1 && $checkState[0]->isAdmin != 1)
                                           <div class="p-2">
                                                   <button class="button-2 totyMypages" id="leave|{{$page->id}}">{{__('pages.dislike')}}</button>
                                           </div>

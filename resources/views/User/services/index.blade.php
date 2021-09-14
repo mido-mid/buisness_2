@@ -3,7 +3,7 @@
 @section('content')
     <section id="ez-body__center-content" class="col-lg-10 mt-3">
         <div class="search-bar d-flex justify-content-center">
-            <input type="text" placeholder="Search" class="search-input w-75" id="search-categories" onkeyup="searchCategoriesSubmit();"/>
+            <input type="text" placeholder="{{__('user.search')}}" class="search-input w-75" id="search-categories" onkeyup="searchCategoriesSubmit();"/>
         </div>
         <div class="services-container d-flex flex-wrap mt-3" id="load-categories">
             @if(count($categories) > 0)
@@ -11,7 +11,8 @@
                     <div class="service card m-2">
                         <a href="{{route('services',$category->id)}}" style="text-decoration: none">
                             <img
-                                src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                src="{{asset('category_images')}}/{{$category->image}}"
+                                style="height: 220px"
                                 class="card-img-top"
                                 alt="..."
                             />

@@ -3,7 +3,7 @@
 @section('content')
      <section id="ez-body__center-content" class="col-lg-8 mt-3">
         <div class="search-bar">
-            <input type="text" placeholder="Search" id="search-companies" onkeyup="searchCompaniesSubmit();"/>
+            <input type="text" placeholder="{{__('user.search')}}" id="search-companies" onkeyup="searchCompaniesSubmit();"/>
         </div>
          <div id="load-companies">
             @foreach($companies as $company)
@@ -28,7 +28,7 @@
                                 <p class="col-sm-3 col-6">{{$phone->phoneNumber}}</p>
                                 <span  class="col-sm-3 col-6 ">
                                   <p class="call-icon">
-                                      <i class="fas fa-mobile-alt"></i> Call
+                                      <i class="fas fa-mobile-alt"></i> {{__('companies.call')}}
                                   </p>
                                 </span>
                             @endforeach

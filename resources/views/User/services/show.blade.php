@@ -2,18 +2,131 @@
 
 @section('content')
     <section id="ez-body__center-content" class="col-lg-10 mt-3">
+        <div class="modal fade" id="progress-modal" data-controls-modal="progress-modal" data-backdrop="static" data-keyboard="false" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title in" id="myModalLabel">{{__('user.please_wait')}}</h4>
+                        <h4 class="modal-title hide" id="myModalLabel">{{__('user.complete')}}</h4>
+                    </div>
+                    <div class="modal-body center-block">
+                        <div id="status">{{__('user.progress')}}</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default hide" data-dismiss="modal" id="btnClose">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div class="modal" id="success-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" style="margin-top: 22vh">
+                <div class="modal-content">
+                    <div class="modal-header d-flex justify-content-between">
+                        <span></span>
+                        <button type="button" id="success-modal-dismiss" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="success-modal-message" >
+                        post created successfully
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal" id="add-service-modal" tabindex="-1" aria-labelledby="exampleModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" style="margin-top: 22vh">
+                <div class="modal-content">
+                    <div class="modal-header d-flex justify-content-between">
+                        <span></span>
+                        <h5 class="modal-title" id="exampleModalLabel">{{__('user.add_service')}}</h5>
+                        <button type="button" id="add-post-modal-dismiss" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="col-12" id="error-message" style="display: none">
+                            <div class="alert alert-danger alert-dismissible fade show" id="error-status" role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </div>
+                        <form action="{{route('services.store')}}" method="POST" class="container" id="add-service-form" enctype="multipart/form-data">
+
+                            @csrf
+
+                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                <label for="cars">{{__('home.category')}}</label>
+                                <select name="category_id" style="width: 200px" class="js-example-basic-single">
+                                    @foreach($categories as $category)
+                                        @if(App::getlocale() == 'en')
+                                            <option value="{{$category->id}}">{{$category->name_en}}</option>
+                                        @else
+                                            <option value="{{$category->id}}">{{$category->name_ar}}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                <label for="exampleInputEmail1">{{__('user.country')}}</label>
+                                <select onchange="addServiceCities(this)" name="country_id" style="width: 200px" class="js-example-basic-single">
+                                    <option value="0" disabled selected>choose target country</option>
+                                    @foreach($countries as $country)
+                                        <option value="{{$country->id}}">{{$country->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                <label for="exampleInputEmail1">{{__('user.city')}}</label>
+                                <select name="city_id" style="width: 200px" class="select-city js-example-basic-single" disabled>
+                                    @foreach($cities as $city)
+                                        <option value="{{$city->id}}">{{$city->name}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <div class="form-group d-flex justify-content-center mt-2">
+                                    <textarea class="form-control w-75 p-2" name="body"  id="post-text" cols="200" rows="4"
+                                              placeholder="{{__('home.text_area')}}"></textarea>
+                            </div>
+
+                            <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                <label for="exampleInputEmail1">{{__('home.price')}}</label>
+                                <input name="price" class="form-control w-75 mt-2" type="number"/>
+                            </div>
+                            <!-- Post Images -->
+                            <div class="form-group d-flex justify-content-center mt-2">
+                                <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs" accept=".jpg,.jpeg,.png,.svg,.gif"
+                                       multiple />
+                            </div>
+                            <!-- Add Post Btn -->
+                            <div class="post-add-btn d-flex justify-content-center mt-4">
+                                <button type="button" onclick="addServiceSubmit()" class="btn btn-warning btn-block w-75">
+                                    {{__('user.add')}}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="services-controller m-3 text-center">
             <a class="btn btn-light rounded-5 filter-button @if($category_id == null) ez-active @endif" href="{{route('services')}}"> All </a>
             @foreach($categories as $category)
-                    <a class="btn btn-light rounded-5 filter-button @if($category_id == $category->id) ez-active @endif" href="{{route('services',$category->id)}}">
-                        @if(App::getlocale() == 'en')
-                            {{$category->name_en }}
-                        @else
-                            {{$category->name_ar }}
-                        @endif
-                    </a>
+                <a class="btn btn-light rounded-5 filter-button @if($category_id == $category->id) ez-active @endif" href="{{route('services',$category->id)}}">
+                    @if(App::getlocale() == 'en')
+                        {{$category->name_en }}
+                    @else
+                        {{$category->name_ar }}
+                    @endif
+                </a>
             @endforeach
-            <a href="{{route('myservices.show')}}" class="btn btn-warning add-service">My Services</a>
+            <button data-toggle="modal" data-target="#add-service-modal" onclick="applySelect2();" class="btn btn-warning add-service">Add Service</button>
         </div>
         <div class="services-container d-flex flex-wrap mt-3" id="all-services">
             @if(count($services) > 0)
@@ -36,9 +149,6 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header pb-0">
-                                        <h5 class="modal-title" id="exampleModalLabel">
-                                            Modal title
-                                        </h5>
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                             <span aria-hidden="true">&times;</span>
                                         </button>
@@ -54,13 +164,13 @@
                                               ">
                                             <div class="upper-side">
                                                 <p class="text-warning">{{$service->price}}</p>
-                                                <h6><b>Product Description</b></h6>
+                                                <h6><b>{{__('user.product_description')}}</b></h6>
                                                 <p class="text-muted">
                                                     {{$service->body}}
                                                 </p>
                                             </div>
                                             <div class="down-side">
-                                                <h6><b>Created By</b></h6>
+                                                <h6><b>{{__('user.created_by')}}</b></h6>
                                                 <div class="d-flex justify-content-between">
                                                     <div class="people mt-2 w-100">
                                                         <div class="people-info d-flex">
@@ -90,17 +200,17 @@
                                                         @if($service->publisher->id != auth()->user()->id)
                                                             <button class="btn btn-warning text-white">
                                                                 @if($service->follow)
-                                                                    Follow
+                                                                    {{__('home.follow')}}
                                                                 @else
-                                                                    following
+                                                                    {{__('pages.add_following')}}
                                                                 @endif
                                                             </button>
                                                         @else
                                                             <button onclick="confirm('{{ __("Are you sure you want to delete this service ?") }}') ? deleteServiceSubmit({{$service->id}}) : ''" class="btn btn-warning text-white">
-                                                                Delete
+                                                                {{__('user.delete')}}
                                                             </button>
                                                             <button onclick="$('#service-modal-{{ $service->id }}').modal('hide');$('#edit-service-modal-{{ $service->id }}').modal('show');applySelect2();" class="btn btn-warning btn-danger">
-                                                                Edit
+                                                                {{__('user.edit')}}
                                                             </button>
                                                             <form action="{{ route('services.destroy', $service->id) }}" id="delete-service-form-{{$service->id}}" method="post">
                                                                 @csrf
@@ -111,7 +221,7 @@
                                                 </div>
                                                 @if($service->publisher->id != auth()->user()->id)
                                                     <button class="btn btn-warning text-white mt-3 w-100">
-                                                        Contact The Creator
+                                                        {{__('user.contact_publisher')}}
                                                     </button>
                                                 @endif
                                             </div>
@@ -155,13 +265,125 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="post-edit-modal">
+                            <div class="modal fade" id="edit-service-modal-{{$service->id}}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog" style="margin-top: 22vh">
+                                    <div class="modal-content">
+                                        <div class="modal-header d-flex justify-content-between">
+                                            <span></span>
+                                            <h5 class="modal-title" id="exampleModalLabel">{{__('user.edit')}}</h5>
+                                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="col-12" id="error-message-{{$service->id}}" style="display: none">
+                                                <div class="alert alert-danger alert-dismissible fade show" id="error-status-{{$service->id}}" role="alert">
+                                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <form action="{{route('services.update',$service->id)}}" id="edit-service-form-{{$service->id}}" method="POST" class="container" enctype="multipart/form-data">
+
+                                                @csrf
+                                                @method('put')
+
+
+                                                <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
+                                                    <label for="cars">{{__('user.category')}}</label>
+                                                    <select style="width: 200px" name="category_id" class="js-example-basic-single">
+                                                        @foreach($categories as $category)
+                                                            @if(App::getlocale() == 'en')
+                                                                <option value="{{$category->id}}" @if($category->id == $service->categoryId) selected @endif>{{$category->name_en}}</option>
+                                                            @else
+                                                                <option value="{{$category->id}}" @if($category->id == $service->categoryId) selected @endif>{{$category->name_ar}}</option>
+                                                            @endif
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
+                                                    <label for="exampleInputEmail1">{{__('user.country')}}</label>
+                                                    <select onchange="editServiceCities(this,{{$service->id}})" name="country_id" class="js-example-basic-single">
+                                                        <option value="0">choose target country</option>
+                                                        @foreach($countries as $country)
+                                                            <option value="{{$country->id}}" @if($country->id == $service->country_id) selected @endif>{{$country->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+
+                                                <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                                    <label for="exampleInputEmail1">{{__('user.city')}}</label>
+                                                    <select name="city_id" style="width: 200px" class="edit-city-{{$service->id}} js-example-basic-single">
+                                                        @foreach($service->cities as $city)
+                                                            <option value="{{$city->id}}" @if($city->id == $service->city_id) selected @endif>{{$city->name}}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <!-- Post Desc -->
+                                                <div class="post-desc d-flex justify-content-center mt-2">
+                                                  <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                            placeholder="{{__('home.text_area')}}" >{{$service->body}}</textarea>
+                                                </div>
+
+                                                <div class="d-flex justify-content-between align-items-center m-auto w-75">
+                                                    <label for="exampleInputEmail1">{{__('home.price')}}</label>
+                                                    <input name="price" value="{{$service->price}}" class="form-control w-75 mt-2" type="number"/>
+                                                </div>
+                                                <!-- Post Images -->
+                                                <div class="form-group d-flex justify-content-center mt-2">
+                                                    <input class="form-control w-75 mt-2" type="file" name="media[]" id="imgs" accept=".jpg,.jpeg,.png,.svg,.gif"
+                                                           multiple />
+                                                </div>
+
+                                                @if(count($service->media) > 0)
+                                                    <p>{{__('home.media')}}</p>
+                                                    <div class="imgsContainer d-flex flex-wrap">
+                                                    @foreach($service->media as $media)
+                                                        @if($media->mediaType == 'image')
+                                                            <!-- if media img and imgs=1 -->
+                                                                <div class="p-3" style="width: 25%">
+                                                                    <img src="{{asset('media')}}/{{$media->filename}}" alt="" width="100%">
+                                                                    <div class="w-100 text-center">
+                                                                        <input checked type="checkbox"  value="{{$media->filename}}" name="checkedimages[]">
+                                                                    </div>
+                                                                </div>
+                                                            @else
+                                                                <div class="p-3" style="width: 25%">
+                                                                    <video class="p-1" controls width="100%">
+                                                                        <source src="{{asset('media')}}/{{$media->filename}}" type="video/mp4">
+                                                                        {{__('home.no_browser')}}
+                                                                    </video>
+                                                                    <div class="w-100 text-center">
+                                                                        <input checked type="checkbox" value="{{$media->filename}}" name="checkedimages[]">
+                                                                    </div>
+                                                                </div>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                            @endif
+                                            <!-- Add Post Btn -->
+                                                <div class="post-add-btn d-flex justify-content-center mt-4">
+                                                    <button type="button" onclick="editServiceSubmit({{$service->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
+                                                        {{__('home.save')}}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 @endforeach
             @else
                 <div class="col-md-8" id="no-service">
                     <div class="card">
                         <div class="card-body">
-                            {{ __('no services found!') }}
+                            {{ __('user.no_services') }}
                         </div>
                     </div>
                 </div>

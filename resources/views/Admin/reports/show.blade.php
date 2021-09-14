@@ -13,9 +13,9 @@
                             <div class="card-body">
                                 <h4 class="card-title">Reported Model Info</h4>
                                 <p class="card-title-desc"> publisher : {{$model->publisher->name}}</p>
-                                <textarea id="elm1" name="area">
-                                    {{$model->body}}
-                                </textarea>
+                                <form method="post">
+                                    <textarea id="elm1" name="area" readonly>{{$model->body}}</textarea>
+                                </form>
                                 @if($model->publisher->stateId != "banned")
                                     <form action="{{ route('reports.ban', $report) }}" method="post">
                                         @csrf

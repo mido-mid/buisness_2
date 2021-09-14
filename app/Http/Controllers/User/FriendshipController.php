@@ -176,6 +176,25 @@ class FriendshipController extends Controller
                 $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
                 return $sections['friendship'];
+
+            case 'removeBlockRequest':
+                $senderId = $request->senderId;
+                $receiverId = $request->receiverId;
+                $blockRequest = DB::table('blocks')->where('senderId',$senderId)->where('receiverId',$receiverId)->delete();
+
+                return $this->returnSuccessMessage('block');
+
+            case 'addBlockRequest':
+                $senderId = $request->senderId;
+                $receiverId = $request->receiverId;
+
+                $blockRequest = DB::table('blocks')->insert([
+                    'senderId' => $senderId,
+                    'receiverId' => $receiverId,
+                ]);
+
+                return $this->returnSuccessMessage('remove block');
+
             case 'sentRequest':
                 $senderId = $request->senderId;
                 $friendshipRecord = Friendship::where('senderId',$senderId)->get();

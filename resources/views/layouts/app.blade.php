@@ -23,6 +23,8 @@
 
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/emojionearea/3.4.2/emojionearea.min.css" integrity="sha512-vEia6TQGr3FqC6h55/NdU3QSM5XR6HSl5fW71QTKrgeER98LIMGwymBVM867C1XHIkYD9nMTfWK2A0xcodKHNA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <!-- Styles -->
     <link href="{{ asset('css/styles/style-mar.css') }}" rel="stylesheet">
     <link href="{{ asset('css/styles/styleEn.css') }}" rel="stylesheet">
@@ -39,10 +41,10 @@
         <div class="container-fluid">
             <a class="navbar-brand p-2" href="{{route('welcome')}}">Business</a>
             <div class="right-side d-flex flex-row">
-                <a class="d-none d-lg-block mr-4" href="#"><i class="fas fa-headset p"></i> Support</a>
+                <a class="d-none d-lg-block mr-4" href="#"><i class="fas fa-headset p"></i>{{__('user.support')}}</a>
                 <a class="dropdown-toggle d-none d-lg-block" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
                    aria-haspopup="true" aria-expanded="false">
-                    <i class="fas fa-language"></i> Language
+                    <i class="fas fa-language"></i>{{__('user.language')}}
                 </a>
                 <ul class="dropdown-menu rounded-5" aria-labelledby="navbarDropdown">
                     @foreach(LaravelLocalization::getSupportedLocales() as $localeCode => $properties)
@@ -57,7 +59,7 @@
                             @csrf
                         </form>
                         <a onclick="event.preventDefault();
-                              document.getElementById('logout-form').submit();" href="{{ route('logout') }}"><span>logout</span></a>
+                              document.getElementById('logout-form').submit();" href="{{ route('logout') }}"><span>{{__('logout')}}</span></a>
                     </li>
                 </ul>
                 <button class="navbar-toggler" type="button" onclick="openSidenav()">
@@ -81,33 +83,33 @@
                         <span>{{ \Str::limit(auth()->user()->name, 10) }}</span></a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{{route('home')}}"><i class="fas fa-home"></i> Home</a>
+                    <a class="nav-link active" aria-current="page" href="{{route('home')}}"><i class="fas fa-home"></i>{{__('user.home')}}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{route('service_categories')}}"><i class="fas fa-hand-holding-usd"></i> Services</a>
+                    <a class="nav-link active" href="{{route('service_categories')}}"><i class="fas fa-hand-holding-usd"></i>{{__('user.services')}}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{route('all-group')}}"><i class="fas fa-users"></i> Groups</a>
+                    <a class="nav-link active" href="{{route('all-group')}}"><i class="fas fa-users"></i>{{__('user.groups')}}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{route('companies.index')}}"><i class="fas fa-truck"></i> Delivery</a>
+                    <a class="nav-link active" href="{{route('companies.index')}}"><i class="fas fa-truck"></i>{{__('user.delivery')}}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{route('all-page')}}"><i class="far fa-copy"></i> Pages</a>
+                    <a class="nav-link active" href="{{route('all-page')}}"><i class="far fa-copy"></i>{{__('user.pages')}}</a>
                 </li>
                 <li class="nav-item" style="display: flex; align-items: center">
-                    <a class="nav-link active" href="#"><i class="fas fa-bell"></i> Notifications</a>
+                    <a class="nav-link active" href="#"><i class="fas fa-bell"></i>{{__('user.notifications')}}</a>
                     <span class="badge bg-warning text-dark">2</span>
                 </li>
                 <li class="nav-item" style="display: flex; align-items: center">
-                    <a class="nav-link active" href="#"><i class="fas fa-comment-dots"></i> Messages</a>
+                    <a class="nav-link active" href="#"><i class="fas fa-comment-dots"></i>{{__('user.messages')}}</a>
                     <span class="badge bg-warning text-dark">3</span>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{route('saved_posts')}}}"><i class="fas fa-bookmark"></i> Saved Posts</a>
+                    <a class="nav-link active" href="{{route('saved_posts')}}}"><i class="fas fa-bookmark"></i>{{__('user.saved_posts')}}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" href="#"><i class="fas fa-headset"></i> Support</a>
+                    <a class="nav-link active" href="#"><i class="fas fa-headset"></i>{{__('user.support')}}</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
@@ -126,7 +128,7 @@
                 </li>
                 @if(auth()->user()->type == 1)
                     <li class="nav-item">
-                        <a class="nav-link active" href="{{url('admin/dashboard')}}"><i class="fas fa-users-cog"></i>  Dashboard</a>
+                        <a class="nav-link active" href="{{url('admin/dashboard')}}"><i class="fas fa-users-cog"></i>{{__('user.dashboard')}}</a>
                     </li>
                 @endif
             </ul>
@@ -143,41 +145,41 @@
                             <span>{{ \Str::limit(auth()->user()->name, 10) }}</span></a>
                     </li>
                     <li>
-                        <a aria-current="page" href="{{route('home')}}"><i class="fas fa-home p"></i> Home</a>
+                        <a aria-current="page" href="{{route('home')}}"><i class="fas fa-home p"></i>{{__('user.home')}}</a>
                     </li>
                     <li>
-                        <a href="{{route('service_categories')}}"><i class="fas fa-hand-holding-usd p"></i> Services</a>
+                        <a href="{{route('service_categories')}}"><i class="fas fa-hand-holding-usd p"></i>{{__('user.services')}}</a>
                     </li>
                     <li>
-                        <a href="{{route('all-group')}}"><i class="fas fa-users p"></i> Groups</a>
+                        <a href="{{route('all-group')}}"><i class="fas fa-users p"></i>{{__('user.groups')}}</a>
                     </li>
                     <li>
-                        <a href="{{route('companies.index')}}"><i class="fas fa-truck p"></i> Delivery</a>
+                        <a href="{{route('companies.index')}}"><i class="fas fa-truck p"></i>{{__('user.delivery')}}</a>
                     </li>
                     <li>
-                        <a href="{{route('all-page')}}"><i class="far fa-copy p"></i> Pages</a>
+                        <a href="{{route('all-page')}}"><i class="far fa-copy p"></i>{{__('user.pages')}}</a>
                     </li>
                     <li style="
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
               ">
-                        <a href="#"><i class="fas fa-bell p"></i> Notifications</a><span class="badge bg-warning text-dark">2</span>
+                        <a href="#"><i class="fas fa-bell p"></i>{{__('user.notifications')}}</a><span class="badge bg-warning text-dark">2</span>
                     </li>
                     <li style="
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
               ">
-                        <a href="#"><i class="fas fa-comment-dots p"></i> Messages</a>
+                        <a href="#"><i class="fas fa-comment-dots p"></i>{{__('user.messages')}}</a>
                         <span class="badge bg-warning text-dark">3</span>
                     </li>
                     <li>
-                        <a href="{{route('saved_posts')}}"><i class="fas fa-bookmark p"></i> Saved Posts</a>
+                        <a href="{{route('saved_posts')}}"><i class="fas fa-bookmark p"></i>{{__('user.saved_posts')}}</a>
                     </li>
                     @if(auth()->user()->type == 1)
                         <li class="nav-item">
-                            <a href="{{url('admin/dashboard')}}"><i class="fas fa-users-cog"></i> Dashboard</a>
+                            <a href="{{url('admin/dashboard')}}"><i class="fas fa-users-cog"></i>{{__('user.dashboard')}}</a>
                         </li>
                     @endif
                 </ul>
@@ -194,6 +196,21 @@
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('js/index.js') }}"></script>
     <script src="{{ asset('js/vue.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@3.0.3/dist/index.min.js"></script>
+    <script>
+        const button = document.querySelector('#emoji-button');
+
+        const picker = new EmojiButton();
+
+        button.addEventListener('click', () => {
+            picker.pickerVisible ? picker.hidePicker : picker.showPicker(button);
+
+        });
+
+        picker.on('emoji', emoji => {
+            document.querySelector('textarea').value += emoji;
+        });
+    </script>
     <script>
         window.users = @json(['user' => $friends_mention]);
     </script>

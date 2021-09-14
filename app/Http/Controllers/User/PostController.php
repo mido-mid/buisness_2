@@ -58,7 +58,7 @@ class PostController extends Controller
             'privacy_id' => 'required|integer',
             'media' => 'nullable',
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif|max:100040',
-            'category_id' => 'required|integer'
+            'category_id' => 'required|integer|not_in:0'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -248,7 +248,7 @@ class PostController extends Controller
 
         $user_groups = DB::select(DB::raw('select groups.*,group_members.state from groups,group_members
                         where group_members.group_id = groups.id
-                        AND group_members.user_id = ' . $user->id . ' and group_members.state in (0,1,3)'));
+                        AND group_members.user_id = ' . $user->id));
 
         $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
                         where page_members.page_id = pages.id
@@ -317,7 +317,7 @@ class PostController extends Controller
             'privacy_id' => 'required|integer',
             'media' => 'nullable',
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png|max:100040',
-            'category_id' => 'required|integer'
+            'category_id' => 'required|integer|not_in:0'
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -467,7 +467,13 @@ class PostController extends Controller
 
             $posts[] = $post;
 
-            $view = view('includes.partialpost', compact('posts', 'privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
+            if($request->group_id){
+                $group = 'exist';
+                $view = view('includes.partialpost', compact('posts','group','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
+            }
+            else{
+                $view = view('includes.partialpost', compact('posts','privacy', 'categories', 'times', 'ages', 'reaches', 'reacts','cities','countries','friends_info'));
+            }
 
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
@@ -566,12 +572,12 @@ class PostController extends Controller
                         AND saved_posts.user_id =' . $user->id));
 
         foreach ($saved_posts as $post) {
-            $post = $this->getPost($user,$post,);
+            $post = $this->getPost($user,$post);
         }
 
         $user_groups = DB::select(DB::raw('select groups.*,group_members.state from groups,group_members
                         where group_members.group_id = groups.id
-                        AND group_members.user_id = ' . $user->id . ' and group_members.state in (0,1,3)'));
+                        AND group_members.user_id = ' . $user->id ));
 
         $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
                         where page_members.page_id = pages.id
@@ -619,7 +625,7 @@ class PostController extends Controller
 
             DB::table('saved_posts')->delete($user_post->id);
 
-            return $this->returnSuccessMessage('save post');
+            return $this->returnSuccessMessage(trans('home.save_post'));
         }
     }
 
@@ -634,9 +640,9 @@ class PostController extends Controller
             'reachId' => 'required|integer',
             'postId' => 'required|integer',
             'age_id' => 'required|integer',
-            'country_id' => 'required|integer',
+            'country_id' => 'required|integer|not_in:0',
             'city_id' => 'required|integer',
-            'category_id' => 'required|integer',
+            'category_id' => 'required|integer|not_in:0',
             'price' => 'required|numeric',
             'gender' => ['required', 'string', 'not_regex:/([%\$#\*<>]+)/']
         ];
@@ -690,6 +696,7 @@ class PostController extends Controller
             }
         }
 
+
         if ($post->mentions != null) {
             $post->edit = $post->body;
             $mentions = explode(',', $post->mentions);
@@ -700,7 +707,6 @@ class PostController extends Controller
                     $post->body);
             }
         }
-
         $post->publisher = User::find($post->publisherId);
         $comments = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->whereNull('comment_id')
             ->limit(5)
@@ -743,13 +749,17 @@ class PostController extends Controller
             $post->reacts_stat = [];
 
             foreach ($reacts as $react){
-                $post->reacts_stat[] = ${$react->name.$stat};
+                array_push($post->reacts_stat,${$react->name.$stat});
             }
         }
 
         if ($post->page_id != null) {
             $post->source = "page";
             $page = DB::table('pages')->where('id', $post->page_id)->first();
+            $post->isPageAdmin = DB::table('page_members')->where('page_id', $post->page_id)
+                ->where('user_id',auth()->user()->id)
+                ->where('isAdmin',1)
+                ->first();
             $post->page = $page;
         } elseif ($post->group_id != null) {
             $post->source = "group";

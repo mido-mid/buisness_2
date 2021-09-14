@@ -21,21 +21,21 @@
     </div>
   </div>
   <div>
-    @if($myState == 1)
-        <button class="button-2 toty2" id="leave|{{$page->id}}|2">{{__('pages.dislike')}}</button>
+    @if($myState == 1 && $isAdmin != 1)
+        <button class="button-2 totyPage" id="leave|{{$page->id}}|2">{{__('pages.dislike')}}</button>
     @elseif($myState == 2)
-        <button class="button-2 toty2" id="leave|{{$page->id}}|2">{{__('pages.dislike_request')}}</button>
+        <button class="button-2 totyPage" id="leave|{{$page->id}}|2">{{__('pages.dislike_request')}}</button>
       @elseif($myState == 3)
-        <button class="button-2 toty2" id="leave|{{$page->id}}|2">{{__('pages.refuse_invite')}}</button>
-        <button class="button-4 toty2" id="confirm|{{$page->id}}|2">{{__('pages.confirm_invite')}}</button>
+        <button class="button-2 totyPage" id="leave|{{$page->id}}|2">{{__('pages.refuse_invite')}}</button>
+        <button class="button-4 totyPage" id="confirm|{{$page->id}}|2">{{__('pages.confirm_invite')}}</button>
     @elseif($isAdmin == 1)
-    <form method="post" action="{{route('adminLeft',['id'=>$page->id])}}" enctype="multipart/form-data">
+    <form method="post" action="{{route('adminLeftPage',['id'=>$page->id])}}" enctype="multipart/form-data">
       @csrf
       <button class="button-2">{{__('pages.leave_page')}}</button>
     </form>
     @else
       @if(Auth::guard('web')->user())
-        <button class="button-4 toty2" id="join|{{$page->id}}|2">{{__('pages.like')}} </button>
+        <button class="button-4 totyPage" id="join|{{$page->id}}|2">{{__('pages.like')}} </button>
       @else
         <form action="/login" method="post">
           @csrf

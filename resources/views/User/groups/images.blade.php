@@ -1,7 +1,7 @@
 @extends('User.groups.layout')
 
 @section('sectionGroups')
-@if($group->privacy == 0 && $isAdmin == 0 && $myState != 1)
+@if($myggroup->privacy == 2 && $isAdmin == 0 && $myState != 1)
 <div class="group-about my-3">
     <div class="group-description">
         <h3 class="heading-tertiary">{{__('pages.privacy')}}</h3>
@@ -31,7 +31,7 @@
               <div class="group-img-container text-center post-modal">
                 <img  src="{{asset('media')}}/{{$imagemodel->filename}}" alt="" class="group-img img-fluid " ><br>
                 <div class="modal-post" >
-                  <a href="{{route('single-post-group',['id'=>$group->id,'postId'=>$imagemodel->model_id])}}" style="color: #FFF">البوست</a>
+                  <a href="{{route('single-post-group',['id'=>$myggroup->id,'postId'=>$imagemodel->model_id])}}" style="color: #FFF">البوست</a>
                 </div>
               </div>
             </div>

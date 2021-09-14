@@ -164,7 +164,7 @@
 
                                 <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
                                     <label for="cars">Choose A Category:</label>
-                                    <select id="post-category" name="category_id">
+                                    <select style="width: 200px" name="category_id" class="js-example-basic-single">
                                         @foreach($categories as $category)
                                             @if(App::getlocale() == 'en')
                                                 <option value="{{$category->id}}" @if($category->id == $service->categoryId) selected @endif>{{$category->name_en}}</option>
@@ -178,6 +178,7 @@
                                 <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
                                     <label for="exampleInputEmail1">Target Country:</label>
                                     <select onchange="editServiceCities(this,{{$service->id}})" name="country_id" class="js-example-basic-single">
+                                        <option value="0">choose target country</option>
                                         @foreach($countries as $country)
                                             <option value="{{$country->id}}" @if($country->id == $service->country_id) selected @endif>{{$country->name}}</option>
                                         @endforeach
@@ -187,8 +188,8 @@
 
                                 <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
                                     <label for="exampleInputEmail1">Target City:</label>
-                                    <select name="city_id" style="width: 200px" class="edit-city-{{$service->id}} js-example-basic-single" disabled>
-                                        @foreach($cities as $city)
+                                    <select name="city_id" style="width: 200px" class="edit-city-{{$service->id}} js-example-basic-single">
+                                        @foreach($service->cities as $city)
                                             <option value="{{$city->id}}" @if($city->id == $service->city_id) selected @endif>{{$city->name}}</option>
                                         @endforeach
                                     </select>

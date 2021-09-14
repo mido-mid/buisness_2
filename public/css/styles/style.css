@@ -1281,7 +1281,7 @@ body {
 }
 .trade-div .call-icon{
     background-color: #fcbc22;
-    width: 62px;
+    width: 64px;
     padding: 5px 10px 5px 10px;
     border-radius: 7px;
     color: white;
@@ -1634,4 +1634,17 @@ body {
 
 .post-height img{
      height: 200px;
+}
+
+
+.textarea-container {
+    position: relative;
+    display: inline-block;
+    box-sizing: border-box;
+}
+.textarea-container button {
+    padding: .2em;
+    position: absolute;
+    top: 0;
+    right: 0;
 }

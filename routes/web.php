@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath','mention']], function () {
+Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath','mention',"web"]], function () {
 
     Route::get('/', function () {
         return view('welcome');
@@ -21,11 +21,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
     Auth::routes(['verify' => true]);
 
-    Route::get('getcities/{country_id}', 'Auth\RegisterController@getCities');
+    Route::get('getcities/{country_id}', 'User\ServiceController@getCities');
 
 
-    Route::group(['middleware' => ['auth']],function() {
-        Route::get('getcities/{country_id}', 'User\ServiceController@getCities');
+    Route::group(['middleware' => ['auth','banned','verified']],function() {
         Route::get('home', 'User\MainController@index')->name('home');
         Route::post('joingroup', 'User\GroupsController@enterGroup')->name('join_group');
         Route::post('likepage', 'User\PagesController@likePage')->name('like_page');
@@ -85,7 +84,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('main-group/{id}/{postId}','User\GroupsController@singlePost')->name('single-post-group');
 
 
-        #region groups
+        #region pages
         Route::resource('pages', 'User\PagesController');
         Route::any('join-page','User\PagesController@joinPage')->name('join-page');
         Route::get('about-page/{id}','User\PagesController@aboutPage')->name('about-page');

@@ -122,6 +122,8 @@ class CategoriesController extends Controller
 
         if ($category) {
 
+            $file_to_store = null;
+
             if($request->hasFile('image')) {
                 $image = $request->file('image');
                 $filename = $image->getClientOriginalName();
@@ -129,6 +131,8 @@ class CategoriesController extends Controller
                 $file_to_store = time() . '_' . explode('.', $filename)[0] . '_.' . $fileextension;
                 $image->move('category_images', $file_to_store);
             }
+
+            $file_to_store = $file_to_store != null ? $file_to_store : $category->image;
 
             $category->update([
                 'name_ar' => $request->name_ar,

@@ -39,8 +39,8 @@
                                           </a>
                                           <p class="card-text"><small class="text-muted" id="{{$my_group->group->id}}">
                                               <?php
-                                                  $member = App\models\GroupMember::where('group_id',$my_group->group->id)->count();
-                                                  echo $member;
+                                                $member = App\models\GroupMember::where('group_id',$my_group->group->id)->where('state',1)->where('isAdmin','!=', 1)->count();
+                                                echo $member;
                                               ?>
                                               {{__('groups.member')}}</small>
                                           </p>
@@ -56,7 +56,7 @@
                                               </div>
 
                                               @elseif (count($checkState)>0)
-                                                  @if ($checkState[0]->state == 1)
+                                                  @if ($checkState[0]->state == 1 && $checkState[0]->isAdmin != 1)
                                                       <div class="p-2">
                                                               <button class="button-2 totyMygroups" id="leave|{{$my_group->group->id}}|0">{{__('groups.left')}}</button>
                                                       </div>
@@ -66,7 +66,7 @@
                                                           <button class="button-2 totyMygroups" id="leave|{{$my_group->group->id}}|0">{{__('groups.left_request')}}</button>
                                                       </div>
 
-                                                  @elseif ($checkState[0]->isAdmin == 1)
+                                                  @elseif ($checkState[0]->state == 1 && $checkState[0]->isAdmin == 1)
                                                       <div class="p-2">
                                                           <button class="button-2">{{__('groups.admin')}}</button>
                                                       </div>
@@ -122,7 +122,7 @@
                                 </a>
                                 <p class="card-text"><small class="text-muted" id="{{$group->id}}|1">
                                     <?php
-                                        $member = App\models\GroupMember::where('group_id',$group->id)->count();
+                                        $member = App\models\GroupMember::where('group_id',$group->id)->where('state',1)->count();
                                         echo $member;
                                     ?>
                                     </small>

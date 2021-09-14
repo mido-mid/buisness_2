@@ -1,7 +1,7 @@
 @extends('User.groups.layout')
 
 @section('sectionGroups')
-@if($group->privacy == 0 && $isAdmin == 0 && $myState != 1)
+@if($myggroup->privacy == 2 && $isAdmin == 0 && $myState != 1)
 <div class="group-about my-3">
     <div class="group-description">
         <h3 class="heading-tertiary">{{__('groups.privacy')}}</h3>
@@ -64,7 +64,7 @@
     <ul class="members-list list-unstyled">
       @foreach($accepteds as $accepted)
       {{-- @if($accepted->user_id != Auth::guard('web')->user()->id) --}}
-      <li class="members-item" id="{{$accepted->user_id}}|{{$group['id']}}">
+      <li class="members-item" id="{{$accepted->user_id}}|{{$myggroup['id']}}">
         <div class="group-member d-flex justify-content-between">
           <a href="#" class="group-member-link d-flex align-items-center">
             <img src="{{asset('assets/images/users')}}/{{$accepted->member->personal_image}}" alt="#" class="member-img img-fluid">
@@ -92,8 +92,8 @@
                 <button class="button-2 totyFollowing" id="removeFollowing|{{$accepted->user_id}}">{{__('groups.un_following')}}</button>
               @endif
               @if($isAdmin == 1 )
-              <button class="button-4 totyAdmin" id="addAdmin|{{$accepted->user_id}}|{{$group['id']}}">{{__('groups.as_admin')}}</button>
-              <button class="button-4 totyAdmin" id="removeMember|{{$accepted->user_id}}|{{$group['id']}}">{{__('groups.delete_member')}}</button>
+              <button class="button-4 totyAdmin" id="addAdmin|{{$accepted->user_id}}|{{$myggroup['id']}}">{{__('groups.as_admin')}}</button>
+              <button class="button-4 totyAdmin" id="removeMember|{{$accepted->user_id}}|{{$myggroup['id']}}">{{__('groups.delete_member')}}</button>
               @endif
 
               @else
@@ -121,8 +121,10 @@
             <div class="group-members my-3">
               <ul class="members-list list-unstyled">
                 @foreach($myData->friends as $friend)
-                @if($friend->stateId == 1 && $friend->userResever->groupmember['state'] != '1' && $friend->userResever->groupmember['state'] != '3'  && $friend->userResever->groupmember['isAdmin'] != '1')
-                <li class="members-item" id="{{$friend->userResever->id}}|{{$group['id']}}">
+                {{-- {{dd($myData->friends[0]->userSender->groupmember['state'])}} --}}
+                @isset($friend->userResever)
+                @if($friend->stateId == 2 && $friend->userResever->groupmember['state'] != '1' && $friend->userResever->groupmember['state'] != '3'  && $friend->userResever->groupmember['isAdmin'] != '1')
+                <li class="members-item" id="{{$friend->userResever->id}}|{{$myggroup['id']}}">
                   <div class="group-member d-flex justify-content-between">
                     <a href="#" class="group-member-link d-flex align-items-center">
                       <img src="{{asset('assets/images/users')}}/{{$friend->userResever->personal_image}}" alt="#" class="member-img img-fluid">
@@ -131,15 +133,18 @@
                         </span>
                     </a>
                     <div>
-                      <button class="button-4 totyAdmin" id="invite|{{$friend->userResever->id}}|{{$group['id']}}">{{__('groups.invite')}}</button>
+                      <button class="button-4 totyAdmin" id="invite|{{$friend->userResever->id}}|{{$myggroup['id']}}">{{__('groups.invite')}}</button>
                     </div>
                   </div>
                 </li>
                 @endif
+                @endisset
+
                 @endforeach
                 @foreach($myData->myfriends as $myfriends)
-                @if($myfriends->stateId == 1 && $myfriends->userSender->groupmember['state'] != '1' && $myfriends->userSender->groupmember['state'] != '2' && $myfriends->userSender->groupmember['state'] != '3' && $myfriends->userResever->groupmember['isAdmin'] != '1')
-                <li class="members-item" id="{{$myfriends->userSender->id}}|{{$group['id']}}">
+                @isset($myfriends->userSender)
+                @if($myfriends->stateId == 2 && $myfriends->userSender->groupmember['state'] != '1' && $myfriends->userSender->groupmember['state'] != '2' && $myfriends->userSender->groupmember['state'] != '3' && $myfriends->userSender->groupmember['isAdmin'] != '1')
+                <li class="members-item" id="{{$myfriends->userSender->id}}|{{$myggroup['id']}}">
                   <div class="group-member d-flex justify-content-between">
                     <a href="#" class="group-member-link d-flex align-items-center">
                       <img src="{{asset('assets/images/users')}}/{{$myfriends->userSender->personal_image}}" alt="#" class="member-img img-fluid">
@@ -148,11 +153,12 @@
                         </span>
                     </a>
                     <div>
-                      <button class="button-4 totyAdmin" id="invite|{{$myfriends->userSender->id}}|{{$group['id']}}">{{__('groups.invite')}}</button>
+                      <button class="button-4 totyAdmin" id="invite|{{$myfriends->userSender->id}}|{{$myggroup['id']}}">{{__('groups.invite')}}</button>
                     </div>
                   </div>
                 </li>
                 @endif
+                @endisset
                 @endforeach
               </ul>
             </div>
@@ -167,154 +173,4 @@
   </div>
   @endif
 @endif
-{{-- @if(Auth::guard('web')->user()) --}}
-{{-- <script>
-  $(document).ready(function(){
-     $('.totyFrientshep').click(function(event){
-         event.preventDefault();
-         var id = $(this).attr('id');
-         var splittable = id.split('|');
-         var RequestType = splittable[0];
-         var Enemy_id = splittable[1];
-         console.log(RequestType);
-         $.ajax({
-         url:'http://127.0.0.1:8000/frientshep-group',
-             method:"get",
-             data:{requestType:RequestType,enemy_id:Enemy_id},
-             dataType:"text",
-             headers: {
-                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-             },
-             success:function(data){
-              var str = data.split('|');
-              var x = 'addFollowing|'+str[1];
-              console.log(x);
-              if(str[0] == 1)
-                    {
-                      document.getElementById(id).textContent = "{{__('groups.un_friend')}}";
-                      document.getElementById(id).classList.remove("button-4");
-                      document.getElementById(id).classList.add("button-2");
-                      document.getElementById(id).id = 'remove|'+str[1];
-                      document.getElementById(str[1]).textContent = str[2] + " {{__('groups.follower')}} ";
-
-                      document.getElementById(x).textContent = "{{__('groups.un_following')}}";
-                      document.getElementById(x).classList.remove("button-4");
-                      document.getElementById(x).classList.add("button-2");
-                      document.getElementById(x).id = 'removeFollowing|'+str[1];
-                    }
-                    if(str[0] == 2)
-                    {
-                      document.getElementById(id).textContent = "{{__('groups.un_friend_request')}}";
-                      document.getElementById(id).classList.remove("button-4");
-                      document.getElementById(id).classList.add("button-2");
-                      document.getElementById(id).id = 'remove|'+str[1];
-                      document.getElementById(str[1]).textContent = str[2] + " {{__('groups.follower')}} ";
-
-                      document.getElementById(x).textContent = "{{__('groups.un_following')}}";
-                      document.getElementById(x).classList.remove("button-4");
-                      document.getElementById(x).classList.add("button-2");
-                      document.getElementById(x).id = 'removeFollowing|'+str[1];
-                    }
-                    if(str[0] == 0)
-                    {
-                        document.getElementById(id).textContent = "{{__('groups.confirm_friend')}}";
-                        document.getElementById(id).classList.remove("button-2");
-                        document.getElementById(id).classList.add("button-4");
-                        document.getElementById(id).id = 'add|'+str[1];
-                        document.getElementById(str[1]).textContent = str[2] + " {{__('groups.follower')}} ";
-
-                        document.getElementById('removeFollowing|'+str[1]).textContent = "{{__('groups.add_following')}}";
-                        document.getElementById('removeFollowing|'+str[1]).classList.remove("button-2");
-                        document.getElementById('removeFollowing|'+str[1]).classList.add("button-4");
-                        document.getElementById('removeFollowing|'+str[1]).id = 'addFollowing|'+str[1];
-                    }
-             }
-         });
-
-     });
-
-     $('.totyFollowing').click(function(event){
-         event.preventDefault();
-         var id = $(this).attr('id');
-         var splittable = id.split('|');
-         var RequestType = splittable[0];
-         var Enemy_id = splittable[1];
-         console.log(RequestType);
-         $.ajax({
-         url:'http://127.0.0.1:8000/following-group',
-             method:"get",
-             data:{requestType:RequestType,enemy_id:Enemy_id},
-             dataType:"text",
-             headers: {
-                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-             },
-             success:function(data){
-              var str = data.split('|');
-              if(str[0] == 1)
-                {
-                  document.getElementById(id).textContent = "{{__('groups.un_following')}}";
-                  document.getElementById(id).classList.remove("button-4");
-                  document.getElementById(id).classList.add("button-2");
-                  document.getElementById(id).id = 'removeFollowing|'+str[1];
-                  document.getElementById(str[1]).textContent = str[2] + "{{__('groups.follower')}}";
-                }
-
-                if(str[0] == 0)
-                {
-                    document.getElementById(id).textContent =  "{{__('groups.add_following')}}";
-                    document.getElementById(id).classList.remove("button-2");
-                    document.getElementById(id).classList.add("button-4");
-                    document.getElementById(id).id = 'addFollowing|'+str[1];
-                    document.getElementById(str[1]).textContent = str[2] + "{{__('groups.follower')}}";
-                }
-              //  alert(data);
-             }
-         });
-
-     });
-
-     $('.totyAdmin').click(function(event){
-         event.preventDefault();
-         var id = $(this).attr('id');
-         var splittable = id.split('|');
-         var RequestType = splittable[0];
-         var Enemy_id = splittable[1];
-         var Group_id = splittable[2];
-         console.log(RequestType);
-         $.ajax({
-         url:'http://127.0.0.1:8000/asignAdmin-group',
-             method:"get",
-             data:{requestType:RequestType,enemy_id:Enemy_id,group_id:Group_id},
-             dataType:"text",
-             headers: {
-                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-             },
-             success:function(data){
-              var str = data.split('|');
-              if(str[0] == 1)
-                {
-                  // var sad =  `<li class='members-item'>` + document.getElementById(Enemy_id+'|'+Group_id).innerHTML + `</li>`;
-                  // console.log(sad);
-                  // document.getElementById('adddmin').innerHTML +=  document.getElementById(Enemy_id+'|'+Group_id).innerHTML ;
-                  // document.getElementById(Enemy_id+'|'+Group_id).style.display = "none";
-                  document.getElementById(id).textContent =  "{{__('groups.admin')}}";
-                  document.getElementById(id).classList.remove("button-4");
-                  document.getElementById(id).classList.add("button-2");
-                  // document.getElementById('addAdmin|'+Enemy_id+'|'+Group_id).style.display = "none";
-                  document.getElementById('removeMember|'+Enemy_id+'|'+Group_id).style.display = "none";
-
-                }
-
-                if(str[0] == 0)
-                {
-                  document.getElementById(Enemy_id+'|'+Group_id).style.display = "none";
-                }
-
-             }
-         });
-
-     });
- });
-</script> --}}
-{{-- @endif --}}
 @endsection

@@ -155,7 +155,7 @@ class PagesController extends Controller
         $page_admin = DB::table('page_members')->insert([
             'page_id' => $page,
             'user_id' => Auth::guard('web')->user()->id,
-            'state' => 0,
+            'state' => 1,
             'isAdmin'=>1
         ]);
 
@@ -397,7 +397,7 @@ class PagesController extends Controller
         $myState = $this->memberState($page_id);
         $isAdmin = $this->isAdmin($page_id);
         $page_liked = DB::table('page_members')->where('page_id', $page_id)->where('user_id', $user->id)->exists();
-        $page_members = PageMember::where('page_id',$page_id)->get();
+        $page_members = PageMember::where('page_id',$page_id)->where('state',1)->get();
         $page_posts = DB::table('posts')->where('page_id', $page_id)
             ->orderBy('created_at', 'desc')->get();
         foreach ($page_posts as $post){
@@ -452,7 +452,7 @@ class PagesController extends Controller
         $myState = $this->memberState($page_id);
         $isAdmin = $this->isAdmin($page_id);
         $page_liked = DB::table('page_members')->where('page_id', $page_id)->where('user_id', $user->id)->exists();
-        $page_members = PageMember::where('page_id',$page_id)->get();
+        $page_members = PageMember::where('page_id',$page_id)->where('state',1)->get();
         $page_posts = DB::table('posts')->where('id', $post_id)
             ->orderBy('created_at', 'desc')->get();
         foreach ($page_posts as $post){
@@ -504,7 +504,7 @@ class PagesController extends Controller
         $related_pages = $this->relatedPages($page->category_id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $page_members = PageMember::where('page_id',$id)->get();
+        $page_members = PageMember::where('page_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
         return view('User.pages.about',compact('page','page_members','myState', 'isAdmin', 'related_pages'));
     }
 
@@ -541,7 +541,7 @@ class PagesController extends Controller
         $related_pages = $this->relatedPages($page->category_id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $page_members = PageMember::where('page_id',$id)->get();
+        $page_members = PageMember::where('page_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
         //0 image
         //1 video
         $images = [];
@@ -557,7 +557,7 @@ class PagesController extends Controller
         $related_pages = $this->relatedPages($page->category_id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $page_members = PageMember::where('page_id',$id)->get();
+        $page_members = PageMember::where('page_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
         //0 image
         //1 video
         $videos = [];
@@ -590,8 +590,8 @@ class PagesController extends Controller
                         'state'=>1,
                         'isAdmin' =>0
                     ]);
-                    $page_members = PageMember::where('page_id',$page_id)->count();
-                    return 1 .'|'.$page_id.'|'. 1;
+                    $page_members = PageMember::where('page_id',$page_id)->where('state',1)->count();
+                    return 1 .'|'.$page_id.'|'. $page_members;
                 }
                 else{
                     //0 Private page
@@ -602,7 +602,7 @@ class PagesController extends Controller
                         'state'=>2,
                         'isAdmin' =>0
                     ]);
-                    $page_members = PageMember::where('page_id',$page_id)->count();
+                    $page_members = PageMember::where('page_id',$page_id)->where('state',1)->count();
                     return 2 .'|'.$page_id.'|'.$page_members;
                 }
                 #endregion
@@ -614,7 +614,7 @@ class PagesController extends Controller
                 $current_page = PageMember::find($current_page_id);
                 $current_page->delete();
                 #endregion
-                $page_members = PageMember::where('page_id',$page_id)->count();
+                $page_members = PageMember::where('page_id',$page_id)->where('state',1)->count();
                 return 0 .'|'.$page_id.'|'.$page_members;
                 break;
 
@@ -626,7 +626,7 @@ class PagesController extends Controller
                     'state'=>1
                 ]);
 
-                $page_members = PageMember::where('page_id',$page_id)->count();
+                $page_members = PageMember::where('page_id',$page_id)->where('state',1)->count();
                 return 1 .'|'.$page_id.'|'.$page_members;
                 break;
         }
@@ -640,7 +640,7 @@ class PagesController extends Controller
         $related_pages = $this->relatedPages($page->category_id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $page_members = PageMember::where('page_id',$id)->get();
+        $page_members = PageMember::where('page_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
         $page_requests = PageMember::where('page_id',$id)->where('state',2)->get();
         return view('User.pages.requests',compact('page','page_members','myState', 'isAdmin', 'related_pages','page_requests'));
     }
@@ -669,7 +669,7 @@ class PagesController extends Controller
         {
             $admin = PageMember::where('user_id',Auth::guard('web')->user()->id)->get();
             $admin[0]->delete();
-            return redirect('pages');
+            return redirect('all-page');
         }
         else
         {
@@ -683,7 +683,7 @@ class PagesController extends Controller
         $related_pages = $this->relatedPages($page->category_id);
         $myState = $this->memberState($id);
         $isAdmin = $this->isAdmin($id);
-        $page_members = PageMember::where('page_id',$id)->get();
+        $page_members = PageMember::where('page_id',$id)->where('state',1)->where('isAdmin','!=', 1)->get();
 
         //$admins = PageMember::where('page_id',$id)->where('isAdmin',1)->get();
 
@@ -691,7 +691,7 @@ class PagesController extends Controller
         $admins = [];
         // $myFriends =[];
 
-        $accepteds = PageMember::where('page_id', $id)->where('state', 1)->get();
+        $accepteds = PageMember::where('page_id', $id)->where('state', 1)->where('isAdmin','!=', 1)->get();
 
 
         $admins = PageMember::where('page_id', $id)->where('isAdmin',1)->get();
@@ -886,7 +886,7 @@ class PagesController extends Controller
                 $current_member = PageMember::find($current_member[0]->id);
                 $current_member->update([
                     'isAdmin' =>1,
-                    'state' =>0,
+                    'state' =>1,
                 ]);
 
                 return 1;
@@ -995,6 +995,7 @@ class PagesController extends Controller
         return view('User.pages.myPages',compact('related_pages','all_pages','expected_pages'));
     }
 
+
     private function getExpectedPages($user_interests_array, $user_pages_ids)
     {
 
@@ -1008,10 +1009,28 @@ class PagesController extends Controller
             $page->members = $page_likes_count;
         }
 
+        if(count($expected_pages) == 0){
+            $expected_pages = Page::whereNotIn('id', $user_pages_ids)->limit(3)->get();
+        }
+
         return $expected_pages;
     }
 
     private function getPost($user,$post){
+
+        $post->sponsored = false;
+
+        $all_sponsored_posts = DB::select(DB::raw('select categories.id as sponsor_category,sponsored.gender,sponsored.created_at as sponsored_at,sponsored_time.duration,posts.*,sponsored_reach.reach,countries.id as country_id,cities.id as city_id,sponsored_ages.from,sponsored_ages.to from
+                                        posts,sponsored,sponsored_reach,sponsored_ages,countries,cities,sponsored_time,categories
+                                        where sponsored.postId = posts.id and sponsored.reachId = sponsored_reach.id
+                                        and sponsored.age_id = sponsored_ages.id and sponsored.country_id = countries.id
+                                        and sponsored.city_id = cities.id and sponsored.timeId = sponsored_time.id and sponsored.category_id = categories.id ORDER BY posts.created_at DESC'));
+
+        foreach ($all_sponsored_posts as $sponsored) {
+            if ($sponsored->id == $post->id) {
+                $post->sponsored = true;
+            }
+        }
 
         if ($post->mentions != null) {
             $post->edit = $post->body;
@@ -1027,6 +1046,7 @@ class PagesController extends Controller
         $comments = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->whereNull('comment_id')
             ->limit(5)
             ->offset(0)
+            ->orderBy('created_at', 'desc')
             ->get();
         $total_comments_count = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->count();
         $likes = DB::table('likes')->where('model_id', $post->id)->where('model_type', 'post')->get();
@@ -1038,36 +1058,43 @@ class PagesController extends Controller
         $post->likes = $likes;
         $post->type = $post->post_id != null ? 'share' : 'post';
 
-        if(count($likes) > 0){
-            $like_stat = [];
-            $love_stat = [];
-            $haha_stat = [];
-            $sad_stat = [];
-            $angry_stat = [];
-            foreach ($likes as $like){
+        if (count($likes) > 0) {
+
+            $reacts = DB::table('reacts')->get();
+
+            $stat = '_stat';
+
+            foreach ($reacts as $react){
+                ${$react->name.$stat} = [];
+            }
+
+            foreach ($likes as $like) {
                 $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
                         where likes.reactId = reacts.id
-                    AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = '. $like->senderId . ' AND
-                    likes.model_id = '.$post->id.' AND likes.model_type = "post"
+                    AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                    likes.model_id = ' . $post->id . ' AND likes.model_type = "post"
                     '));
 
                 $like->publisher = User::find($like->senderId);
+                $like->react_name = $reactname[0]->name;
 
-                $stat = '_stat';
-
-                array_push(${$reactname[0]->name.$stat},$like);
+                array_push(${$reactname[0]->name . $stat}, $like);
             }
 
-            $post->like_stat = $like_stat;
-            $post->love_stat = $love_stat;
-            $post->haha_stat = $haha_stat;
-            $post->sad_stat = $sad_stat;
-            $post->angry_stat = $angry_stat;
+            $post->reacts_stat = [];
+
+            foreach ($reacts as $react){
+                array_push($post->reacts_stat,${$react->name.$stat});
+            }
         }
 
         if ($post->page_id != null) {
             $post->source = "page";
             $page = DB::table('pages')->where('id', $post->page_id)->first();
+            $post->isPageAdmin = DB::table('page_members')->where('page_id', $post->page_id)
+                ->where('user_id',auth()->user()->id)
+                ->where('isAdmin',1)
+                ->first();
             $post->page = $page;
         } elseif ($post->group_id != null) {
             $post->source = "group";
@@ -1145,10 +1172,10 @@ class PagesController extends Controller
         $post->shares = count($shares);
         $post->share_details = [];
 
-        if($post->shares > 0 && $post->type == "post"){
-            foreach($shares as $share){
+        if ($post->shares > 0 && $post->type == "post") {
+            foreach ($shares as $share) {
                 $share->publisher = User::find($share->publisherId);
-                array_push($post->share_details,$share);
+                array_push($post->share_details, $share);
             }
         }
 
@@ -1174,8 +1201,9 @@ class PagesController extends Controller
                         $comment->edit = $comment->body;
                         $mentions = explode(',', $comment->mentions);
                         foreach ($mentions as $mention) {
+                            $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                             $comment->body = str_replace('@' . $mention,
-                                '<span style="color: #ffc107">' . $mention . '</span>',
+                                '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
                                 $comment->body);
                         }
                     }
@@ -1191,31 +1219,32 @@ class PagesController extends Controller
                         $comment->user_react = DB::table('reacts')->where('id', $comment->liked->reactId)->get();
                     }
 
-                    if(count($comment->likes) > 0){
-                        $like_stat = [];
-                        $love_stat = [];
-                        $haha_stat = [];
-                        $sad_stat = [];
-                        $angry_stat = [];
-                        foreach ($comment->likes as $like){
+                    if (count($comment->likes) > 0) {
+                        $reacts = DB::table('reacts')->get();
+
+                        $stat = '_stat';
+
+                        foreach ($reacts as $react){
+                            ${$react->name.$stat} = [];
+                        }
+                        foreach ($comment->likes as $like) {
                             $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
                                                     where likes.reactId = reacts.id
-                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = '. $like->senderId . ' AND
-                                                likes.model_id = '.$comment->id.' AND likes.model_type = "comment"
+                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                                                likes.model_id = ' . $comment->id . ' AND likes.model_type = "comment"
                                                 '));
 
                             $like->publisher = User::find($like->senderId);
+                            $like->react_name = $reactname[0]->name;
 
-                            $stat = '_stat';
-
-                            array_push(${$reactname[0]->name.$stat},$like);
+                            array_push(${$reactname[0]->name . $stat}, $like);
                         }
 
-                        $comment->like_stat = $like_stat;
-                        $comment->love_stat = $love_stat;
-                        $comment->haha_stat = $haha_stat;
-                        $comment->sad_stat = $sad_stat;
-                        $comment->angry_stat = $angry_stat;
+                        $comment->reacts_stat = [];
+
+                        foreach ($reacts as $react){
+                            array_push($comment->reacts_stat,${$react->name.$stat});
+                        }
                     }
 
                     if (count($comment->replies) > 0) {
@@ -1230,8 +1259,9 @@ class PagesController extends Controller
                                     $reply->edit = $reply->body;
                                     $mentions = explode(',', $reply->mentions);
                                     foreach ($mentions as $mention) {
+                                        $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                                         $reply->body = str_replace('@' . $mention,
-                                            '<span style="color: #ffc107">' . $mention . '</span>',
+                                            '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
                                             $reply->body);
                                     }
                                 }
@@ -1245,31 +1275,32 @@ class PagesController extends Controller
                                     $reply->user_react = DB::table('reacts')->where('id', $reply->liked->reactId)->get();
                                 }
 
-                                if(count($reply->likes) > 0){
-                                    $like_stat = [];
-                                    $love_stat = [];
-                                    $haha_stat = [];
-                                    $sad_stat = [];
-                                    $angry_stat = [];
-                                    foreach ($reply->likes as $like){
+                                if (count($reply->likes) > 0) {
+                                    $reacts = DB::table('reacts')->get();
+
+                                    $stat = '_stat';
+
+                                    foreach ($reacts as $react){
+                                        ${$react->name.$stat} = [];
+                                    }
+                                    foreach ($reply->likes as $like) {
                                         $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
                                                     where likes.reactId = reacts.id
-                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = '. $like->senderId . ' AND
-                                                likes.model_id = '.$reply->id.' AND likes.model_type = "comment"
+                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                                                likes.model_id = ' . $reply->id . ' AND likes.model_type = "comment"
                                                 '));
 
                                         $like->publisher = User::find($like->senderId);
+                                        $like->react_name = $reactname[0]->name;
 
-                                        $stat = '_stat';
-
-                                        array_push(${$reactname[0]->name.$stat},$like);
+                                        array_push(${$reactname[0]->name . $stat}, $like);
                                     }
 
-                                    $reply->like_stat = $like_stat;
-                                    $reply->love_stat = $love_stat;
-                                    $reply->haha_stat = $haha_stat;
-                                    $reply->sad_stat = $sad_stat;
-                                    $reply->angry_stat = $angry_stat;
+                                    $reply->reacts_stat = [];
+
+                                    foreach ($reacts as $react){
+                                        array_push($reply->reacts_stat,${$react->name.$stat});
+                                    }
                                 }
                             }
                         }

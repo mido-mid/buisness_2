@@ -68,13 +68,16 @@ class RegisterController extends Controller
             'user_name' => ['required', 'string', 'max:255' ,'unique:users', 'alpha_dash'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'birthDate' => ['required','date'],
+            'birthDate' => ['required','date','before:today'],
             'phone' => ['required', 'digits:11', Rule::unique('users', 'phone')],
             'jobTitle' => ['required', 'string', 'max:255' , 'not_regex:/([%\$#\*<>]+)/'],
             'city_id' => ['required', 'integer'],
             'country_id' => ['required', 'integer'],
-            'category_id' => ['required', 'not_in:0'],
+            'category_id' => ['required','array'],
             'gender' => ['required', 'string'],
+        ],$messages = [
+            'country_id.required' => 'The country field is required.',
+            'city_id.required' => 'The city field is required'
         ]);
     }
 
@@ -86,11 +89,18 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        $birthDate = $data['birthDate'];
+
+        $currentDate = date("Y-m-d");
+
+        $age = date_diff(date_create($birthDate), date_create($currentDate));
+
         $user = User::create([
             'name' => $data['name'],
             'user_name' => $data['user_name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
+            'age' => $age->format("%y"),
             'birthDate' => $data['birthDate'],
             'type' => 0,
             'phone' => $data['phone'],
@@ -98,13 +108,14 @@ class RegisterController extends Controller
             'city_id' => $data['city_id'],
             'country_id' => $data['country_id'],
             'gender' => $data['gender'],
-            'stateId' => 4
+            'stateId' => 'allowed',
+            'official' => 0
         ]);
 
         foreach ($data['category_id'] as $category){
             DB::table('user_categories')->insert([
-                'user_id' => $user->id,
-                'category_id' => $category
+                'userId' => $user->id,
+                'categoryId' => $category
             ]);
         }
 

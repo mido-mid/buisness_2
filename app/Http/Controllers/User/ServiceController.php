@@ -30,11 +30,13 @@ class ServiceController extends Controller
     public function index($category_id = null)
     {
         //
+        $countries = DB::table('countries')->get();
+        $cities = DB::table('cities')->get();
         $categories = Category::where('type','service')->get();
 
         if($category_id != null) {
 
-            $services = Post::where('postTypeId', 1)->where('categoryId',$category_id)->where('country_id',auth()->user()->country_id)->where('city_id',auth()->user()->city_id)->where('publisherId','!=',auth()->user()->id)->get();
+            $services = Post::where('postTypeId', 1)->where('categoryId',$category_id)->where('country_id',auth()->user()->country_id)->where('city_id',auth()->user()->city_id)->get();
             if (count($services) > 0) {
                 foreach ($services as $service) {
                     $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
@@ -43,11 +45,12 @@ class ServiceController extends Controller
                     $service->media = $media;
                     $service->publisher = $publisher;
                     $service->follow = $follow  ? 'true' : 'false';
+                    $service->cities = DB::table('cities')->where('country_id',$service->country_id)->get();
                 }
             }
         }
         else{
-            $services = Post::where('postTypeId', 1)->where('country_id',auth()->user()->country_id)->where('city_id',auth()->user()->city_id)->where('publisherId','!=',auth()->user()->id)->get();
+            $services = Post::where('postTypeId', 1)->where('country_id',auth()->user()->country_id)->where('city_id',auth()->user()->city_id)->get();
             if (count($services) > 0) {
                 foreach ($services as $service) {
                     $media = DB::table('media')->where('model_id',$service->id)->where('model_type','post')->get()->toArray();
@@ -56,11 +59,12 @@ class ServiceController extends Controller
                     $service->media = $media;
                     $service->publisher = $publisher;
                     $service->follow = $follow  ? 'true' : 'false';
+                    $service->cities = DB::table('cities')->where('country_id',$service->country_id)->get();
                 }
             }
         }
 
-        return view('User.services.show',compact('services','categories','category_id'));
+        return view('User.services.show',compact('services','categories','category_id','countries','cities'));
     }
 
     /**

@@ -60,8 +60,8 @@
                             @csrf
 
                             <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
-                                <label for="cars">Choose A Category:</label>
-                                <select id="post-category" name="category_id">
+                                <label for="cars">Service Category:</label>
+                                <select name="category_id" style="width: 200px" class="js-example-basic-single">
                                     @foreach($categories as $category)
                                         @if(App::getlocale() == 'en')
                                             <option value="{{$category->id}}">{{$category->name_en}}</option>
@@ -75,6 +75,7 @@
                             <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
                                 <label for="exampleInputEmail1">Target Country:</label>
                                 <select onchange="addServiceCities(this)" name="country_id" style="width: 200px" class="js-example-basic-single">
+                                    <option value="0">choose target country</option>
                                     @foreach($countries as $country)
                                         <option value="{{$country->id}}">{{$country->name}}</option>
                                     @endforeach
@@ -295,7 +296,7 @@
 
                                                 <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
                                                     <label for="cars">Choose A Category:</label>
-                                                    <select id="post-category" name="category_id">
+                                                    <select style="width: 200px" name="category_id" class="js-example-basic-single">
                                                         @foreach($categories as $category)
                                                             @if(App::getlocale() == 'en')
                                                                 <option value="{{$category->id}}" @if($category->id == $service->categoryId) selected @endif>{{$category->name_en}}</option>
@@ -309,6 +310,7 @@
                                                 <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
                                                     <label for="exampleInputEmail1">Target Country:</label>
                                                     <select onchange="editServiceCities(this,{{$service->id}})" name="country_id" class="js-example-basic-single">
+                                                        <option value="0">choose target country</option>
                                                         @foreach($countries as $country)
                                                             <option value="{{$country->id}}" @if($country->id == $service->country_id) selected @endif>{{$country->name}}</option>
                                                         @endforeach

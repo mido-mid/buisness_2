@@ -16,9 +16,9 @@
                     <option value="" disabled>{{__('groups.pivacy_add')}}</option>
                     @if($groupnew->privacy == 1 )
                     <option value="1" selected>{{__('groups.public')}}</option>
-                    <option value="0">{{__('groups.private')}}</option>
+                    <option value="2">{{__('groups.private')}}</option>
                     @else
-                    <option value="0" selected>{{__('groups.private')}}</option>
+                    <option value="2" selected>{{__('groups.private')}}</option>
                     <option value="1">{{__('groups.public')}}</option>
                     @endif
                   </select>
@@ -54,29 +54,30 @@
       </div>
         {{-- @include('User.groups.related') --}}
     </div>
+    
 </section>
 <script>
-  function draw() {
-      var ctx = document.getElementById('canv2').getContext('2d');
-      var img = new Image();
-      ctx.canvas.width = window.innerWidth;
-      ctx.canvas.height = window.innerHeight;
-      img.onload = function() {
-          ctx.drawImage(img, 0, 0,window.innerWidth,window.innerHeight);
-      };
-      img.src = "{{asset('media')}}/{{$groupnew->cover_image}}";
-
-      var ctx1 = document.getElementById('canv1').getContext('2d');
-      var img1 = new Image();
-      ctx1.canvas.width = window.innerWidth;
-      ctx1.canvas.height = window.innerHeight;
-      img1.onload = function() {
-          ctx1.drawImage(img1, 0, 0,window.innerWidth,window.innerHeight);
-      };
-      img1.src = "{{asset('media')}}/{{$groupnew->profile_image}}";
-  }
-  draw();
-</script>
+    function draw() {
+        var ctx = document.getElementById('canv2').getContext('2d');
+        var img = new Image();
+        ctx.canvas.width = window.innerWidth;
+        ctx.canvas.height = window.innerHeight;
+        img.onload = function() {
+            ctx.drawImage(img, 0, 0,window.innerWidth,window.innerHeight);
+        };
+        img.src = "{{asset('media')}}/{{$groupnew->cover_image}}";
+  
+        var ctx1 = document.getElementById('canv1').getContext('2d');
+        var img1 = new Image();
+        ctx1.canvas.width = window.innerWidth;
+        ctx1.canvas.height = window.innerHeight;
+        img1.onload = function() {
+            ctx1.drawImage(img1, 0, 0,window.innerWidth,window.innerHeight);
+        };
+        img1.src = "{{asset('media')}}/{{$groupnew->profile_image}}";
+    }
+    draw();
+  </script>
 <section id="ez-body__right-sidebar" class="col-lg-2 ez-sidebar">
   <ul class="pt-4" id="right-sidebar__items">
       @if(count($expected_groups) > 0)
@@ -95,7 +96,7 @@
                               </a>
                               <p class="card-text"><small class="text-muted" id="{{$group->id}}|1">
                                   <?php
-                                      $member = App\models\GroupMember::where('group_id',$group->id)->count();
+                                      $member = App\models\GroupMember::where('group_id',$group->id)->where('state',1)->where('isAdmin','!=', 1)->count();
                                       echo $member;
                                   ?>
                                   </small>
@@ -113,7 +114,7 @@
                                   </div>
       
                                   @elseif (count($checkState)>0)
-                                      @if ($checkState[0]->state == 1)
+                                      @if ($checkState[0]->state == 1 && $checkState[0]->isAdmin != 1)
                                           <div class="p-2">
                                                   <button class="button-2 toty" id="leave|{{$group->id}}|1">{{__('groups.left')}}</button>
                                           </div>
@@ -123,7 +124,7 @@
                                               <button class="button-2 toty" id="leave|{{$group->id}}|1">{{__('groups.left_request')}}</button>
                                           </div>
       
-                                      @elseif ($checkState[0]->isAdmin == 1)
+                                      @elseif ($checkState[0]->state == 1 && $checkState[0]->isAdmin == 1)
                                           <div class="p-2">
                                               <button class="button-2">{{__('groups.admin')}}</button>
                                           </div>
@@ -144,6 +145,6 @@
       @endif
   </ul>
 </section>
-    
+
 @endsection
 

@@ -70,6 +70,11 @@
 <script src="{{ asset('assets') }}/libs/simplebar/simplebar.min.js"></script>
 <script src="{{ asset('assets') }}/libs/node-waves/waves.min.js"></script>
 
+<script src="{{ asset('assets') }}/libs/tinymce/tinymce.min.js"></script>
+
+<!-- init js -->
+<script src="{{ asset('assets') }}/js/pages/form-editor.init.js"></script>
+
 
 <!-- Peity chart-->
 <script src="{{ asset('assets') }}/libs/peity/jquery.peity.min.js"></script>
@@ -100,9 +105,6 @@
 <!-- Datatable init js -->
 <script src="{{ asset('assets') }}/js/pages/datatables.init.js"></script>
 <script src="{{ asset('assets') }}/js/app.js"></script>
-
-<!-- init js -->
-<script src="{{ asset('assets') }}/js/pages/form-editor.init.js"></script>
 
 </body>
 </html>

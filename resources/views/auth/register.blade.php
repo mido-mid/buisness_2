@@ -28,7 +28,7 @@
                 </div>
 
                 <div class="form-group{{ $errors->has('user_name') ? ' has-danger' : '' }}">
-                    <input id="name" type="text" class="form-control @error('user_name') is-invalid @enderror" name="user_name" value="{{ old('user_name') }}" required="please your enter name" placeholder="{{__('user.name')}}" autocomplete="user_name">
+                    <input id="name" type="text" class="form-control @error('user_name') is-invalid @enderror" name="user_name" value="{{ old('user_name') }}" required="please your enter name" placeholder="{{__('user.username')}}" autocomplete="user_name">
 
                     @error('user_name')
                     <span class="invalid-feedback" role="alert">
@@ -68,23 +68,23 @@
                     @enderror
                 </div>
 
-                <div class="form-group{{ $errors->has('bith_date') ? ' has-danger' : '' }}">
-                    <input type="date" name="birthDate" id="input-date" class="form-control form-control-alternative{{ $errors->has('birthDate') ? ' is-invalid' : '' }}" placeholder="{{__('user.birthdate')}}" value="{{ old('birth_date') }}" required>
+                <div class="form-group{{ $errors->has('birthDate') ? ' has-danger' : '' }}">
+                    <input type="date" name="birthDate" id="input-date" class="form-control form-control-alternative{{ $errors->has('birthDate') ? ' is-invalid' : '' }}" placeholder="{{__('user.birth_date')}}" value="{{ old('birthDate') }}" required>
 
-                    @if ($errors->has('birth_date'))
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $errors->first('birth_date') }}</strong>
-                        </span>
-                    @endif
+                    @error('birthDate')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                    @enderror
                 </div>
 
                 <div class="row">
                     <div class="col-6 form-group{{ $errors->has('phone') ? ' has-danger' : '' }}">
-                        <input type="tel" name="phone" id="phone" class="form-control form-control-alternative{{ $errors->has('phone') ? ' is-invalid' : '' }}" placeholder="{{__('user.phone')}}" value="{{ old('phone') }}" required>
+                        <input type="tel" name="phone" class="form-control form-control-alternative{{ $errors->has('phone') ? ' is-invalid' : '' }}" placeholder="{{__('user.phone')}}" value="{{ old('phone') }}" required>
 
                         @error('phone')
                             <span class="invalid-feedback" role="alert">
-                                <strong>{{ $errors->first('phone') }}</strong>
+                                <strong>{{ $message }}</strong>
                             </span>
                         @enderror
                     </div>
@@ -97,24 +97,36 @@
                 </div>
 
                 <div class="form-group{{ $errors->has('country_id') ? ' has-danger' : '' }}">
-                    <select class="js-example-basic-single form-control @error('country_id') is-invalid @enderror" name="country_id" data-placeholder="{{__('user.country')}}" required>
+                    <select class="js-example-basic-single form-control @error('country_id') is-invalid @enderror" name="country_id"  required>
+                        <option value="0" disabled selected>choose your country</option>
                         @foreach($countries as $country)
                             <option value="{{$country->id}}">{{$country->name}}</option>
                         @endforeach
                     </select>
+
+                    @error('country_id')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                    @enderror
                 </div>
 
 
                 <div class="form-group{{ $errors->has('city_id') ? ' has-danger' : '' }}">
-                    <select id="select-city" class="js-example-basic-single form-control @error('city_id') is-invalid @enderror" name="city_id" data-placeholder="{{__('user.city')}}" required disabled>
+                    <select id="select-city" class="js-example-basic-single form-control @error('city_id') is-invalid @enderror" name="city_id" required disabled>
                         @foreach($cities as $city)
                             <option value="{{$city->id}}">{{$city->name}}</option>
                         @endforeach
                     </select>
+                    @error('city_id')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                    @enderror
                 </div>
 
                 <div class="form-group{{ $errors->has('category_id') ? ' has-danger' : '' }}">
-                    <select class="js-example-basic-multiple form-control @error('category_id') is-invalid @enderror" name="category_id[]" data-placeholder="{{__('user.category')}}" required multiple="multiple">
+                    <select class="js-example-basic-multiple form-control @error('category_id') is-invalid @enderror" name="category_id[]" data-placeholder="choose your interests" required multiple="multiple">
                         @foreach($categories as $category)
                             @if(App::getlocale() == 'en')
                                 <option value="{{$category->id}}">{{$category->name_en}}</option>
@@ -125,10 +137,10 @@
                     </select>
                 </div>
 
-                <div class="form-group{{ $errors->has('job_title') ? ' has-danger' : '' }}">
-                    <input id="job_title" type="text" class="form-control @error('job_title') is-invalid @enderror" name="jobTitle" value="{{ old('job_title') }}" required="please your enter job_title" placeholder="{{__('user.job_title')}}" >
+                <div class="form-group{{ $errors->has('jobTitle') ? ' has-danger' : '' }}">
+                    <input id="jobTitle" type="text" class="form-control @error('jobTitle') is-invalid @enderror" name="jobTitle" value="{{ old('jobTitle') }}" required="please your enter job title" placeholder="{{__('user.job_title')}}" >
 
-                    @error('job_title')
+                    @error('jobTitle')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
                     </span>
