@@ -384,7 +384,7 @@ class ServiceController extends Controller
 
             $service->delete();
 
-            return $this->returnSuccessMessage('service successfully deleted');
+            return $this->returnSuccessMessage(trans('user.delete_service'));
         }
         else
         {

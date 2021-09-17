@@ -116,7 +116,10 @@ class FriendshipController extends Controller
                         'followingId' => $following,
                     ]);
                 }
-                return $this->returnSuccessMessage('remove request');
+                return response()->json([
+                    'msg' => trans('groups.un_friend_request'),
+                    'state' => 'remove request',
+                ]);
 
             case 'removeFriendRequest':
                 $senderId = $request->senderId;
@@ -128,7 +131,8 @@ class FriendshipController extends Controller
 
                 $user_id = $receiverId == auth()->user()->id ? $senderId : $receiverId;
                 return response()->json([
-                    'msg' => 'add friend',
+                    'msg' => trans('groups.add_friend'),
+                    'state' => 'add friend',
                     'sender' => auth()->user()->id,
                     'receiver' => $user_id
                 ]);
@@ -182,7 +186,10 @@ class FriendshipController extends Controller
                 $receiverId = $request->receiverId;
                 $blockRequest = DB::table('blocks')->where('senderId',$senderId)->where('receiverId',$receiverId)->delete();
 
-                return $this->returnSuccessMessage('block');
+                return response()->json([
+                    'msg' => trans('home.block'),
+                    'state' => 'block',
+                ]);
 
             case 'addBlockRequest':
                 $senderId = $request->senderId;
@@ -193,7 +200,10 @@ class FriendshipController extends Controller
                     'receiverId' => $receiverId,
                 ]);
 
-                return $this->returnSuccessMessage('remove block');
+                return response()->json([
+                    'msg' => trans('home.remove_block'),
+                    'state' => 'remove block',
+                ]);
 
             case 'sentRequest':
                 $senderId = $request->senderId;

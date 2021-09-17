@@ -107,57 +107,40 @@
     <ul class="pt-4" id="right-sidebar__items">
         @if(count($expected_pages) > 0)
             <li class="mt-3">
-                <h6 class="pb-2" style="font-weight: bold;font-size: 15px">Pages You May Like</h6>
+                <h6 class="pb-2" style="font-weight: bold;font-size: 15px">{{__('home.expected_pages')}}</h6>
                 <div class="suggested-groups">
                     @foreach($expected_pages as $page)
-                    <div class="card">
-                      <a href="/pages/{{$page->id}}">
-                          <img src="{{asset('media')}}/{{$page->profile_image}}" class="card-img-top" alt="...">
-                      </a>
-                      <div class="d-flex justify-content-between">
-                          <div class="card-body">
-                              <a href="pages/{{$page->id}}" style="color:black !important">
-                                  <h3 class="card-title">{{$page->name}}</h3>
-                              </a>
-                              <p class="card-text"><small class="text-muted" id="{{$page->id}}">
-                                  <?php
-                                      $member = App\models\PageMember::where('page_id',$page->id)->where('state',1)->where('isAdmin','!=', 1)->count();
-                                      echo $member;
-                                  ?>
-                                  </small>
-                                  {{__('pages.member')}}
-                              </p>
-                          </div>
-                                @if(Auth::guard('web')->user())
-                                  <?php
-                                      $checkState = App\models\PageMember::where('page_id',$page->id)->where('user_id',auth::user()->id)->get();
-                                  ?>
-                                  @if (count($checkState)==0)
-                                  <div class="p-2">
-                                          <button class="button-4 totyAllpages" id="join|{{$page->id}}" >{{__('pages.like')}} </button>
-                                  </div>
-      
-                                  @elseif (count($checkState)>0)
-                                      @if ($checkState[0]->state == 1 && $checkState[0]->isAdmin != 1)
-                                          <div class="p-2">
-                                                  <button class="button-2 totyAllpages" id="leave|{{$page->id}}">{{__('pages.dislike')}}</button>
-                                          </div>
-      
-                                      @elseif ($checkState[0]->isAdmin == 1)
-                                          <div class="p-2">
-                                              <button class="button-2">{{__('pages.admin')}}</button>
-                                          </div>
-                                      @endif
-                                  @endif
-                                @else
-                                    <form action="/login" method="post">
+                        <div class="group">
+                            <a href="{{route('main-page',$page->id)}}">
+                                <div class="group-banner">
+                                    @if($page->cover_image)
+                                        <img
+                                            width="100%"
+                                            src="{{asset('media')}}/{{$page->profile_image}}"
+                                            alt="User Profile Pic"
+                                        />
+                                    @else
+                                        <img
+                                            width="100%"
+                                            src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                            alt="User Profile Pic"
+                                        />
+                                    @endif
+                                </div>
+                                <div class="mt-2 group-info">
+                                    <div>
+                                        <p><b>{{$page->name}}</b></p>
+                                        <p id="page-members-{{$page->id}}">{{$page->members}} {{__('home.likes')}}</p>
+                                    </div>
+                                    <a id="like-page-btn-{{$page->id}}" onclick="likePageSubmit({{$page->id}},'{{App::getlocale()}}')" class="btn btn-warning text-white">{{__('pages.like')}}</a>
+                                    <form id="like-page-form-{{$page->id}}" action="{{ route('like_page') }}" method="POST" style="display: none;">
                                         @csrf
-                                        <button class="button-4">{{__('pages.like')}}</button>
+                                        <input type="hidden" name="page_id" value="{{$page->id}}">
+                                        <input type="hidden" id="like-page-flag-{{$page->id}}" name="flag" value="0">
                                     </form>
-                                @endif
-                            </div>
+                                </div>
+                            </a>
                         </div>
-                    </div>
                     @endforeach
                 </div>
             </li>

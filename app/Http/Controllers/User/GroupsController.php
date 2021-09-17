@@ -629,7 +629,10 @@ class GroupsController extends Controller
 
                 ]);
 
-                return $this->returnSuccessMessage('request pending');
+                return response()->json([
+                    'msg' => trans('groups.left_request'),
+                    'state' => 'request pending',
+                ]);
             } else {
                 DB::table('group_members')->insert([
                     'group_id' => $group_id,
@@ -637,7 +640,10 @@ class GroupsController extends Controller
                     'state' => 1,
                     'isAdmin'=>0
                 ]);
-                return $this->returnSuccessMessage('exit group');
+                return response()->json([
+                    'msg' => trans('groups.leave_group'),
+                    'state' => 'exit group',
+                ]);
             }
         } else {
             $user_id = auth()->user()->id;
@@ -653,7 +659,10 @@ class GroupsController extends Controller
                 }
             }else{
                 DB::table('group_members')->where('id',$current_group_id)->delete();
-                return $this->returnSuccessMessage('join');
+                return response()->json([
+                    'msg' => trans('groups.join'),
+                    'state' => 'join',
+                ]);
             }
             #endregion
         }
@@ -1173,6 +1182,7 @@ class GroupsController extends Controller
         }
 
 
+
         if ($post->mentions != null) {
             $post->edit = $post->body;
             $mentions = explode(',', $post->mentions);
@@ -1206,26 +1216,26 @@ class GroupsController extends Controller
             $stat = '_stat';
 
             foreach ($reacts as $react){
-                ${$react->name.$stat} = [];
+                ${$react->name_en.$stat} = [];
             }
 
             foreach ($likes as $like) {
-                $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                         where likes.reactId = reacts.id
                     AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                     likes.model_id = ' . $post->id . ' AND likes.model_type = "post"
                     '));
 
                 $like->publisher = User::find($like->senderId);
-                $like->react_name = $reactname[0]->name;
+                $like->react_name = $reactname[0]->name_en;
 
-                array_push(${$reactname[0]->name . $stat}, $like);
+                array_push(${$reactname[0]->name_en . $stat}, $like);
             }
 
             $post->reacts_stat = [];
 
             foreach ($reacts as $react){
-                array_push($post->reacts_stat,${$react->name.$stat});
+                array_push($post->reacts_stat,${$react->name_en.$stat});
             }
         }
 
@@ -1366,25 +1376,25 @@ class GroupsController extends Controller
                         $stat = '_stat';
 
                         foreach ($reacts as $react){
-                            ${$react->name.$stat} = [];
+                            ${$react->name_en.$stat} = [];
                         }
                         foreach ($comment->likes as $like) {
-                            $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                            $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                                                     where likes.reactId = reacts.id
                                                 AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                                                 likes.model_id = ' . $comment->id . ' AND likes.model_type = "comment"
                                                 '));
 
                             $like->publisher = User::find($like->senderId);
-                            $like->react_name = $reactname[0]->name;
+                            $like->react_name = $reactname[0]->name_en;
 
-                            array_push(${$reactname[0]->name . $stat}, $like);
+                            array_push(${$reactname[0]->name_en . $stat}, $like);
                         }
 
                         $comment->reacts_stat = [];
 
                         foreach ($reacts as $react){
-                            array_push($comment->reacts_stat,${$react->name.$stat});
+                            array_push($comment->reacts_stat,${$react->name_en.$stat});
                         }
                     }
 
@@ -1422,25 +1432,25 @@ class GroupsController extends Controller
                                     $stat = '_stat';
 
                                     foreach ($reacts as $react){
-                                        ${$react->name.$stat} = [];
+                                        ${$react->name_en.$stat} = [];
                                     }
                                     foreach ($reply->likes as $like) {
-                                        $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                                        $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                                                     where likes.reactId = reacts.id
                                                 AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                                                 likes.model_id = ' . $reply->id . ' AND likes.model_type = "comment"
                                                 '));
 
                                         $like->publisher = User::find($like->senderId);
-                                        $like->react_name = $reactname[0]->name;
+                                        $like->react_name = $reactname[0]->name_en;
 
-                                        array_push(${$reactname[0]->name . $stat}, $like);
+                                        array_push(${$reactname[0]->name_en . $stat}, $like);
                                     }
 
                                     $reply->reacts_stat = [];
 
                                     foreach ($reacts as $react){
-                                        array_push($reply->reacts_stat,${$react->name.$stat});
+                                        array_push($reply->reacts_stat,${$react->name_en.$stat});
                                     }
                                 }
                             }
@@ -1449,6 +1459,7 @@ class GroupsController extends Controller
                 }
             }
         }
+
 
         return $post;
     }

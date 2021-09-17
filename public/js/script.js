@@ -11,7 +11,7 @@ let savePostSubmit = (id) => {
         contentType: false,
         success: function (data) {
             $('#save-post-' + id).text(data.msg);
-            if(data.msg == "saved"){
+            if(data.state == "saved"){
                 $('#save-post-flag-' + id).attr('value',1);
             }
             else{
@@ -35,10 +35,10 @@ let addFriendSubmit = (id,type) => {
         contentType: false,
         success: function (data) {
             $('#'+type+'-friend-btn-' + id).text(data.msg);
-            if(data.msg == "add friend") {
+            if(data.state == "add friend") {
                 $('#'+type+'-request-type-' + id).attr('value', 'addFriendRequest')
-                $('#sender-'+id).attr('name',data.sender);
-                $('#receiver-'+id).attr('name',data.receiver);
+                $('#sender-'+id).attr('value',data.sender);
+                $('#receiver-'+id).attr('value',data.receiver);
             }
             else{
                 $('#'+type+'-request-type-' + id).attr('value', 'removeFriendRequest')
@@ -82,7 +82,7 @@ let addBlockSubmit = (id) => {
         contentType: false,
         success: function (data) {
             $('#search-block-btn-' + id).text(data.msg);
-            if(data.msg == "block") {
+            if(data.state == "block") {
                 $('#block-request-type-' + id).attr('value', 'addBlockRequest')
             }
             else{
@@ -96,7 +96,7 @@ let addBlockSubmit = (id) => {
 }
 
 
-let joinGroupSubmit = (id) => {
+let joinGroupSubmit = (id,lang) => {
 
     $.ajax({
         url: $('#join-group-form-' + id).attr('action'),
@@ -107,18 +107,20 @@ let joinGroupSubmit = (id) => {
         processData: false,
         contentType: false,
         success: function (data) {
+
+            var members = lang == "en" ? " members" : " الأعضاء";
             console.log(data.msg);
             $('#join-btn-' + id).text(data.msg);
-            if(data.msg == "join") {
+            if(data.state == "join") {
                 $('#join-flag-' + id).attr('value',0)
                 if(parseInt($('#members-' + id).text()) > 0) {
-                    $('#members-' + id).text(parseInt($('#members-' + id).text()) - 1 + ' members');
+                    $('#members-' + id).text(parseInt($('#members-' + id).text()) - 1 + members);
                 }
             }
             else{
                 $('#join-flag-' + id).attr('value',1)
                 if(data.msg == "exit group") {
-                    $('#members-' + id).text(parseInt($('#members-' + id).text()) + 1 + ' members');
+                    $('#members-' + id).text(parseInt($('#members-' + id).text()) + 1 + members);
                 }
             }
         },
@@ -129,7 +131,7 @@ let joinGroupSubmit = (id) => {
 }
 
 
-let likePageSubmit = (id) => {
+let likePageSubmit = (id,lang) => {
 
     $.ajax({
         url: $('#like-page-form-' + id).attr('action'),
@@ -140,16 +142,17 @@ let likePageSubmit = (id) => {
         processData: false,
         contentType: false,
         success: function (data) {
+            var likes = lang == "en" ? ' likes' : " إعجاب";
             $('#like-page-btn-' + id).text(data.msg);
-            if(data.msg == "like") {
+            if(data.state == "like") {
                 $('#like-page-flag-' + id).attr('value',0)
                 if(parseInt($('#page-members-' + id).text()) > 0) {
-                    $('#page-members-' + id).text(parseInt($('#page-members-' + id).text()) - 1 + ' likes');
+                    $('#page-members-' + id).text(parseInt($('#page-members-' + id).text()) - 1 + likes);
                 }
             }
             else{
                 $('#like-page-flag-' + id).attr('value',1)
-                $('#page-members-' + id).text(parseInt($('#page-members-' + id).text()) + 1 + ' likes');
+                $('#page-members-' + id).text(parseInt($('#page-members-' + id).text()) + 1 + likes);
             }
         },
         error: function (data) {
@@ -162,7 +165,7 @@ let likePageSubmit = (id) => {
 }
 
 
-let addPostSubmit = () => {
+let addPostSubmit = (lang) => {
 
     $.ajax({
         url: $('#add-post-form').attr('action'),
@@ -184,10 +187,11 @@ let addPostSubmit = () => {
             return xhr;
         },
         success: function (data) {
+            var text = lang == "en" ? ' post created successfully' : "لقد تم إضافة المنشور بنجاح";
             var div = document.getElementById('addedpost');
             $('#progress-modal').modal('hide');
             $('#success-modal').modal('show');
-            $('#success-modal-message').text("post created successfully");
+            $('#success-modal-message').text(text);
             div.innerHTML = data + div.innerHTML;
         },
         error: function (data) {
@@ -198,7 +202,7 @@ let addPostSubmit = () => {
     });
 }
 
-let editPostSubmit = (id) => {
+let editPostSubmit = (id,lang) => {
 
     $.ajax({
         url: $('#edit-post-form-' + id).attr('action'),
@@ -220,10 +224,11 @@ let editPostSubmit = (id) => {
             return xhr;
         },
         success: function (data) {
+            var text = lang == "en" ? ' post edited successfully' : "لقد تم تعديل المنشور بنجاح";
             var div = document.getElementById('post-' + id);
             $('#progress-modal').modal('hide');
             $('#success-modal').modal('show');
-            $('#success-modal-message').text("post edited successfully");
+            $('#success-modal-message').text(text);
             div.classList.remove('post-container','bg-white','mt-3','p-3');
             div.innerHTML = data;
         },
@@ -499,7 +504,7 @@ let editReplySubmit = (id) => {
 
 
 
-let sharePostSubmit = (id) => {
+let sharePostSubmit = (id,lang) => {
 
     $.ajax({
         url: $('#share-post-form-' + id).attr('action'),
@@ -509,10 +514,11 @@ let sharePostSubmit = (id) => {
         processData: false,
         contentType: false,
         success: function (data) {
+            var text = lang == "en" ? 'post shared to your timeline' : "لقد تم مشاركة المنشور";
             var div = document.getElementById('addedpost');
             $('#share-post-modal-' + id).modal('hide');
             $('#success-modal').modal('show');
-            $('#success-modal-message').text("post shared to your timeline");
+            $('#success-modal-message').text(text);
             div.innerHTML = data + div.innerHTML;
         },
         error: function (data) {
@@ -576,7 +582,7 @@ let unlikeModelSubmit = (model_id,react_id) => {
 
 
 
-let addStorySubmit = (publisher_id) => {
+let addStorySubmit = (publisher_id,lang) => {
 
     $.ajax({
         url: $('#add-story-form').attr('action'),
@@ -598,11 +604,12 @@ let addStorySubmit = (publisher_id) => {
             return xhr;
         },
         success: function (data) {
+            var text = lang == "en" ? 'story added successfully' : "لقد تم إضافة قصة بنجاح";
             $('#progress-modal').modal('hide');
             $('#story-' + publisher_id).css('display','block');
             var div = document.getElementById('show-story-modal-' + publisher_id);
             $('#success-modal').modal('show');
-            $('#success-modal-message').text("story added successfully");
+            $('#success-modal-message').text(text);
             div.innerHTML = data;
 
         },
@@ -678,7 +685,7 @@ let removeCurrent = (id) => {
     $("video")[0].pause();
 }
 
-let addServiceSubmit = () => {
+let addServiceSubmit = (lang) => {
 
     $.ajax({
         url: $('#add-service-form').attr('action'),
@@ -700,10 +707,11 @@ let addServiceSubmit = () => {
             return xhr;
         },
         success: function (data) {
+            var text = lang == "en" ? 'service created successfully' : "لقد تم إضافة خدمة بنجاح";
             $('#progress-modal').modal('show');
             var div = document.getElementById('all-services');
             $('#success-modal').modal('show');
-            $('#success-modal-message').text("service created successfully");
+            $('#success-modal-message').text(text);
             div.innerHTML = data + div.innerHTML;
             $('#no-service').css('display','none');
             var added_div = document.getElementById('added-service');
@@ -718,7 +726,7 @@ let addServiceSubmit = () => {
     });
 }
 
-let editServiceSubmit = (id) => {
+let editServiceSubmit = (id,lang) => {
 
     $.ajax({
         url: $('#edit-service-form-' + id).attr('action'),
@@ -740,9 +748,10 @@ let editServiceSubmit = (id) => {
             return xhr;
         },
         success: function (data) {
+            var text = lang == "en" ? 'service edited successfully' : "لقد تم تعديل الخدمة بنجاح";
             $('#progress-modal').modal('hide');
             $('#success-modal').modal('show');
-            $('#success-modal-message').text("service edited successfully");
+            $('#success-modal-message').text(text);
             $('.service-id-' + id).html(data);
         },
         error: function (data) {

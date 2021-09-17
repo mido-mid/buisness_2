@@ -327,7 +327,7 @@ class CommentController extends Controller
 
             return response()->json([
                 'type' => $type,
-                'msg' => "comment deleted successfully",
+                'msg' => trans('home.delete_comment'),
                 'count' => count($post->comments)
             ]);
         }
@@ -375,25 +375,25 @@ class CommentController extends Controller
                 $stat = '_stat';
 
                 foreach ($reacts as $react){
-                    ${$react->name.$stat} = [];
+                    ${$react->name_en.$stat} = [];
                 }
                 foreach ($comment->likes as $like) {
-                    $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                    $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                                                     where likes.reactId = reacts.id
                                                 AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                                                 likes.model_id = ' . $comment->id . ' AND likes.model_type = "comment"
                                                 '));
 
                     $like->publisher = User::find($like->senderId);
-                    $like->react_name = $reactname[0]->name;
+                    $like->react_name = $reactname[0]->name_en;
 
-                    array_push(${$reactname[0]->name . $stat}, $like);
+                    array_push(${$reactname[0]->name_en . $stat}, $like);
                 }
 
                 $comment->reacts_stat = [];
 
                 foreach ($reacts as $react){
-                    array_push($comment->reacts_stat,${$react->name.$stat});
+                    array_push($comment->reacts_stat,${$react->name_en.$stat});
                 }
             }
 
@@ -431,31 +431,30 @@ class CommentController extends Controller
                             $stat = '_stat';
 
                             foreach ($reacts as $react){
-                                ${$react->name.$stat} = [];
+                                ${$react->name_en.$stat} = [];
                             }
                             foreach ($reply->likes as $like) {
-                                $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                                $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                                                     where likes.reactId = reacts.id
                                                 AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                                                 likes.model_id = ' . $reply->id . ' AND likes.model_type = "comment"
                                                 '));
 
                                 $like->publisher = User::find($like->senderId);
-                                $like->react_name = $reactname[0]->name;
+                                $like->react_name = $reactname[0]->name_en;
 
-                                array_push(${$reactname[0]->name . $stat}, $like);
+                                array_push(${$reactname[0]->name_en . $stat}, $like);
                             }
 
                             $reply->reacts_stat = [];
 
                             foreach ($reacts as $react){
-                                array_push($reply->reacts_stat,${$react->name.$stat});
+                                array_push($reply->reacts_stat,${$react->name_en.$stat});
                             }
                         }
                     }
                 }
             }
         }
-        return $comment;
     }
 }

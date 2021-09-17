@@ -24,10 +24,10 @@
                         @foreach($company->phones as $phone)
                             <p class="col-sm-3 col-6">{{$phone->phoneNumber}}</p>
                             <span  class="col-sm-3 col-6 ">
-                                      <p class="call-icon">
-                                          <i class="fas fa-mobile-alt"></i> Call
-                                      </p>
-                                    </span>
+                                  <p class="call-icon">
+                                      <i class="fas fa-mobile-alt"></i> {{__('companies.call')}}
+                                  </p>
+                                </span>
                         @endforeach
                     </div>
                 </div>

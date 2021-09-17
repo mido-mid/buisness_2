@@ -42,7 +42,7 @@
                                         <div class="story-content-vedio">
                                             <video class="w-100 h-100" id="story-video-{{$inner_story->id}}">
                                                 <source src="{{asset('media')}}/{{$inner_story->media->filename}}" type="video/mp4" />
-                                                Your browser does not support the video tag.
+                                                {{__('home.no_browser_support')}}
                                             </video>
                                             @if($inner_story->body != null)
                                                 <div class="carousel-caption d-none d-md-block">
@@ -65,7 +65,7 @@
                                         <div class="modal-content">
                                             <div class="modal-header d-flex justify-content-between">
                                                 <h5 class="modal-title" id="exampleModalLabel">
-                                                    Story Viewers
+                                                    {{__('home.story_viewers')}}
                                                 </h5>
                                                 <button type="button" class="close ml-0" onclick="$('#show-story-views-modal-{{$inner_story->id}}').modal('hide');" aria-label="Close">
                                                     <span aria-hidden="true">&times;</span>
@@ -92,7 +92,7 @@
                                                     @endforeach
 
                                                 @else
-                                                    <p class="mb-0 ml-3"><b>no viewers yet</b></p>
+                                                    <p class="mb-0 ml-3"><b>{{__('home.no_viewers')}}</b></p>
                                                 @endif
                                             </div>
                                         </div>

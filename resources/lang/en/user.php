@@ -43,6 +43,9 @@ return [
     "search" => "search",
     "edit" => "Edit",
     "delete" => "Delete",
-    "add" => "add"
+    "add" => "add",
+
+    //service
+    "delete_service" => "service deleted successfully",
 
 ];

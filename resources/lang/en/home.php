@@ -38,6 +38,7 @@ return [
     "price" => "price",
     "save" => "save",
     "media" => "الوسائط",
+    "load_more_comments" => "show more comments",
 
     //search
     "groups" => "groups",
@@ -62,7 +63,16 @@ return [
     "expected_posts" => "posts you may like" ,
     "expected_groups" => "groups you would like to join",
     "expected_friends" => "friends you may know",
-    "expected__pages" => "pages you may be interested in",
+    "expected_pages" => "pages you may be interested in",
     "follow" => "follow",
-    "likes" => "likes"
+    "likes" => "likes",
+    "block" => "block",
+    "remove_block" => "remove block",
+
+
+    //messages
+    "delete_post" => "post deleted successfully",
+    "delete_comment" => "comment deleted successfully",
+    "delete_story" => "story deleted successfully",
+    "report_sent" => "report sent successfully"
 ];

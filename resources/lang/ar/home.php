@@ -18,6 +18,7 @@ return [
     "reacts" => "التفاعلات",
     "all" => "الكل",
     "hide" => "إخفاء التعليقات",
+    "load_more_comments" => "عرض المزيد من التعليقات",
 
 
     //forms
@@ -62,7 +63,15 @@ return [
     "expected_posts" => "منشورات قد تعجبك" ,
     "expected_groups" => "مجموعات قد تعجبك",
     "expected_friends" => "أشخاص قد تعرفهم",
-    "expected__pages" => "صفحات قد تعجبك",
+    "expected_pages" => "صفحات قد تعجبك",
     "follow" => "متابعه",
-    "likes" => "اعجاب"
+    "likes" => "إعجاب",
+    "block" => "حظر",
+    "remove_block" => "إلغاء الحظر",
+
+    //messages
+    "delete_post" => "لقد تم حذف المنشور بنجاح",
+    "delete_comment" => "لقد تم حذف التعليق بنجاح",
+    "delete_story" => "لقد تم حذف القصة بنجاح",
+    "report_sent" => "لقد تم الإبلاغ بنجاح"
 ];

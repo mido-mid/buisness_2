@@ -399,26 +399,26 @@ class MainController extends Controller
                 $stat = '_stat';
 
                 foreach ($reacts as $react){
-                    ${$react->name.$stat} = [];
+                    ${$react->name_en.$stat} = [];
                 }
 
                 foreach ($likes as $like) {
-                    $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                    $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                         where likes.reactId = reacts.id
                     AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                     likes.model_id = ' . $post->id . ' AND likes.model_type = "post"
                     '));
 
                     $like->publisher = User::find($like->senderId);
-                    $like->react_name = $reactname[0]->name;
+                    $like->react_name = $reactname[0]->name_en;
 
-                    array_push(${$reactname[0]->name . $stat}, $like);
+                    array_push(${$reactname[0]->name_en . $stat}, $like);
                 }
 
                 $post->reacts_stat = [];
 
                 foreach ($reacts as $react){
-                    array_push($post->reacts_stat,${$react->name.$stat});
+                    array_push($post->reacts_stat,${$react->name_en.$stat});
                 }
             }
 
@@ -559,25 +559,25 @@ class MainController extends Controller
                             $stat = '_stat';
 
                             foreach ($reacts as $react){
-                                ${$react->name.$stat} = [];
+                                ${$react->name_en.$stat} = [];
                             }
                             foreach ($comment->likes as $like) {
-                                $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                                $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                                                     where likes.reactId = reacts.id
                                                 AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                                                 likes.model_id = ' . $comment->id . ' AND likes.model_type = "comment"
                                                 '));
 
                                 $like->publisher = User::find($like->senderId);
-                                $like->react_name = $reactname[0]->name;
+                                $like->react_name = $reactname[0]->name_en;
 
-                                array_push(${$reactname[0]->name . $stat}, $like);
+                                array_push(${$reactname[0]->name_en . $stat}, $like);
                             }
 
                             $comment->reacts_stat = [];
 
                             foreach ($reacts as $react){
-                                array_push($comment->reacts_stat,${$react->name.$stat});
+                                array_push($comment->reacts_stat,${$react->name_en.$stat});
                             }
                         }
 
@@ -615,25 +615,25 @@ class MainController extends Controller
                                         $stat = '_stat';
 
                                         foreach ($reacts as $react){
-                                            ${$react->name.$stat} = [];
+                                            ${$react->name_en.$stat} = [];
                                         }
                                         foreach ($reply->likes as $like) {
-                                            $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                                            $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                                                     where likes.reactId = reacts.id
                                                 AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                                                 likes.model_id = ' . $reply->id . ' AND likes.model_type = "comment"
                                                 '));
 
                                             $like->publisher = User::find($like->senderId);
-                                            $like->react_name = $reactname[0]->name;
+                                            $like->react_name = $reactname[0]->name_en;
 
-                                            array_push(${$reactname[0]->name . $stat}, $like);
+                                            array_push(${$reactname[0]->name_en . $stat}, $like);
                                         }
 
                                         $reply->reacts_stat = [];
 
                                         foreach ($reacts as $react){
-                                            array_push($reply->reacts_stat,${$react->name.$stat});
+                                            array_push($reply->reacts_stat,${$react->name_en.$stat});
                                         }
                                     }
                                 }
@@ -902,12 +902,12 @@ class MainController extends Controller
 
                 return response()->json([
                     'type' => $type,
-                    'msg' => "report sent successfully",
+                    'msg' => trans('home.report_sent'),
                     'count' => count($post->comments)
                 ]);
             } else {
                 return response()->json([
-                    'msg' => "report sent successfully",
+                    'msg' => trans('home.report_sent'),
                 ]);
             }
         } else {
@@ -962,30 +962,31 @@ class MainController extends Controller
                     }
 
                     if (count($comment->likes) > 0) {
-                        $like_stat = [];
-                        $love_stat = [];
-                        $haha_stat = [];
-                        $sad_stat = [];
-                        $angry_stat = [];
+                        $reacts = DB::table('reacts')->get();
+
+                        $stat = '_stat';
+
+                        foreach ($reacts as $react){
+                            ${$react->name_en.$stat} = [];
+                        }
                         foreach ($comment->likes as $like) {
-                            $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                            $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                                                     where likes.reactId = reacts.id
                                                 AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                                                 likes.model_id = ' . $comment->id . ' AND likes.model_type = "comment"
                                                 '));
 
                             $like->publisher = User::find($like->senderId);
+                            $like->react_name = $reactname[0]->name_en;
 
-                            $stat = '_stat';
-
-                            array_push(${$reactname[0]->name . $stat}, $like);
+                            array_push(${$reactname[0]->name_en . $stat}, $like);
                         }
 
-                        $comment->like_stat = $like_stat;
-                        $comment->love_stat = $love_stat;
-                        $comment->haha_stat = $haha_stat;
-                        $comment->sad_stat = $sad_stat;
-                        $comment->angry_stat = $angry_stat;
+                        $comment->reacts_stat = [];
+
+                        foreach ($reacts as $react){
+                            array_push($comment->reacts_stat,${$react->name_en.$stat});
+                        }
                     }
 
                     if (count($comment->replies) > 0) {
@@ -1017,30 +1018,31 @@ class MainController extends Controller
                                 }
 
                                 if (count($reply->likes) > 0) {
-                                    $like_stat = [];
-                                    $love_stat = [];
-                                    $haha_stat = [];
-                                    $sad_stat = [];
-                                    $angry_stat = [];
+                                    $reacts = DB::table('reacts')->get();
+
+                                    $stat = '_stat';
+
+                                    foreach ($reacts as $react){
+                                        ${$react->name_en.$stat} = [];
+                                    }
                                     foreach ($reply->likes as $like) {
-                                        $reactname = DB::select(DB::raw('select reacts.name from likes,reacts
+                                        $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
                                                     where likes.reactId = reacts.id
                                                 AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
                                                 likes.model_id = ' . $reply->id . ' AND likes.model_type = "comment"
                                                 '));
 
                                         $like->publisher = User::find($like->senderId);
+                                        $like->react_name = $reactname[0]->name_en;
 
-                                        $stat = '_stat';
-
-                                        array_push(${$reactname[0]->name . $stat}, $like);
+                                        array_push(${$reactname[0]->name_en . $stat}, $like);
                                     }
 
-                                    $reply->like_stat = $like_stat;
-                                    $reply->love_stat = $love_stat;
-                                    $reply->haha_stat = $haha_stat;
-                                    $reply->sad_stat = $sad_stat;
-                                    $reply->angry_stat = $angry_stat;
+                                    $reply->reacts_stat = [];
+
+                                    foreach ($reacts as $react){
+                                        array_push($reply->reacts_stat,${$react->name_en.$stat});
+                                    }
                                 }
                             }
                         }
@@ -1122,33 +1124,35 @@ class MainController extends Controller
                         ->where('group_id',$group->id)->first();
 
                     if($joined_group){
-                        if ($joined_group->state == 0){
-                            $group->joined = 'request rejected';
-                            $group->flag = 0;
-                        }
-                        elseif ($joined_group->state == 1){
-                            $group->joined = 'exit group';
-                            $group->flag = 1;
-
+//                        if ($joined_group->state == 0){
+//                            $group->joined = 'request rejected';
+//                            $group->flag = 0;
+//                        }
+                        if ($joined_group->state == 1){
                             if($joined_group->isAdmin == 1){
-                                $group->joined = 'delete group';
+                                $group->joined = trans('groups.delet_group');
+                                $group->state = 'delete group';
                             }
                             else{
-                                $group->joined = 'exit group';
+                                $group->joined = trans('groups.leave_group');
+                                $group->state = 'leave group';
                                 $group->flag = 1;
                             }
                         }
                         elseif($joined_group->state == 2){
-                            $group->joined = 'cancel request';
+                            $group->joined = trans('groups.left_request');
+                            $group->state = 'cancel request';
                             $group->flag = 1;
                         }
                         else{
-                            $group->joined = 'accept invitation';
+                            $group->joined = trans('groups.confirm_invite');
+                            $group->state = 'accept invitation';
                             $group->flag = 0;
                         }
                     }
                     else{
-                        $group->joined = 'join';
+                        $group->joined = trans('groups.join');
+                        $group->state = 'join';
                         $group->flag = 0;
                     }
 
@@ -1176,15 +1180,18 @@ class MainController extends Controller
 
                         if ($liked_page != null){
                             if($liked_page->isAdmin == 1){
-                                $page->liked = 'delete page';
+                                $page->liked = trans('pages.delet_page');
+                                $page->state = 'delete page';
                             }
                             else{
-                                $page->liked = 'unlike';
+                                $page->liked = trans('pages.dislike');
+                                $page->state = 'unlike';
                                 $page->flag = 1;
                             }
                         }
                         else{
-                            $page->liked = 'like';
+                            $page->liked = trans('pages.like');
+                            $page->state = 'like';
                             $page->flag = 0;
                         }
 
@@ -1199,7 +1206,7 @@ class MainController extends Controller
             }
             else{
                 $users = DB::select(DB::raw('
-                                select * from users where users.name LIKE "%' . $search_param . '%"'));
+                                select * from users where users.name LIKE "%' . $search_param . '%" AND users.id != '.auth()->user()->id));
 
                 foreach ($users as $user){
                     $isfriend = DB::table('friendships')->where(function ($q) use ($user) {
@@ -1214,42 +1221,45 @@ class MainController extends Controller
                         $auth_user_status = $isfriend->receiverId == auth()->user()->id ? 'receiver' : 'sender';
                         if ($auth_user_status == 'sender') {
                             if ($isfriend->stateId == 2) {
-                                $user->friendship = 'unfriend';
+                                $user->friendship = trans('pages.un_friend');
+                                $user->state = 'unfriend';
                                 $user->request_type = 'removeFriendRequest';
                                 $user->sender = auth()->user()->id;
                                 $user->receiver = $user->id;
                             } else {
-                                $user->friendship = 'remove friend request';
+                                $user->friendship = trans('pages.un_friend_request');
+                                $user->state = 'remove friend request';
                                 $user->request_type = 'removeFriendRequest';
                                 $user->sender = auth()->user()->id;
                                 $user->receiver = $user->id;
                             }
                         } else {
                             if ($isfriend->stateId == 2) {
-
-                                $user->friendship = 'unfriend';
+                                $user->friendship = trans('pages.un_friend');
+                                $user->state = 'unfriend';
                                 $user->request_type = 'removeFriendRequest';
                                 $user->sender = $user->id;
                                 $user->receiver = auth()->user()->id;
                             } else {
-                                $user->friendship = 'receive friend request';
+                                $user->state = 'receive friend request';
                                 $user->sender = $user->id;
                                 $user->receiver = auth()->user()->id;
                             }
                         }
                     } else {
-                        $user->friendship = 'add friend';
+                        $user->friendship = trans('pages.add_friend');
+                        $user->state = 'add friend';
                         $user->request_type = 'addFriendRequest';
                         $user->sender = auth()->user()->id;
                         $user->receiver = $user->id;
                     }
 
                     if($isblocked == false) {
-                        $user->block = 'block';
+                        $user->block = trans('home.block');
                         $user->block_type = 'addBlockRequest';
                     }
                     else{
-                        $user->block = 'remove block';
+                        $user->block = trans('home.remove_block');
                         $user->block_type = 'removeBlockRequest';
                     }
                 }

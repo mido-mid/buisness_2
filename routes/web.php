@@ -103,6 +103,36 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('main-page/{id}/{postId}','User\PagesController@singlePost')->name('single-post-page');
 
 
+
+
+        //redeny profile
+        Route::get('profile/{user_id}', 'User\ProfileController@index')->name('profile');
+        Route::post('add/friend','User\ProfileController@addFriend')->name('user.add.friend');
+        Route::post('profile/add/friend', 'User\ProfileController@addFriendRedeny')->name('redeny.user.add.friend');
+        Route::post('profile/follow/friend', 'User\ProfileController@followFriendRedeny')->name('redeny.user.follow.friend');
+        Route::post('profile/unfollow/friend', 'User\ProfileController@unfollowFriendRedeny')->name('redeny.user.unfollow.friend');
+
+
+        Route::post('profile/refuse/friend', 'User\ProfileController@RefuseFriendRedeny')->name('redeny.user.refuse.friend');
+        Route::post('profile/accept/friend', 'User\ProfileController@AcceptFriendRedeny')->name('redeny.user.accept.friend');
+
+            Route::post('edit/profile', 'ProfileController@editProfile')->name('redeny.user.edit.profile');
+            Route::post('add/friend', 'ProfileController@addFriendProfile')->name('redeny.user.add.friend.profile');
+            Route::post('refuse/friend', 'ProfileController@RefuseFriendProfile')->name('redeny.user.refuse.friend.profile');
+            Route::post('accept/friend', 'ProfileController@AcceptFriendProfile')->name('redeny.user.accept.friend.profile');
+            Route::post('follow/friend', 'ProfileController@followFriendProfile')->name('redeny.user.follow.friend.profile');
+            Route::post('unfollow/friend', 'ProfileController@unfollowFriendProfile')->name('redeny.user.unfollow.friend.profile');
+            Route::post('add/inspiration', 'ProfileController@addInspirationProfile')->name('redeny.user.add.inspiration.profile');
+            Route::post('remove/inspiration', 'ProfileController@removeInspirationProfile')->name('redeny.user.remove.inspiration.profile');
+            Route::post('add/music', 'ProfileController@addMusic')->name('redeny.user.add.music');
+            Route::post('list/music', 'ProfileController@MusicList')->name('redeny.user.list.music');
+            Route::post('list/sport', 'ProfileController@SportList')->name('redeny.user.list.sport');
+            Route::post('list/hoppy', 'ProfileController@HobbyList')->name('redeny.user.list.hoppy');
+            Route::post('list/inspiration', 'ProfileController@inspirationList')->name('redeny.user.list.inspiration');
+
+            Route::get('profile/view/{user_id}/{component}', 'ProfileController@viewComponent')->name('redeny.view.component');
+
+
     });
 
 

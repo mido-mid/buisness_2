@@ -20,16 +20,16 @@
                                 {{$group->name}}
                             </b></a>
 
-                        <span style="display: block" id="members-{{$group->id}}">{{$group->members}} members</span>
+                        <span style="display: block" id="members-{{$group->id}}">{{$group->members}} {{__('groups.members')}}</span>
                     </div>
                     <div class="post-option ml-auto pr-3">
-                        @if($group->joined == 'delete group')
+                        @if($group->state == 'delete group')
                             <a id="delete-group-btn-{{$group->id}}" onclick="deleteGroupSubmit({{$group->id}})" class="btn btn-warning text-white">{{$group->joined}}</a>
                             <form id="delete-group-form-{{$group->id}}" action="{{ route('groups.destroy',$group->id) }}" method="POST" style="display: none;">
                                 @csrf
                             </form>
                         @else
-                            <a id="join-btn-{{$group->id}}" onclick="joinGroupSubmit({{$group->id}})" class="btn btn-warning text-white">Join</a>
+                            <a id="join-btn-{{$group->id}}" onclick="joinGroupSubmit({{$group->id}})" class="btn btn-warning text-white">{{$group->joined}}</a>
                             <form id="join-group-form-{{$group->id}}" action="{{ route('join_group') }}" method="POST" style="display: none;">
                                 @csrf
                                 <input type="hidden" name="group_id" value="{{$group->id}}">

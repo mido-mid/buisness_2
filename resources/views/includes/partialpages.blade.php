@@ -20,7 +20,7 @@
                                 {{$page->name}}
                             </b></a>
 
-                        <span style="display: block" id="page-members-{{$page->id}}">{{$page->members}} members</span>
+                        <span style="display: block" id="page-members-{{$page->id}}">{{$page->members}} {{__('home.likes')}}</span>
                     </div>
                     <div class="post-option ml-auto pr-3">
                         @if($page->liked == 'delete page')

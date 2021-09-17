@@ -28,9 +28,9 @@
                             <input type="hidden" id="block-sender-{{$user->id}}" name="senderId" value="{{auth()->user()->id}}">
                             <input type="hidden" name="requestType" id="block-request-type-{{$user->id}}" value="{{$user->block_type}}">
                         </form>
-                        @if($user->friendship == 'receive friend request')
+                        @if($user->state == 'receive friend request')
                             <div class="owner-name pl-3" id="friend-request-div-{{$user->id}}">
-                                <a id="accept-friend-request-{{$user->id}}" onclick="friendRequestSubmit({{$user->id}},'accept')" class="btn btn-warning text-white">accept friend request</a>
+                                <a id="accept-friend-request-{{$user->id}}" onclick="friendRequestSubmit({{$user->id}},'accept')" class="btn btn-warning text-white">{{__('pages.confirm_friend')}}</a>
                                 <form id="accept-friend-request-form-{{$user->id}}" action="{{ route('addfriend') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                     @csrf
                                     <input type="hidden" name="receiverId" value="{{$user->receiver}}">
@@ -38,7 +38,7 @@
                                     <input type="hidden" name="requestType" id="friend-request-type-{{$user->id}}" value="acceptFriendRequest">
                                 </form>
 
-                                <a id="remove-friend-request-{{$user->id}}" onclick="friendRequestSubmit({{$user->id}},'remove')" class="btn btn-warning text-white">remove friend request</a>
+                                <a id="remove-friend-request-{{$user->id}}" onclick="friendRequestSubmit({{$user->id}},'remove')" class="btn btn-warning text-white">{{__('pages.un_friend_request')}}</a>
                                 <form id="remove-friend-request-form-{{$user->id}}" action="{{ route('addfriend') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                     @csrf
                                     <input type="hidden" name="receiverId" value="{{$user->receiver}}">

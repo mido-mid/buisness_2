@@ -44,6 +44,9 @@ return [
     "search" => "البحث",
     "edit" => "تعديل",
     "delete" => "حذف",
-    "add" => "إضافة"
+    "add" => "إضافة",
+
+    //service
+    "delete_service" => "لقد تم حذف الخدمة بنجاح",
 
 ];

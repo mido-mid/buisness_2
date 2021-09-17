@@ -34,152 +34,210 @@
                         <div class="reaction-container" id="reaction-container-{{$reply->id}}">
                             <!-- container div for reaction system -->
                             <span class="reaction-btn">
-                                                                                                    <!-- Default like button -->
-                                                                                                    <span class="reaction-btn-emo like-btn-{{$reply->user_react[0]->name}}" id="reaction-btn-emo-{{$reply->id}}"></span>
+                                                                                                        <!-- Default like button -->
+                                                                                                        <span class="reaction-btn-emo like-btn-{{$reply->user_react[0]->name_en}}" id="reaction-btn-emo-{{$reply->id}}"></span>
                                 <!-- Default like button emotion-->
-                                                                                                    <span class="reaction-btn-text reaction-btn-text-{{$reply->user_react[0]->name}} active" onclick="unlikeModelSubmit({{$reply->id}},{{$reply->user_react[0]->id}})" id="reaction-btn-text-{{$reply->id}}">
-                                                                                                        {{$reply->user_react[0]->name}}
-                                                                                                        <form id="unlike-form-{{$reply->id}}-{{$reply->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                                                            @csrf
-                                                                                                            <input type="hidden" name="model_id" value="{{$reply->id}}">
-                                                                                                            <input type="hidden" name="model_type" value="comment">
-                                                                                                            <input type="hidden" name="reactId" value="{{$reply->user_react[0]->id}}">
-                                                                                                           <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="delete">
-                                                                                                        </form>
-                                                                                                    </span>
-                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
-                                                                                                    <ul class="emojies-box">
-                                                                                                        @foreach($reacts as $react)
-                                                                                                            <!-- Reaction buttons container-->
-                                                                                                                <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
-                                                                                                                <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                        <span class="reaction-btn-text reaction-btn-text-{{$reply->user_react[0]->name_en}} active" onclick="unlikeModelSubmit({{$reply->id}},{{$reply->user_react[0]->id}})" id="reaction-btn-text-{{$reply->id}}">
+                                                                                                            @if(App::getLocale() == 'ar')
+                                                                                                                {{$reply->user_react[0]->name_ar}}
+                                                                                                            @else
+                                                                                                                {{$reply->user_react[0]->name_en}}
+                                                                                                            @endif
+                                                                                                            <form id="unlike-form-{{$reply->id}}-{{$reply->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                                                                                                 @csrf
                                                                                                                 <input type="hidden" name="model_id" value="{{$reply->id}}">
                                                                                                                 <input type="hidden" name="model_type" value="comment">
-                                                                                                                <input type="hidden" name="reactId" value="{{$react->id}}">
-                                                                                                                <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="update">
+                                                                                                                <input type="hidden" name="reactId" value="{{$reply->user_react[0]->id}}">
+                                                                                                               <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="delete">
                                                                                                             </form>
-                                                                                                            @endforeach
-                                                                                                    </ul>
-                                                                                                </span>
+                                                                                                        </span>
+                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
+                                                                                                        <ul class="emojies-box">
+                                                                                                            @foreach($reacts as $react)
+                                                                                                                <!-- Reaction buttons container-->
+                                                                                                                    <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
+                                                                                                                    <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                                    @csrf
+                                                                                                                    <input type="hidden" name="model_id" value="{{$reply->id}}">
+                                                                                                                    <input type="hidden" name="model_type" value="comment">
+                                                                                                                    <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                                                                    <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="update">
+                                                                                                                </form>
+                                                                                                                @endforeach
+                                                                                                        </ul>
+                                                                                                    </span>
                             <div class="like-stat">
                                 <!-- Like statistic container-->
                                 <span class="like-emo" id="like-emo-{{$reply->id}}">
-                                                                                                      <!-- like emotions container -->
-                                                                                                        <span class="like-btn-like"></span>
-                                                                                                        @if($reply->user_react[0]->name != "like")
-                                        <span class="like-btn-{{$reply->user_react[0]->name}}"></span>
+                                                                                                          <!-- like emotions container -->
+                                                                                                            <span class="like-btn-like"></span>
+                                                                                                            @if($reply->user_react[0]->name_en != "like")
+                                        <span class="like-btn-{{$reply->user_react[0]->name_en}}"></span>
                                 @endif
                                 <!-- given emotions like, wow, sad (default:Like) -->
-                                                                                                    </span>
-                                <span class="like-details" id="like-details-{{$reply->id}}" data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">You @if($reply->likes->count-1 != 0) and {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) k @endif others @endif</span>
+                                                                                                        </span>
+                                <span class="like-details" id="like-details-{{$reply->id}}" data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">{{__('home.you')}} @if($reply->likes->count-1 != 0) {{__('home.and')}} {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) {{__('home.thousnad')}} @endif {{__('home.others')}} @endif</span>
                             </div>
+                            @if($reply->likes->count > 0)
+                                <div class="likes-modal">
+                                    <div class="modal fade" id="likes-modal-{{$reply->id}}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog" style="margin-top: 10vh;">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex justify-content-between">
+                                                    <span></span>
+                                                    <h5 class="modal-title" id="exampleModalLabel">
+                                                        Reactions
+                                                    </h5>
+                                                    <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="services-controller m-3 text-left">
+                                                        <button onclick="filterPostLikes({{$reply->id}},'all-{{$reply->id}}')" class="btn btn-light active-{{$reply->id}} filter-all-{{$reply->id}} ez-active" id="{{$reply->id}}" data-filter="all-{{$reply->id}}">
+                                                            {{__('home.all')}}
+                                                        </button>
+                                                        @foreach($reply->reacts_stat as $react_stat)
+                                                            @if(count($react_stat) > 0)
+                                                                <div class="btn btn-light active-{{$reply->id}} filter-{{$react_stat[0]->react_name}}-{{$reply->id}}" onclick='filterPostLikes({{$comment->id}},"{{$react_stat[0]->react_name}}-{{$reply->id}}")' id="{{$reply->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$reply->id}}">
+                                                                    <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
+                                                                    <span>{{count($react_stat)}}</span>
+                                                                </div>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="likes-container mt-3">
+                                                        @foreach($reply->reacts_stat as $react_stat)
+                                                            @if(count($react_stat) > 0)
+                                                                <div class="filter-{{$post->id}} {{$react_stat[0]->react_name}}-{{$reply->id}}">
+                                                                    @foreach($react_stat as $react_emoji)
+                                                                        <div class="people-info d-flex align-items-center">
+                                                                            @if($react_emoji->publisher->personal_image != null)
+                                                                                <img class="profile-figure rounded-circle"
+                                                                                     src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
+                                                                            @else
+                                                                                <img class="profile-figure rounded-circle"
+                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                            @endif
+                                                                            <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
                         </div>
                     @else
                         <div class="reaction-container" id="reaction-container-{{$reply->id}}">
                             <!-- container div for reaction system -->
                             <span class="reaction-btn">
-                                                                                                <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$reply->id}}" style="display: none"></span>
+                                                                                                    <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$reply->id}}" style="display: none"></span>
                                 <!-- Default like button emotion-->
-                                                                                                <span class="reaction-btn-text" id="reaction-btn-text-{{$reply->id}}">
-                                                                                                    <div><i class="far fa-thumbs-up"></i>
-                                                                                                        @if($reply->likes->count > 0)
-                                                                                                            <span data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">
-                                                                                                                {{$reply->likes->count}}
-                                                                                                            </span>
-                                                                                                        @endif
-                                                                                                    </div>
-                                                                                                </span>
+                                                                                                    <span class="reaction-btn-text" id="reaction-btn-text-{{$reply->id}}">
+                                                                                                        <div><i class="far fa-thumbs-up"></i>
+                                                                                                            @if($reply->likes->count > 0)
+                                                                                                                <span data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">
+                                                                                                                    {{$reply->likes->count}}
+                                                                                                                </span>
+                                                                                                            @endif
+                                                                                                        </div>
+                                                                                                    </span>
                                 <!-- Default like button text,(Like, wow, sad..) default:Like  -->
-                                                                                                <ul class="emojies-box">
-                                                                                                    @foreach($reacts as $react)
-                                                                                                        <!-- Reaction buttons container-->
-                                                                                                            <li class="emoji emo-{{$react->name}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name}}"></li>
-                                                                                                            <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                                                            @csrf
-                                                                                                            <input type="hidden" name="model_id" value="{{$reply->id}}">
-                                                                                                            <input type="hidden" name="model_type" value="comment">
-                                                                                                            <input type="hidden" name="reactId" value="{{$react->id}}">
-                                                                                                        </form>
-                                                                                                        @endforeach
-                                                                                                </ul>
-                                                                                            </span>
+                                                                                                    <ul class="emojies-box">
+                                                                                                        @foreach($reacts as $react)
+                                                                                                            <!-- Reaction buttons container-->
+                                                                                                                <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
+                                                                                                                <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                                @csrf
+                                                                                                                <input type="hidden" name="model_id" value="{{$reply->id}}">
+                                                                                                                <input type="hidden" name="model_type" value="comment">
+                                                                                                                <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                                                            </form>
+                                                                                                            @endforeach
+                                                                                                    </ul>
+                                                                                                </span>
                             <div class="like-stat" id="like-stat-{{$reply->id}}" style="display: none">
                                 <!-- Like statistic container-->
                                 <span class="like-emo" id="like-emo-{{$reply->id}}">
-                                                                                                      <!-- like emotions container -->
-                                                                                                      <span class="like-btn-like"></span>
+                                                                                                          <!-- like emotions container -->
+                                                                                                          <span class="like-btn-like"></span>
                                     <!-- given emotions like, wow, sad (default:Like) -->
-                                                                                                    </span>
-                                <span class="like-details" id="like-details-{{$reply->id}}" data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">@if($reply->likes->count-1 > 0) and {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) k @endif others @endif</span>
+                                                                                                        </span>
+                                <span class="like-details" id="like-details-{{$reply->id}}" data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">@if($reply->likes->count-1 > 0) {{__('home.and')}} {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) {{__('home.thousand')}} @endif {{__('home.others')}} @endif</span>
                             </div>
-                        </div>
-                    @endif
-                    @if($reply->likes->count > 0)
-                        <div class="likes-modal">
-                            <div class="modal fade" id="likes-modal-{{$reply->id}}" tabindex="-1" aria-hidden="true">
-                                <div class="modal-dialog" style="margin-top: 10vh;">
-                                    <div class="modal-content">
-                                        <div class="modal-header d-flex justify-content-between">
-                                            <span></span>
-                                            <h5 class="modal-title" id="exampleModalLabel">
-                                                Reactions
-                                            </h5>
-                                            <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                                <span aria-hidden="true">&times;</span>
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="services-controller m-3 text-left">
-                                                <button onclick="filterPostLikes({{$reply->id}},'all-{{$reply->id}}')" class="btn btn-light active-{{$reply->id}} filter-all-{{$reply->id}} ez-active" id="{{$reply->id}}" data-filter="all-{{$reply->id}}">
-                                                    All
-                                                </button>
-                                                @foreach($reply->reacts_stat as $react_stat)
-                                                    @if(count($react_stat) > 0)
-                                                        <div class="btn btn-light active-{{$reply->id}} filter-{{$react_stat[0]->react_name}}-{{$reply->id}}" onclick='filterPostLikes({{$comment->id}},"{{$react_stat[0]->react_name}}-{{$reply->id}}")' id="{{$reply->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$reply->id}}">
-                                                            <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
-                                                            <span>{{count($react_stat)}}</span>
-                                                        </div>
-                                                    @endif
-                                                @endforeach
-                                            </div>
-                                            <div class="likes-container mt-3">
-                                                @foreach($reply->reacts_stat as $react_stat)
-                                                    @if(count($react_stat) > 0)
-                                                        <div class="filter-{{$post->id}} {{$react_stat[0]->react_name}}-{{$reply->id}}">
-                                                            @foreach($react_stat as $react_emoji)
-                                                                <div class="people-info d-flex align-items-center">
-                                                                    @if($react_emoji->publisher->personal_image != null)
-                                                                        <img class="profile-figure rounded-circle"
-                                                                             src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
-                                                                    @else
-                                                                        <img class="profile-figure rounded-circle"
-                                                                             src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
-                                                                    @endif
-                                                                    <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                            @if($reply->likes->count > 0)
+                                <div class="likes-modal">
+                                    <div class="modal fade" id="likes-modal-{{$reply->id}}" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog" style="margin-top: 10vh;">
+                                            <div class="modal-content">
+                                                <div class="modal-header d-flex justify-content-between">
+                                                    <span></span>
+                                                    <h5 class="modal-title" id="exampleModalLabel">
+                                                        Reactions
+                                                    </h5>
+                                                    <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="services-controller m-3 text-left">
+                                                        <button onclick="filterPostLikes({{$reply->id}},'all-{{$reply->id}}')" class="btn btn-light active-{{$reply->id}} filter-all-{{$reply->id}} ez-active" id="{{$reply->id}}" data-filter="all-{{$reply->id}}">
+                                                            {{__('home.all')}}
+                                                        </button>
+                                                        @foreach($reply->reacts_stat as $react_stat)
+                                                            @if(count($react_stat) > 0)
+                                                                <div class="btn btn-light active-{{$reply->id}} filter-{{$react_stat[0]->react_name}}-{{$reply->id}}" onclick='filterPostLikes({{$comment->id}},"{{$react_stat[0]->react_name}}-{{$reply->id}}")' id="{{$reply->id}}" data-filter="{{$react_stat[0]->react_name}}-{{$reply->id}}">
+                                                                    <img src="{{asset('media')}}/{{$react_stat[0]->react_name}}.png"/>
+                                                                    <span>{{count($react_stat)}}</span>
                                                                 </div>
-                                                            @endforeach
-                                                        </div>
-                                                    @endif
-                                                @endforeach
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="likes-container mt-3">
+                                                        @foreach($reply->reacts_stat as $react_stat)
+                                                            @if(count($react_stat) > 0)
+                                                                <div class="filter-{{$post->id}} {{$react_stat[0]->react_name}}-{{$reply->id}}">
+                                                                    @foreach($react_stat as $react_emoji)
+                                                                        <div class="people-info d-flex align-items-center">
+                                                                            @if($react_emoji->publisher->personal_image != null)
+                                                                                <img class="profile-figure rounded-circle"
+                                                                                     src="{{asset('media')}}/{{$react_emoji->publisher->personal_image}}" />
+                                                                            @else
+                                                                                <img class="profile-figure rounded-circle"
+                                                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80" />
+                                                                            @endif
+                                                                            <p class="mb-0 ml-3"><b>{{$react_emoji->publisher->name}}</b></p>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            @endif
+                                                        @endforeach
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            @endif
                         </div>
                     @endif
-                    <li class="ml-3 text-primary" onclick="makeReply({{$comment->id}},'{{$reply->publisher->user_name}}')">Reply</li>
+                    <li class="ml-3 text-primary" onclick="makeReply({{$comment->id}},'{{$reply->publisher->user_name}}')">{{__('home.reply')}}</li>
                 </ul>
             </div>
         </div>
         <div class="comment-options comment-options-{{$reply->id}}">
             <ul class="options">
                 <li data-toggle="modal" data-target="#report-comment-modal-{{$reply->id}}">
-                    Report this comment</li>
+                    {{__('home.report')}}</li>
                 @if($reply->publisher->id == auth()->user()->id)
-                    <li data-toggle="modal" data-target="#edit-reply-modal-{{$reply->id}}">Edit</li>
-                    <li onclick="confirm('{{ __("Are you sure you want to delete this reply ?") }}') ? deleteCommentSubmit({{$reply->id}},{{$post->id}}) : ''" >Delete</li>
+                    <li data-toggle="modal" data-target="#edit-reply-modal-{{$reply->id}}">{{__('user.edit')}}</li>
+                    <li onclick="confirm('{{ __("Are you sure you want to delete this reply ?") }}') ? deleteCommentSubmit({{$reply->id}},{{$post->id}}) : ''" >{{__('user.delete')}}</li>
                     <form action="{{ route('comments.destroy', $reply->id) }}" id="delete-comment-form-{{$reply->id}}" method="POST">
                     @csrf
                     @method('delete')
@@ -193,7 +251,7 @@
                             <div class="modal-content">
                                 <div class="modal-header d-flex justify-content-between">
                                     <span></span>
-                                    <h5 class="modal-title" id="exampleModalLabel">Edit Reply</h5>
+                                    <h5 class="modal-title" id="exampleModalLabel">{{__('user.edit')}}</h5>
                                     <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
@@ -213,8 +271,8 @@
 
                                     <!-- Post Desc -->
                                         <div class="post-desc d-flex justify-content-center mt-2">
-                                                                                                              <textarea onfocus="mentionAdd('text-edit-{{$reply->id}}','menu-edit-reply-{{$reply->id}}')" id="text-edit-{{$reply->id}}" class="w-75" name="body" cols="200" rows="4"
-                                                                                                                        placeholder="Start Typing..." >@if($reply->mentions != null){{$reply->edit}}@else{{$reply->body}}@endif</textarea>
+                                                                                                                  <textarea onfocus="mentionAdd('text-edit-{{$reply->id}}','menu-edit-reply-{{$reply->id}}')" id="text-edit-{{$reply->id}}" class="w-75" name="body" cols="200" rows="4"
+                                                                                                                            placeholder="{{__('home.text_area')}}" >@if($reply->mentions != null){{$reply->edit}}@else{{$reply->body}}@endif</textarea>
                                             <div id="menu-edit-reply-{{$reply->id}}" class="menu" role="listbox"></div>
                                         </div>
 
@@ -226,7 +284,7 @@
                                         <!-- Add Post Btn -->
                                         <div class="post-add-btn d-flex justify-content-center mt-4">
                                             <button type="button" onclick="editReplySubmit({{$reply->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
-                                                Save
+                                                {{__('user.save')}}
                                             </button>
                                         </div>
                                     </form>
@@ -242,7 +300,7 @@
                             <div class="modal-content">
                                 <div class="modal-header d-flex justify-content-between">
                                     <span></span>
-                                    <h5 class="modal-title" id="exampleModalLabel">Report Comment</h5>
+                                    <h5 class="modal-title" id="exampleModalLabel">{{__('home.report')}}</h5>
                                     <button type="button" class="close ml-0" data-dismiss="modal" aria-label="Close">
                                         <span aria-hidden="true">&times;</span>
                                     </button>
@@ -261,8 +319,8 @@
 
                                     <!-- Post Desc -->
                                         <div class="post-desc d-flex justify-content-center mt-2">
-                                                                                                              <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
-                                                                                                                        placeholder="Start Typing..." ></textarea>
+                                                                                                                  <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                                                                                            placeholder="{{__('home.text_area')}}" ></textarea>
                                         </div>
                                         <!-- Add Post Btn -->
                                         <input type="hidden" name="model_id" value="{{$reply->id}}">
@@ -270,7 +328,7 @@
 
                                         <div class="post-add-btn d-flex justify-content-center mt-4">
                                             <button type="button" onclick="reportCommentSubmit({{$reply->id}})" class="btn btn-warning btn-block w-75" data-dismiss="modal">
-                                                Report
+                                                {{__('home.report')}}
                                             </button>
                                         </div>
                                     </form>

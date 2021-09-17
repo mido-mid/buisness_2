@@ -307,7 +307,7 @@ class StoryController extends Controller
             }
             $story->delete();
 
-            return $this->returnSuccessMessage('story successfully deleted');
+            return $this->returnSuccessMessage(trans('home.delete_story'));
         }
         else
         {
