@@ -102,6 +102,11 @@
 <!-- Datatable init js -->
 <script src="{{ asset('assets') }}/js/pages/datatables.init.js"></script>
 <script src="{{ asset('assets') }}/js/app.js"></script>
+<script>
+    $(document).ready(function() {
+        $('.tox-edit-area').attr('disabled','disabled');
+    });
+</script>
 
 </body>
 </html>

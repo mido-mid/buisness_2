@@ -372,7 +372,7 @@ class MainController extends Controller
                 foreach ($mentions as $mention) {
                     $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                     $post->body = str_replace('@' . $mention,
-                        '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                        '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
                         $post->body);
                 }
             }
@@ -459,8 +459,9 @@ class MainController extends Controller
                     $shared_post->edit = $shared_post->body;
                     $mentions = explode(',', $shared_post->mentions);
                     foreach ($mentions as $mention) {
+                        $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                         $shared_post->body = str_replace('@' . $mention,
-                            '<span style="color: #ffc107">' . $mention . '</span>',
+                            '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
                             $shared_post->body);
                     }
                 }
@@ -470,6 +471,10 @@ class MainController extends Controller
                 if ($shared_post->page_id != null) {
                     $shared_post->source = "page";
                     $page = DB::table('pages')->where('id', $shared_post->page_id)->first();
+                    $shared_post->isPageAdmin = DB::table('page_members')->where('page_id', $shared_post->page_id)
+                        ->where('user_id',auth()->user()->id)
+                        ->where('isAdmin',1)
+                        ->first();
                     $shared_post->page = $page;
                 } elseif ($shared_post->group_id != null) {
                     $shared_post->source = "group";
@@ -537,7 +542,7 @@ class MainController extends Controller
                             foreach ($mentions as $mention) {
                                 $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                                 $comment->body = str_replace('@' . $mention,
-                                    '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                                    '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
                                     $comment->body);
                             }
                         }
@@ -595,7 +600,7 @@ class MainController extends Controller
                                         foreach ($mentions as $mention) {
                                             $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                                             $reply->body = str_replace('@' . $mention,
-                                                '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                                                '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
                                                 $reply->body);
                                         }
                                     }

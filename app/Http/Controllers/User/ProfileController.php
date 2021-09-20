@@ -15,6 +15,7 @@ use App\Models\UserInspiration;
 use App\Models\UserMusic;
 use App\Models\UserSport;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -27,6 +28,8 @@ class ProfileController extends Controller
 
     public function index($user_id)
     {
+
+        $user = \auth()->user();
         $MyId = Auth::user()->id;
         if ($MyId == $user_id) {
             $this->myProfile = 1;
@@ -56,8 +59,53 @@ class ProfileController extends Controller
         $sports = $this->sports($user_id);
         $hoppies = $this->hoppies($user_id);
 
+        $posts = DB::table('posts')->where('publisherId', $user_id)->where('postTypeId', 2)->orderBy('created_at','desc')->get()->toArray();
+
+        foreach ($posts as $post){
+            $post = $this->getPost(auth()->user(),$post);
+        }
+
+        $privacy = DB::table('privacy_type')->get();
+
+        $categories = DB::table('categories')->where('type', 'post')->get();
+
+        $times = DB::table('sponsored_time')->get();
+
+        $reaches = DB::table('sponsored_reach')->get();
+
+        $ages = DB::table('sponsored_ages')->get();
+
+        $reacts = DB::table('reacts')->get();
+
+        $cities = DB::table('cities')->get();
+
+        $countries = DB::table('countries')->get();
+
+        $friends_info = [];
+
+        // friends posts he follows and are public and in groups you are in and in pages you liked
+        $friends = DB::table('friendships')->where(function ($q) use ($user){
+            $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+        })->where('stateId',2)->get();
+
+        foreach ($friends as $friend){
+            $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
+
+            $friend_info = DB::table('users')->select('id','name','cover_image','personal_image')->where('id',$friend_id)->first();
+
+            array_push($friends_info,$friend_info);
+
+        }
+        foreach ($friends_info as $info){
+            $info->name = explode(' ',$info->name)[0];
+        }
+
         return view('User.profile.index_en',
             compact(
+                'posts',
+                'privacy', 'categories', 'times',
+                'ages', 'reaches', 'reacts','cities',
+                'countries','friends_info',
                 'unRelatedUsersIds',
                 'myProfile',
                 'profileId',
@@ -903,6 +951,312 @@ class ProfileController extends Controller
             'age',
             'official'
         ]);
+    }
+
+    private function getPost($user,$post){
+
+        $post->sponsored = false;
+
+        $all_sponsored_posts = DB::select(DB::raw('select categories.id as sponsor_category,sponsored.gender,sponsored.created_at as sponsored_at,sponsored_time.duration,posts.*,sponsored_reach.reach,countries.id as country_id,cities.id as city_id,sponsored_ages.from,sponsored_ages.to from
+                                        posts,sponsored,sponsored_reach,sponsored_ages,countries,cities,sponsored_time,categories
+                                        where sponsored.postId = posts.id and sponsored.reachId = sponsored_reach.id
+                                        and sponsored.age_id = sponsored_ages.id and sponsored.country_id = countries.id
+                                        and sponsored.city_id = cities.id and sponsored.timeId = sponsored_time.id and sponsored.category_id = categories.id ORDER BY posts.created_at DESC'));
+
+        foreach ($all_sponsored_posts as $sponsored) {
+            if ($sponsored->id == $post->id) {
+                $post->sponsored = true;
+            }
+        }
+
+
+
+
+        if ($post->mentions != null) {
+            $post->edit = $post->body;
+            $mentions = explode(',', $post->mentions);
+            foreach ($mentions as $mention) {
+                $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                $post->body = str_replace('@' . $mention,
+                    '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
+                    $post->body);
+            }
+        }
+        $post->publisher = User::find($post->publisherId);
+        $comments = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->whereNull('comment_id')
+            ->limit(5)
+            ->offset(0)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $total_comments_count = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->count();
+        $likes = DB::table('likes')->where('model_id', $post->id)->where('model_type', 'post')->get();
+        $shares = DB::table('posts')->where('post_id', $post->id)->get()->toArray();
+        $post->comments_count = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->whereNull('comment_id')
+            ->count();
+
+        $post->comments = $comments;
+        $post->likes = $likes;
+        $post->type = $post->post_id != null ? 'share' : 'post';
+
+        if (count($likes) > 0) {
+
+            $reacts = DB::table('reacts')->get();
+
+            $stat = '_stat';
+
+            foreach ($reacts as $react){
+                ${$react->name_en.$stat} = [];
+            }
+
+            foreach ($likes as $like) {
+                $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
+                        where likes.reactId = reacts.id
+                    AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                    likes.model_id = ' . $post->id . ' AND likes.model_type = "post"
+                    '));
+
+                $like->publisher = User::find($like->senderId);
+                $like->react_name = $reactname[0]->name_en;
+
+                array_push(${$reactname[0]->name_en . $stat}, $like);
+            }
+
+            $post->reacts_stat = [];
+
+            foreach ($reacts as $react){
+                array_push($post->reacts_stat,${$react->name_en.$stat});
+            }
+        }
+
+        if ($post->page_id != null) {
+            $post->source = "page";
+            $page = DB::table('pages')->where('id', $post->page_id)->first();
+            $post->isPageAdmin = DB::table('page_members')->where('page_id', $post->page_id)
+                ->where('user_id',auth()->user()->id)
+                ->where('isAdmin',1)
+                ->first();
+            $post->page = $page;
+        } elseif ($post->group_id != null) {
+            $post->source = "group";
+            $group = DB::table('groups')->where('id', $post->group_id)->first();
+            $post->group = $group;
+        } else {
+            $post->source = "normal post";
+        }
+
+        if ($post->tags != null) {
+            $tags_ids = explode(',', $post->tags);
+            $post->tags_ids = $tags_ids;
+            $tags_info = [];
+            $post->tagged = false;
+            foreach ($tags_ids as $id) {
+                if ($id == $user->id) {
+                    $post->tagged = true;
+                }
+                $tagged_friend = User::find($id);
+                array_push($tags_info, $tagged_friend);
+            }
+            $post->tags_info = $tags_info;
+        }
+
+        if ($post->type == 'share') {
+            $shared_post = DB::table('posts')->where('id', $post->post_id)->first();
+            if ($shared_post->mentions != null) {
+                $shared_post->edit = $shared_post->body;
+                $mentions = explode(',', $shared_post->mentions);
+                foreach ($mentions as $mention) {
+                    $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                    $shared_post->body = str_replace('@' . $mention,
+                        '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
+                        $shared_post->body);
+                }
+            }
+            $post->media = DB::table('media')->where('model_id', $post->id)->where('model_type', 'post')->get();
+            $shared_post->publisher = User::find($shared_post->publisherId);
+            $shared_post->media = DB::table('media')->where('model_id', $shared_post->id)->where('model_type', 'post')->get();
+            if ($shared_post->page_id != null) {
+                $shared_post->source = "page";
+                $page = DB::table('pages')->where('id', $shared_post->page_id)->first();
+                $shared_post->isPageAdmin = DB::table('page_members')->where('page_id', $shared_post->page_id)
+                    ->where('user_id',auth()->user()->id)
+                    ->where('isAdmin',1)
+                    ->first();
+                $shared_post->page = $page;
+            } elseif ($shared_post->group_id != null) {
+                $shared_post->source = "group";
+                $group = DB::table('groups')->where('id', $shared_post->group_id)->first();
+                $shared_post->group = $group;
+            } else {
+                $shared_post->source = "normal post";
+            }
+
+            if ($shared_post->tags != null) {
+                $tags_ids = explode(',', $shared_post->tags);
+                $shared_post->tags_ids = $tags_ids;
+                $tags_info = [];
+                $shared_post->tagged = false;
+                foreach ($tags_ids as $id) {
+                    if ($id == $user->id) {
+                        $shared_post->tagged = true;
+                    }
+                    $tagged_friend = User::find($id);
+                    array_push($tags_info, $tagged_friend);
+                }
+                $shared_post->tags_info = $tags_info;
+            }
+
+            $shared_post->sponsored = false;
+
+            $post->shared_post = $shared_post;
+        } else {
+            $post->media = DB::table('media')->where('model_id', $post->id)->where('model_type', 'post')->get();
+        }
+
+        $post->comments->count = $total_comments_count;
+        $post->likes->count = count($likes);
+        $post->shares = count($shares);
+        $post->share_details = [];
+
+        if ($post->shares > 0 && $post->type == "post") {
+            foreach ($shares as $share) {
+                $share->publisher = User::find($share->publisherId);
+                array_push($post->share_details, $share);
+            }
+        }
+
+        $post->liked = DB::table('likes')->where('model_id', $post->id)->where('model_type', 'post')->where('senderId', $user->id)->first();
+
+        if ($post->liked) {
+            $post->user_react = DB::table('reacts')->where('id', $post->liked->reactId)->get();
+        }
+
+        $post->saved = DB::table('saved_posts')->where('post_id', $post->id)->where('user_id', $user->id)->exists();
+
+        if ($post->comments->count > 0) {
+            foreach ($post->comments as $comment) {
+
+                $comment->reported = DB::table('reports')->where('user_id', $user->id)
+                    ->where('model_id', $comment->id)->where('model_type', 'comment')->exists();
+
+                $comment->type = $comment->comment_id != null ? 'reply' : 'comment';
+
+                if ($comment->reported == false) {
+
+                    if ($comment->mentions != null) {
+                        $comment->edit = $comment->body;
+                        $mentions = explode(',', $comment->mentions);
+                        foreach ($mentions as $mention) {
+                            $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                            $comment->body = str_replace('@' . $mention,
+                                '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
+                                $comment->body);
+                        }
+                    }
+                    $comment->publisher = User::find($comment->user_id);
+                    $comment->media = DB::table('media')->where('model_id', $comment->id)->where('model_type', 'comment')->first();
+                    $comment->replies = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->where('comment_id', $comment->id)->get();
+                    $comment->likes = DB::table('likes')->where('model_id', $comment->id)->where('model_type', 'comment')->get();
+                    $comment->replies->count = count($comment->replies);
+                    $comment->likes->count = count($comment->likes);
+                    $comment->liked = DB::table('likes')->where('model_id', $comment->id)->where('model_type', 'comment')->where('senderId', $user->id)->first();
+
+                    if ($comment->liked) {
+                        $comment->user_react = DB::table('reacts')->where('id', $comment->liked->reactId)->get();
+                    }
+
+                    if (count($comment->likes) > 0) {
+                        $reacts = DB::table('reacts')->get();
+
+                        $stat = '_stat';
+
+                        foreach ($reacts as $react){
+                            ${$react->name_en.$stat} = [];
+                        }
+                        foreach ($comment->likes as $like) {
+                            $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
+                                                    where likes.reactId = reacts.id
+                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                                                likes.model_id = ' . $comment->id . ' AND likes.model_type = "comment"
+                                                '));
+
+                            $like->publisher = User::find($like->senderId);
+                            $like->react_name = $reactname[0]->name_en;
+
+                            array_push(${$reactname[0]->name_en . $stat}, $like);
+                        }
+
+                        $comment->reacts_stat = [];
+
+                        foreach ($reacts as $react){
+                            array_push($comment->reacts_stat,${$react->name_en.$stat});
+                        }
+                    }
+
+                    if (count($comment->replies) > 0) {
+                        foreach ($comment->replies as $reply) {
+
+                            $reply->reported = DB::table('reports')->where('user_id', $user->id)
+                                ->where('model_id', $reply->id)->where('model_type', 'comment')->exists();
+
+                            if ($reply->reported == false) {
+
+                                if ($reply->mentions != null) {
+                                    $reply->edit = $reply->body;
+                                    $mentions = explode(',', $reply->mentions);
+                                    foreach ($mentions as $mention) {
+                                        $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                                        $reply->body = str_replace('@' . $mention,
+                                            '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
+                                            $reply->body);
+                                    }
+                                }
+                                $reply->publisher = User::find($reply->user_id);
+                                $reply->media = DB::table('media')->where('model_id', $reply->id)->where('model_type', 'comment')->first();
+                                $reply->likes = DB::table('likes')->where('model_id', $reply->id)->where('model_type', 'comment')->get();
+                                $reply->likes->count = count($reply->likes);
+                                $reply->liked = DB::table('likes')->where('model_id', $reply->id)->where('model_type', 'comment')->where('senderId', $user->id)->first();
+
+                                if ($reply->liked) {
+                                    $reply->user_react = DB::table('reacts')->where('id', $reply->liked->reactId)->get();
+                                }
+
+                                if (count($reply->likes) > 0) {
+                                    $reacts = DB::table('reacts')->get();
+
+                                    $stat = '_stat';
+
+                                    foreach ($reacts as $react){
+                                        ${$react->name_en.$stat} = [];
+                                    }
+                                    foreach ($reply->likes as $like) {
+                                        $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
+                                                    where likes.reactId = reacts.id
+                                                AND likes.reactId = ' . $like->reactId . ' AND likes.senderId = ' . $like->senderId . ' AND
+                                                likes.model_id = ' . $reply->id . ' AND likes.model_type = "comment"
+                                                '));
+
+                                        $like->publisher = User::find($like->senderId);
+                                        $like->react_name = $reactname[0]->name_en;
+
+                                        array_push(${$reactname[0]->name_en . $stat}, $like);
+                                    }
+
+                                    $reply->reacts_stat = [];
+
+                                    foreach ($reacts as $react){
+                                        array_push($reply->reacts_stat,${$react->name_en.$stat});
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+
+        return $post;
     }
 
 }

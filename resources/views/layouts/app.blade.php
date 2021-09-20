@@ -77,7 +77,7 @@
             </div>
             <ul class="w-75 navbar-nav me-auto mb-2 mb-lg-0 p-3">
                 <li>
-                    <a href="profile.html"><img class="profile-figure"
+                    <a href="{{route('user.view.profile',['user_id'=>auth()->user()->id])}}"><img class="profile-figure"
                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
                                                 alt="My Profile Pic" />
                         <span>{{ \Str::limit(auth()->user()->name, 10) }}</span></a>
@@ -139,7 +139,7 @@
             <section id="ez-body__left-sidebar" class="col-lg-2 ez-sidebar">
                 <ul id="left-sidebar__items">
                     <li class="mt-2">
-                        <a href="{{route('profile',auth()->user()->id)}}"><img class="profile-figure"
+                        <a href="{{route('user.view.profile',['user_id'=>auth()->user()->id])}}"><img class="profile-figure"
                                                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
                                                     alt="My Profile Pic" />
                             <span>{{ \Str::limit(auth()->user()->name, 10) }}</span></a>

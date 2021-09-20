@@ -2339,7 +2339,7 @@
                     <div class="suggested-peoples">
                         @foreach($expected_users as $user)
                             <div class="people mt-2">
-                                <a href="{{route('profile',$user->id)}}">
+                                <a href="{{route('user.view.profile',['user_id'=>$user->id])}}">
                                     <div class="people-info d-flex">
                                         @if($user->personal_image)
                                             <img

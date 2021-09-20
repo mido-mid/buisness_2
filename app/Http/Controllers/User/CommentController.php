@@ -456,5 +456,7 @@ class CommentController extends Controller
                 }
             }
         }
+
+        return $comment;
     }
 }

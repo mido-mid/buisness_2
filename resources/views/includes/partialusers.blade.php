@@ -16,7 +16,7 @@
                         </div>
                     @endif
                     <div class="owner-name pl-3">
-                        <a href="{{route('profile',$user->id)}}"><b>
+                        <a href="{{route('user.view.profile',['user_id'=>$user->id])}}"><b>
                                 {{$user->name}}
                             </b></a>
                     </div>
