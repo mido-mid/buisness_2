@@ -25,14 +25,11 @@
     <link href="{{  asset('assets') }}/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
     <!-- Icons Css -->
     <link href="{{  asset('assets') }}/css/icons.min.css" rel="stylesheet" type="text/css" />
-    <!-- App Css-->
-    <link href="{{  asset('assets') }}/css/app.min.css" rel="stylesheet" type="text/css" />
-
 
     @if(App::getLocale() == 'ar')
-
-        <link rel="stylesheet" href="{{ asset('css') }}/styles/custom.css">
-
+        <link href="{{  asset('assets') }}/css/app-rtl.min.css" rel="stylesheet" type="text/css" />
+    @else
+        <link href="{{  asset('assets') }}/css/app.min.css" rel="stylesheet" type="text/css" />
     @endif
 
 </head>
