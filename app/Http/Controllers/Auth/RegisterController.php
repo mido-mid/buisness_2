@@ -63,9 +63,46 @@ class RegisterController extends Controller
      */
     protected function validator(array $data)
     {
+//        $messages = [
+//            'name.required' => trans('error.name_required'),
+//            'name.string' => trans('error.name_string'),
+//            'name.max' => trans('error.name_max'),
+//            'name.regex' => trans('error.name_regex'),
+//            'user_name.required' => trans('error.user_name_required'),
+//            'user_name.string' => trans('error.user_name_string'),
+//            'user_name.max' => trans('error.user_name_max'),
+//            'user_name.alpha_dash' => trans('error.user_name_alpha'),
+//            'user_name.unique' => trans('error.user_name_unique'),
+//            'email.required' => trans('error.email_required'),
+//            'email.string' => trans('error.email_string'),
+//            'email.email' => trans('error.email_email'),
+//            'email.max' => trans('error.email_max'),
+//            'email.unique' => trans('error.email_unique'),
+//            'country_id.required' => trans('error.country_required'),
+//            'country_id.integer' => trans('error.country_integer'),
+//            'city_id.required' => trans('error.city_required'),
+//            'city_id.integer' => trans('error.city_integer'),
+//            'category_id.required' => trans('error.category_required'),
+//            'category_id.integer' => trans('error.category_integer'),
+//            'gender.required' => trans('error.gender_required'),
+//            'gender.string' => trans('error.gender_string'),
+//            'password.required' => trans('error.password_required'),
+//            'password.string' => trans('error.password_string'),
+//            'password.confirmed' => trans('error.password_confirmed'),
+//            'password.min' => trans('error.password_min'),
+//            'birthDate.required' => trans('error.birthdate_required'),
+//            'birthDate.date' => trans('error.birthdate_date'),
+//            'birthDate.before' => trans('error.birthdate_before'),
+//            'jobTitle.required' => trans('error.job_title_required'),
+//            'jobTitle.string' => trans('error.job_title_string'),
+//            'jobTitle.regex' => trans('error.job_title_regex'),
+//            'jobTitle.max' => trans('error.job_title_max'),
+//            'phone.required' => trans('error.phone_required'),
+//            'phone.string' => trans('error.phone_string'),
+//        ];
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255' , 'not_regex:/([%\$#\*<>]+)/'],
-            'user_name' => ['required', 'string', 'max:255' ,'unique:users', 'alpha_dash'],
+            'user_name' => ['required', 'string', 'max:255' ,'unique:users', 'alpha_dash','not_regex:/([%\$#\*<>]+)/'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'birthDate' => ['required','date','before:today'],
@@ -75,9 +112,6 @@ class RegisterController extends Controller
             'country_id' => ['required', 'integer'],
             'category_id' => ['required','array'],
             'gender' => ['required', 'string'],
-        ],$messages = [
-            'country_id.required' => 'The country field is required.',
-            'city_id.required' => 'The city field is required'
         ]);
     }
 

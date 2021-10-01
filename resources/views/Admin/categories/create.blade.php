@@ -26,9 +26,9 @@
 
 
                                     @if(isset($category))
-                                        {{ __('edit category') }}
+                                        {{ __('admin.edit_category') }}
                                     @else
-                                        {{ __('add category') }}
+                                        {{ __('admin.add_category') }}
 
                                     @endif
                                 </h3>
@@ -42,7 +42,7 @@
                                 @endif
                                 <div class="card-body">
                                     <div class="form-group row">
-                                        <label for="example-text-input" class="col-sm-2 col-form-label">Name_Ar</label>
+                                        <label for="example-text-input" class="col-sm-2 col-form-label">{{__('admin.name_ar')}}</label>
                                         <div class="col-sm-10">
                                             <input class="form-control @error('name_ar') is-invalid @enderror" type="text" @if(isset($category)) value="{{old('name_ar',$category->name_ar)}}" @else value="{{old('name_ar')}}" @endif name="name_ar" id="example-text-input" required>
                                         </div>
@@ -54,7 +54,7 @@
                                     </div>
 
                                     <div class="form-group row">
-                                        <label for="example-text-input" class="col-sm-2 col-form-label">Name_En</label>
+                                        <label for="example-text-input" class="col-sm-2 col-form-label">{{__('admin.name_en')}}</label>
                                         <div class="col-sm-10">
                                             <input class="form-control @error('name_en') is-invalid @enderror" type="text" @if(isset($category)) value="{{old('name_ar',$category->name_en)}}" @else value="{{old('name_ar')}}"  @endif name="name_en" id="example-text-input" required>
                                         </div>
@@ -66,17 +66,17 @@
                                     </div>
 
                                     <div class="form-group row">
-                                        <label for="example-text-input" class="col-sm-2 col-form-label">Type</label>
+                                        <label for="example-text-input" class="col-sm-2 col-form-label">{{__('admin.type')}}</label>
                                         <div class="col-sm-10">
                                             <select class="form-control select2" name="type" required>
-                                                <option @if(isset($category))  @if($category->id == "post") selected @endif  @endif value="post">post</option>
-                                                <option @if(isset($category))  @if($category->id == "service") selected @endif  @endif value="service">service</option>
+                                                <option @if(isset($category))  @if($category->id == "post") selected @endif  @endif value="post">{{__('admin.post')}}</option>
+                                                <option @if(isset($category))  @if($category->id == "service") selected @endif  @endif value="service">{{__('admin.service')}}</option>
                                             </select>
                                         </div>
                                     </div>
 
                                     <div class="form-group row">
-                                        <label for="example-text-input" class="col-sm-2">Image</label>
+                                        <label for="example-text-input" class="col-sm-2">{{__('admin.image')}}</label>
                                         <div class="col-sm-10">
                                             <input type="file" class="form-control @error('image') is-invalid @enderror" name="image" id="example-text-input">
                                         </div>
@@ -88,7 +88,7 @@
                                     </div>
                                     <div class="form-group row">
                                         <div class="col-sm-10">
-                                            <input class="btn btn-purple" type="submit" @if(isset($category)) value="edit" @else value="add" @endif>
+                                            <input class="btn btn-purple" type="submit" @if(isset($category)) value="edit" @else value="{{__('admin.add')}}" @endif>
                                         </div>
                                     </div>
                                 </div>

@@ -56,15 +56,15 @@ class CommentController extends Controller
 
         $user = auth()->user();
 
-        $rules = [
-            'body' => ['required'],
-        ];
-
-        $validator = Validator::make($request->all(),$rules);
-
-        if ($validator->fails()) {
-            return $this->returnValidationError(402,$validator);
-        }
+//        $rules = [
+//            'body' => ['required'],
+//        ];
+//
+//        $validator = Validator::make($request->all(),$rules);
+//
+//        if ($validator->fails()) {
+//            return $this->returnValidationError(402,$validator);
+//        }
 
         preg_match_all("/(@\w+)/", $request->body, $mentions);
 
@@ -193,17 +193,17 @@ class CommentController extends Controller
 
         $comment = Comment::find($comment_id);
 
-        $rules = [
-            'body' => ['required'],
-        ];
-
-        $validator = Validator::make($request->all(),$rules);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'msg' => $validator->errors()->first()
-            ],402);
-        }
+//        $rules = [
+//            'body' => ['required'],
+//        ];
+//
+//        $validator = Validator::make($request->all(),$rules);
+//
+//        if ($validator->fails()) {
+//            return response()->json([
+//                'msg' => $validator->errors()->first()
+//            ],402);
+//        }
 
         if($comment){
 

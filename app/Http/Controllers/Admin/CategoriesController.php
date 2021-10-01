@@ -36,11 +36,24 @@ class CategoriesController extends Controller
     {
 
          $rules = [
-             'name_ar' => ['required','min:2','not_regex:/([%\$#\*<>]+)/'],
-             'name_en' =>['required','min:2','not_regex:/([%\$#\*<>]+)/'],
+             'name_ar' => ['required','max:255','not_regex:/([%\$#\*<>]+)/'],
+             'name_en' =>['required','max:2','not_regex:/([%\$#\*<>]+)/'],
              'type' => ['required','string'],
              'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,JPG|max:2048',
          ];
+
+//        $messages = [
+//            'name_ar.required' => trans('error.name_ar_required'),
+//            'name_ar.regex' => trans('error.name_ar_required'),
+//            'name_ar.min' => trans('error.name_ar_min'),
+//            'name_en.required' => trans('error.name_en_required'),
+//            'name_en.regex' => trans('error.name_en_regex'),
+//            'name_en.min' => trans('error.name_en_min'),
+//            'type.required' => trans('error.type_required'),
+//            'type.string' => trans('error.type_string'),
+//            'image.mimes' => trans('error.image_mimes'),
+//            'image.max' => trans('error.image_max'),
+//        ];
 
          $this->validate($request,$rules);
 
@@ -60,9 +73,9 @@ class CategoriesController extends Controller
          ]);
 
          if ($category) {
-             return redirect()->route('categories.index')->withStatus('category successfully created');
+             return redirect()->route('categories.index')->withStatus(trans('admin.created_successfully'));
          } else {
-             return redirect()->route('categories.index')->withStatus('something went wrong, try again');
+             return redirect()->route('categories.index')->withStatus(trans('admin.something_wrong'));
          }
     }
 
@@ -94,7 +107,7 @@ class CategoriesController extends Controller
         }
         else
         {
-            return redirect('admin/categories')->withStatus('no word have this id');
+            return redirect('admin/categories')->withStatus(trans('admin.not_id'));
         }
     }
 
@@ -111,11 +124,25 @@ class CategoriesController extends Controller
         $category = Category::find($id);
 
         $rules = [
-            'name_ar' => ['required','min:2','not_regex:/([%\$#\*<>]+)/'],
-            'name_en' =>['required','min:2','not_regex:/([%\$#\*<>]+)/'],
+            'name_ar' => ['required','max:255','not_regex:/([%\$#\*<>]+)/'],
+            'name_en' =>['required','max:255','not_regex:/([%\$#\*<>]+)/'],
             'type' => ['required','string'],
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,JPG|max:2048',
         ];
+
+
+//        $messages = [
+//            'name_ar.required' => trans('error.name_ar_required'),
+//            'name_ar.regex' => trans('error.name_ar_required'),
+//            'name_ar.min' => trans('error.name_ar_min'),
+//            'name_en.required' => trans('error.name_en_required'),
+//            'name_en.regex' => trans('error.name_en_regex'),
+//            'name_en.min' => trans('error.name_en_min'),
+//            'type.required' => trans('error.type_required'),
+//            'type.string' => trans('error.type_string'),
+//            'image.mimes' => trans('error.image_mimes'),
+//            'image.max' => trans('error.image_max'),
+//        ];
 
 
         $this->validate($request,$rules);
@@ -140,9 +167,9 @@ class CategoriesController extends Controller
                 'type' => $request->type,
                 'image'=> $file_to_store
             ]);
-            return redirect()->route('categories.index')->withStatus('category updated successfully');
+            return redirect()->route('categories.index')->withStatus(trans('admin.updated_successfully'));
         } else {
-            return redirect()->route('categories.index')->withStatus('something went wrong, try again');
+            return redirect()->route('categories.index')->withStatus(trans('messages.something_wrong'));
         }
     }
 
@@ -168,9 +195,9 @@ class CategoriesController extends Controller
 
             $category->delete();
 
-            return redirect()->route('categories.index')->withStatus('category successfully deleted');
+            return redirect()->route('categories.index')->withStatus(trans('messages.deleted_successfully'));
         } else {
-            return redirect()->route('categories.index')->withStatus('something went wrong, try again');
+            return redirect()->route('categories.index')->withStatus(trans('messages.something_wrong'));
         }
     }
 }

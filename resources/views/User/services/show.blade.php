@@ -206,7 +206,7 @@
                                                                 @endif
                                                             </button>
                                                         @else
-                                                            <button onclick="confirm('{{ __("Are you sure you want to delete this service ?") }}') ? deleteServiceSubmit({{$service->id}}) : ''" class="btn btn-warning text-white">
+                                                            <button onclick="confirm('{{ __("home.confirm") }}') ? deleteServiceSubmit({{$service->id}}) : ''" class="btn btn-warning text-white">
                                                                 {{__('user.delete')}}
                                                             </button>
                                                             <button onclick="$('#service-modal-{{ $service->id }}').modal('hide');$('#edit-service-modal-{{ $service->id }}').modal('show');applySelect2();" class="btn btn-warning btn-danger">
@@ -291,7 +291,7 @@
 
 
                                                 <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
-                                                    <label for="cars">{{__('user.category')}}</label>
+                                                    <label for="cars">{{__('home.category')}}</label>
                                                     <select style="width: 200px" name="category_id" class="js-example-basic-single">
                                                         @foreach($categories as $category)
                                                             @if(App::getlocale() == 'en')

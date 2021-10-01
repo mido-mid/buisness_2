@@ -11,8 +11,8 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">Reported Model Info</h4>
-                                <p class="card-title-desc"> publisher : {{$model->publisher->name}}</p>
+                                <h4 class="card-title">{{ __('admin.report_details') }}</h4>
+                                <p class="card-title-desc"> {{ __('admin.publisher') }} : {{$model->publisher->name}}</p>
                                 <form method="post">
                                     <textarea id="elm1" name="area">{{$model->body}}</textarea>
                                 </form>
@@ -20,13 +20,13 @@
                                     <form action="{{ route('reports.ban', $report) }}" method="post">
                                         @csrf
                                         <input type="hidden" name="ban" value="banned">
-                                        <button type="button" class="btn btn-purple" onclick="confirm('{{ __("Are you sure you want to ban that user?") }}') ? this.parentElement.submit() : ''" style="margin-top: 20px" class="btn btn-purple waves-effect waves-light">Ban publisher</button>
+                                        <button type="button" class="btn btn-purple" onclick="confirm('{{ __("home.confirm") }}') ? this.parentElement.submit() : ''" style="margin-top: 20px" class="btn btn-purple waves-effect waves-light">{{ __('admin.ban_publisher') }}</button>
                                     </form>
                                 @else
                                     <form action="{{ route('reports.ban', $report)}}" method="post">
                                         @csrf
                                         <input type="hidden" name="ban" value="allowed">
-                                        <button type="button" class="btn btn-purple" onclick="confirm('{{ __("Are you sure you want to remove the ban?") }}') ? this.parentElement.submit() : ''" style="margin-top: 20px" class="btn btn-purple waves-effect waves-light">Remove Ban</button>
+                                        <button type="button" class="btn btn-purple" onclick="confirm('{{ __("home.confirm") }}') ? this.parentElement.submit() : ''" style="margin-top: 20px" class="btn btn-purple waves-effect waves-light">{{ __('admin.remove_ban') }}</button>
                                     </form>
                                 @endif
                             </div>
@@ -44,7 +44,7 @@
                                 @else
                                     <video class="p-1" controls class="gallery-thumb-img" style="height: 300px; width: 200px">
                                         <source src="{{asset('media')}}/{{$media->filename}}" type="video/mp4">
-                                        Your browser does not support HTML video.
+                                        {{ __('home.no_browser') }}
                                     </video>
                                 @endif
                             </div>

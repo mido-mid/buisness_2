@@ -22,7 +22,7 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">Reports</h3>
+                                <h3 class="card-title">{{__('admin.reports')}}</h3>
                             </div>
                             <div class="card-body">
                                 <table id="datatable" class="table table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
@@ -30,12 +30,12 @@
                                     @if(count($reports) > 0)
                                         <thead>
                                             <tr>
-                                                <th>body</th>
-                                                <th>State</th>
-                                                <th>Source</th>
-                                                <th>user</th>
-                                                <th>show info</th>
-                                                <th>controls</th>
+                                                <th>{{__('admin.body')}}</th>
+                                                <th>{{__('admin.status')}}</th>
+                                                <th>{{__('admin.source')}}</th>
+                                                <th>{{__('admin.user')}}</th>
+                                                <th>{{__('admin.details')}}</th>
+                                                <th>{{__('admin.controls')}}</th>
                                             </tr>
                                         </thead>
                                         @foreach($reports as $report)
@@ -52,7 +52,7 @@
                                                         {{ $report->user_name }}
                                                     </th>
                                                     <td>
-                                                        <a type="button" class="btn btn-info"href="{{route('reports.showinfo',$report->id)}}">{{ __('Show') }}</a>
+                                                        <a type="button" class="btn btn-info"href="{{route('reports.showinfo',$report->id)}}">{{ __('admin.show') }}</a>
                                                     </td>
                                                     <td>
 
@@ -61,7 +61,7 @@
                                                             @method('put')
 
                                                             <input type="hidden" name="state" value="accepted">
-                                                            <button type="button" class="btn btn-success" onclick="confirm('{{ __("Are you sure you want to accept this report?") }}') ? this.parentElement.submit() : ''">{{ __('Accept') }}</button>
+                                                            <button type="button" class="btn btn-success" onclick="confirm('{{ __("home.confirm") }}') ? this.parentElement.submit() : ''">{{ __('admin.accept') }}</button>
 
                                                         </form>
 
@@ -70,7 +70,7 @@
                                                             @method('put')
 
                                                             <input type="hidden" name="state" value="refused">
-                                                            <button type="button" class="btn btn-primary" onclick="confirm('{{ __("Are you sure you want to refuse this report?") }}') ? this.parentElement.submit() : ''">{{ __('Refuse') }}</button>
+                                                            <button type="button" class="btn btn-primary" onclick="confirm('{{ __("home.confirm") }}') ? this.parentElement.submit() : ''">{{ __('admin.refuse') }}</button>
 
                                                         </form>
                                                     </td>
@@ -82,7 +82,7 @@
                                             <tr>
                                                 <td colspan="3">
                                                     <center>
-                                                        <h3>There is no reports  yet!</h3>
+                                                        <h3>{{ __('admin.no_reports') }}</h3>
                                                     </center>
                                                 </td>
                                             </tr>

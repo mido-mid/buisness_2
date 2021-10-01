@@ -61,6 +61,16 @@ class PostController extends Controller
             'category_id' => 'required|integer|not_in:0'
         ];
 
+//        $messages = [
+//            'privacy_id.required' => trans('error.privacy_required'),
+//            'privacy_id.integer' => trans('error.privacy_integer'),
+//            'media.mimes' => trans('error.media_mimes'),
+//            'media.max' => trans('error.media_max'),
+//            'category_id.required' => trans('error.category_required'),
+//            'category_id.integer' => trans('error.category_integer'),
+//            'category_id.not_in' => trans('error.category_notin')
+//        ];
+
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
@@ -319,6 +329,16 @@ class PostController extends Controller
             'media.*' => 'mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png|max:100040',
             'category_id' => 'required|integer|not_in:0'
         ];
+
+//        $messages = [
+//            'privacy_id.required' => trans('error.privacy_required'),
+//            'privacy_id.integer' => trans('error.privacy_integer'),
+//            'media.mimes' => trans('error.media_mimes'),
+//            'media.max' => trans('error.media_max'),
+//            'category_id.required' => trans('error.category_required'),
+//            'category_id.integer' => trans('error.category_integer'),
+//            'category_id.not_in' => trans('error.category_notin')
+//        ];
 
         $validator = Validator::make($request->all(), $rules);
 
@@ -644,14 +664,35 @@ class PostController extends Controller
         $rules = [
             'timeId' => 'required|integer',
             'reachId' => 'required|integer',
-            'postId' => 'required|integer',
             'age_id' => 'required|integer',
             'country_id' => 'required|integer|not_in:0',
             'city_id' => 'required|integer',
             'category_id' => 'required|integer|not_in:0',
             'price' => 'required|numeric',
-            'gender' => ['required', 'string', 'not_regex:/([%\$#\*<>]+)/']
+            'gender' => ['required', 'string']
         ];
+
+//        $messages = [
+//            'timeId.required' => trans('error.time_required'),
+//            'timeId.integer' => trans('error.time_integer'),
+//            'reachId.required' => trans('error.reach_required'),
+//            'reachId.integer' => trans('error.reach_integer'),
+//            'postId.required' => trans('error.post_required'),
+//            'postId.integer' => trans('error.post_integer'),
+//            'age_id.required' => trans('error.age_required'),
+//            'age_id.integer' => trans('error.age_integer'),
+//            'country_id.required' => trans('error.country_required'),
+//            'country_id.integer' => trans('error.country_integer'),
+//            'city_id.required' => trans('error.city_required'),
+//            'city_id.integer' => trans('error.city_integer'),
+//            'category_id.required' => trans('error.category_required'),
+//            'category_id.integer' => trans('error.category_integer'),
+//            'category_id.not_in' => trans('error.category_notin'),
+//            'gender.required' => trans('error.gender_required'),
+//            'gender.string' => trans('error.gender_string'),
+//            'price.required' => trans('error.price_required'),
+//            'price.numeric' => trans('error.price_numeric'),
+//        ];
 
         $validator = Validator::make($request->all(), $rules);
 

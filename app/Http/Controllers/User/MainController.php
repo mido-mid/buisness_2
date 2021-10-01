@@ -877,8 +877,12 @@ class MainController extends Controller
         $user = auth()->user();
 
         $rules = [
-            'body' => ['required'],
+            'body' => ['nullable'],
         ];
+
+//        $messages = [
+//            'body.required' => trans('error.body_required',''),
+//        ];
 
         $validator = Validator::make($rules, $rules);
 

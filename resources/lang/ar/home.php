@@ -19,12 +19,13 @@ return [
     "all" => "الكل",
     "hide" => "إخفاء التعليقات",
     "load_more_comments" => "عرض المزيد من التعليقات",
+    "confirm" => "هل أنت متأكد أنك تريد إكمال هذه العملية ؟",
 
 
     //forms
     "text_area" => "اكتب ما تريد",
     "privacy" => "الخصوصية",
-    "category" => "تصنيف المنشور",
+    "category" => "التصنيف ",
     "choose_from_friends" => "اختر من أصدقائك",
     "tag_friends" => "ضع إشارة لأصدقائك",
     "please_wait" => "من فضلك انتظر",

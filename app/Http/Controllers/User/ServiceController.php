@@ -97,6 +97,19 @@ class ServiceController extends Controller
             'city_id' => 'required|integer',
         ];
 
+//        $messages = [
+//            'body.required' => trans('error.body_required'),
+//            'price.numeric' => trans('error.price_numeric'),
+//            'media.mimes' => trans('error.media_mimes'),
+//            'media.max' => trans('error.media_max'),
+//            'country_id.required' => trans('error.country_required'),
+//            'country_id.integer' => trans('error.country_integer'),
+//            'city_id.required' => trans('error.city_required'),
+//            'city_id.integer' => trans('error.city_integer'),
+//            'category_id.required' => trans('error.category_required'),
+//            'category_id.integer' => trans('error.category_integer'),
+//        ];
+
         $validator = Validator::make($request->all(),$rules);
 
         if ($validator->fails()) {
@@ -256,6 +269,19 @@ class ServiceController extends Controller
             'country_id' => 'required|integer',
             'city_id' => 'integer'
         ];
+
+//        $messages = [
+//            'body.required' => trans('error.body_required'),
+//            'price.numeric' => trans('error.price_numeric'),
+//            'media.mimes' => trans('error.media_mimes'),
+//            'media.max' => trans('error.media_max'),
+//            'country_id.required' => trans('error.country_required'),
+//            'country_id.integer' => trans('error.country_integer'),
+//            'city_id.required' => trans('error.city_required'),
+//            'city_id.integer' => trans('error.city_integer'),
+//            'category_id.required' => trans('error.category_required'),
+//            'category_id.integer' => trans('error.category_integer'),
+//        ];
 
         $validator = Validator::make($request->all(),$rules);
 

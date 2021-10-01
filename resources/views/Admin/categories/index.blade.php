@@ -26,7 +26,7 @@
                     <div class="col-12">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">Categories</h3>
+                                <h3 class="card-title">{{__('admin.categories')}}</h3>
                             </div>
                             <div class="card-body">
                                 <table id="datatable" class="table table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
@@ -34,13 +34,10 @@
                                     @if(count($categories) > 0)
                                         <thead>
                                             <tr>
-                                                @if(App::getlocale() == 'ar')
-                                                    <th>name_ar</th>
-                                                @else
-                                                    <th>name_en</th>
-                                                @endif
-                                                <th>Image</th>
-                                                <th>controls</th>
+                                                <th>{{__('admin.name_en')}}</th>
+                                                <th>{{__('admin.name_ar')}}</th>
+                                                <th>{{__('admin.image')}}</th>
+                                                <th>{{__('admin.controls')}}</th>
                                             </tr>
                                         </thead>
 
@@ -65,10 +62,10 @@
                                                                     @csrf
                                                                     @method('delete')
 
-                                                                    <button type="button" class="dropdown-item" onclick="confirm('{{ __("Are you sure you want to delete this vendor?") }}') ? this.parentElement.submit() : ''">{{ __('delete') }}</button>
+                                                                    <button type="button" class="dropdown-item" onclick="confirm('{{ __("home.confirm") }}') ? this.parentElement.submit() : ''">{{ __('admin.delete') }}</button>
 
                                                                 </form>
-                                                                <a class="dropdown-item" href="{{ route('categories.edit', $category->id) }}">{{ __('edit') }}</a>
+                                                                <a class="dropdown-item" href="{{ route('categories.edit', $category->id) }}">{{ __('user.edit') }}</a>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -82,8 +79,8 @@
                                             <tr>
                                                 <td colspan="3">
                                                     <center>
-                                                        <h3>There is no categories yet!</h3>
-                                                        <a class="btn btn-danger" href="{{ route('categories.create')}}">{{ __('add') }}</a>
+                                                        <h3>{{__('admin.no_categories')}}</h3>
+                                                        <a class="btn btn-danger" href="{{ route('categories.create')}}">{{ __('admin.add') }}</a>
                                                     </center>
                                                 </td>
                                             </tr>

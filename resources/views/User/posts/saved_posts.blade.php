@@ -24,14 +24,17 @@
              aria-hidden="true">
             <div class="modal-dialog" style="margin-top: 22vh">
                 <div class="modal-content">
-                    <div class="modal-header d-flex justify-content-between">
-                        <span></span>
-                        <button type="button" id="success-modal-dismiss" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body" id="success-modal-message" >
-                        post created successfully
+                    <a class="success-close" href="#" data-dismiss="modal">&times;</a>
+                    <div class="page-body">
+                        <div class="head">
+                            <h3 style="margin-top:5px;" id="success-modal-message">Lorem ipsum dolor sit amet</h3>
+                        </div>
+                        <h1 style="text-align:center;">
+                            <div class="checkmark-circle">
+                                <div class="background"></div>
+                                <div class="checkmark draw"></div>
+                            </div>
+                        </h1>
                     </div>
                 </div>
             </div>
@@ -147,7 +150,7 @@
                                         @csrf
                                         @method('delete')
                                         <!-- ajax-->
-                                            <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
+                                            <li onclick="confirm('{{ __("home.confirm") }}') ? deletePostSubmit({{$post->id}}) : ''">
                                                 {{__('user.delete')}}</li>
                                         </form>
                                     @endif
@@ -158,7 +161,7 @@
                                         @csrf
                                         @method('delete')
                                         <!-- ajax-->
-                                            <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
+                                            <li onclick="confirm('{{ __("home.confirm") }}') ? deletePostSubmit({{$post->id}}) : ''">
                                                 {{__('user.delete')}}</li>
                                         </form>
                                     @endif
@@ -394,7 +397,7 @@
                                 <div class="post-owner d-flex align-items-center">
                                     @if($post->source == "page")
                                         <div class="owner-img">
-                                            <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->page->profile_image}}" class="rounded-circle" /></a>
+                                            <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="/{{$post->page->profile_image}}" class="rounded-circle" /></a>
                                         </div>
                                     @else
                                         @if($post->publisher->personal_image)
@@ -1430,7 +1433,7 @@
                                                                                         {{__('home.report')}}</li>
                                                                                     @if($reply->publisher->id == auth()->user()->id)
                                                                                         <li data-toggle="modal" data-target="#edit-reply-modal-{{$reply->id}}">{{__('user.edit')}}</li>
-                                                                                        <li onclick="confirm('{{ __("Are you sure you want to delete this reply ?") }}') ? deleteCommentSubmit({{$reply->id}},{{$post->id}}) : ''" >{{__('user.delete')}}</li>
+                                                                                        <li onclick="confirm('{{ __("home.confirm") }}') ? deleteCommentSubmit({{$reply->id}},{{$post->id}}) : ''" >{{__('user.delete')}}</li>
                                                                                         <form action="{{ route('comments.destroy', $reply->id) }}" id="delete-comment-form-{{$reply->id}}" method="POST">
                                                                                         @csrf
                                                                                         @method('delete')
@@ -1571,7 +1574,7 @@
                                                         {{__('home.report')}}</li>
                                                     @if($comment->publisher->id == auth()->user()->id)
                                                         <li data-toggle="modal" data-target="#edit-comment-modal-{{$comment->id}}">{{__('user.edit')}}</li>
-                                                        <li onclick="confirm('{{ __("Are you sure you want to delete this comment ?") }}') ? deleteCommentSubmit({{$comment->id}},{{$post->id}}) : ''" >{{__('user.delete')}}</li>
+                                                        <li onclick="confirm('{{ __("home.confirm") }}') ? deleteCommentSubmit({{$comment->id}},{{$post->id}}) : ''" >{{__('user.delete')}}</li>
                                                         <form action="{{ route('comments.destroy', $comment->id) }}" id="delete-comment-form-{{$comment->id}}" method="POST">
                                                         @csrf
                                                         @method('delete')
@@ -1884,7 +1887,7 @@
                                                 </div>
                                                 <!-- Select Service Category -->
                                                 <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
-                                                    <label for="cars">{{__('home.choose_category')}}</label>
+                                                    <label for="cars">{{__('home.category')}}</label>
                                                     <select class="js-example-basic-single" name="category_id">
                                                         @foreach($categories as $category)
                                                             @if(App::getlocale() == 'en')

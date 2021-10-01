@@ -7,7 +7,7 @@
         <div id="sidebar-menu">
             <!-- Left Menu Start -->
             <ul class="metismenu list-unstyled" id="side-menu">
-                <li class="menu-title">Dashboard</li>
+                <li class="menu-title">{{__('admin.dashboard')}}</li>
                      <!-- Redeny -->
                       <!-- Admin Panel -->
 
@@ -15,7 +15,7 @@
                 <li>
                     <a href="{{ route('categories.index') }}">
                         <i class="dripicons-network-1"></i>
-                        <span>Categories</span>
+                        <span>{{__('admin.categories')}}</span>
                     </a>
                 </li>
 
@@ -23,7 +23,7 @@
                 <li>
                     <a href="{{ route('reports.index') }}">
                         <i class="dripicons-network-1"></i>
-                        <span>Reports</span>
+                        <span>{{__('admin.reports')}}</span>
                     </a>
                 </li>
             </ul>

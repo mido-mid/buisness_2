@@ -14,7 +14,7 @@
                                     @endif
                                     <div>
                                         @if($story->publisher->id == auth()->user()->id)
-                                            <i class="fas fa-trash p-2" onclick="confirm('{{ __("Are you sure you want to delete this story ?") }}') ? deleteStorySubmit({{$inner_story->id}},{{$story->publisher->id}}) : ''"></i>
+                                            <i class="fas fa-trash p-2" onclick="confirm('{{ __("home.confirm") }}') ? deleteStorySubmit({{$inner_story->id}},{{$story->publisher->id}}) : ''"></i>
                                             <form action="{{ route('stories.destroy', $inner_story->id) }}" id="delete-story-form-{{$inner_story->id}}" method="post" style="display: none">
                                             @csrf
                                             @method('delete')

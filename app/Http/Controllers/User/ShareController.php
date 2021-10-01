@@ -7,6 +7,7 @@ use App\Models\Media;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class ShareController extends Controller
 {
@@ -42,11 +43,27 @@ class ShareController extends Controller
         $user = auth()->user();
 
         $rules = [
-            'body' => 'required','not_regex:/([%\$#\*<>]+)/',
+            'body' => ['nullable'],
             'privacy_id' => 'required|integer',
         ];
 
-        $this->validate($request,$rules);
+        $messages = [
+            'privacy_id.required' => trans('error.privacy_required'),
+            'privacy_id.integer' => trans('error.privacy_integer'),
+            'media.mimes' => trans('error.media_mimes'),
+            'media.max' => trans('error.media_max'),
+            'category_id.required' => trans('error.category_required'),
+            'category_id.integer' => trans('error.category_integer'),
+            'category_id.not_in' => trans('error.category_notin')
+        ];
+
+        $validator = Validator::make($request->all(), $rules,$messages);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'msg' => $validator->errors()->first()
+            ], 402);
+        }
 
         $share = Post::create([
             'body' => $request->body,

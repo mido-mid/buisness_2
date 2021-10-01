@@ -18,6 +18,7 @@ return [
     "reacts" => "Reacts",
     "all" => "All",
     "hide" => "hide comments",
+    "confirm" => "Are you sure you want to complete this operation ?",
 
 
     //forms

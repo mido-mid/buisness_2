@@ -131,10 +131,10 @@ class ReportsController extends Controller
                 'state' => $request->state
             ]);
 
-            return redirect()->route('reports.index')->withStatus('report state updated successfully');
+            return redirect()->route('reports.index')->withStatus(trans('admin.report_state_updated'));
         }
         else{
-            return redirect()->route('reports.index')->withStatus('something wrong happened');
+            return redirect()->route('reports.index')->withStatus(trans('admin.something_wrong'));
         }
     }
 
@@ -150,10 +150,10 @@ class ReportsController extends Controller
                 'stateId' => $request->ban
             ]);
 
-            return redirect()->route('reports.show',$report)->withStatus('user banned successfully');
+            return redirect()->route('reports.show',$report)->withStatus(trans('admin.user_ban'));
         }
         else{
-            return redirect()->route('reports.index')->withStatus('something wrong happened');
+            return redirect()->route('reports.index')->withStatus(trans('admin.something_wrong'));
         }
     }
 
@@ -172,10 +172,10 @@ class ReportsController extends Controller
 
             $report->delete();
 
-            return redirect()->route('reports.index')->withStatus('report deleted successfully');
+            return redirect()->route('reports.index')->withStatus(trans('admin.deleted_successfully'));
         }
         else{
-            return redirect()->route('reports.index')->withStatus('something wrong happened');
+            return redirect()->route('reports.index')->withStatus(trans('admin.something_wrong'));
         }
     }
 }

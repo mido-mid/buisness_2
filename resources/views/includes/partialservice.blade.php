@@ -75,7 +75,7 @@
                                                 @endif
                                             </button>
                                         @else
-                                            <button onclick="confirm('{{ __("Are you sure you want to delete this service ?") }}') ? deleteServiceSubmit({{$service->id}}) : ''" class="btn btn-warning text-white">
+                                            <button onclick="confirm('{{ __("home.confirm") }}') ? deleteServiceSubmit({{$service->id}}) : ''" class="btn btn-warning text-white">
                                                 {{__('user.delete')}}
                                             </button>
                                             <button onclick="$('#service-modal-{{ $service->id }}').modal('hide');$('#edit-service-modal-{{ $service->id }}').modal('show');applySelect2();" class="btn btn-warning btn-danger">

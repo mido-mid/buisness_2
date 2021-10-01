@@ -146,18 +146,6 @@ return [
     |
     */
 
-    'attributes' => [
-        'name_ar' => "Arabic Name",
-        'name_en' => "English Name",
-        'jobTitle' => "job title",
-        'birthDate' => "birthdate",
-        'city_id' => "City",
-        'country_id' => "Country",
-        'category_id' => "Category",
-        'reachId' => "Reach",
-        'timeId' => "Time",
-        'age_id' => "Age",
-        'privacy_id' => "privacy",
-    ],
+    'attributes' => [],
 
 ];

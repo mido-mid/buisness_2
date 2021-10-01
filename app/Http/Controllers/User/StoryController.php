@@ -54,6 +54,15 @@ class StoryController extends Controller
             'media.*' => ['mimes:mpeg,ogg,mp4,webm,3gp,mov,flv,avi,wmv,ts,jpg,jpeg,png,svg,gif','max:100040'],
         ];
 
+
+//        $messages = [
+//            'privacy_id.required' => trans('error.privacy_required'),
+//            'privacy_id.integer' => trans('error.privacy_integer'),
+//            'media.mimes' => trans('error.media_mimes'),
+//            'media.max' => trans('error.media_max'),
+//        ];
+
+
         $validator = Validator::make($request->all(),$rules);
 
         if ($validator->fails()) {
