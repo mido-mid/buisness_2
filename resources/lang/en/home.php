@@ -2,6 +2,7 @@
 return [
 
     //general
+    "title" => "title",
     "thousand" => "k",
     "others" => "others",
     "with" => "with",

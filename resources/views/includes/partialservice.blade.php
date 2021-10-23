@@ -9,8 +9,8 @@
                 <img src="{{asset('media')}}/services.jpg" style="height: 220px;" width="100%">
             @endif
             <div class="card-body">
-                <h5 class="card-title">{{$service->body}}</h5>
-                <p class="card-text">{{$service->price}} $</p>
+                <h5 class="card-title">{{$service->title}}</h5>
+                <p class="card-text">{{ $service->price ? $service->price : 0 }} $</p>
             </div>
         </div>
         <div class="modal fade service-modal" id="service-modal-{{$service->id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
@@ -18,6 +18,9 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header pb-0">
+                        <h5 class="modal-title" id="exampleModalLabel">
+                            {{$service->title}}
+                        </h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
@@ -159,8 +162,14 @@
                                 @method('put')
 
 
+                                <div class="form-group d-flex justify-content-between align-items-center m-auto w-75">
+                                    <label for="name" style="margin:5px">{{ __("home.title")  }}</label>
+                                    <input class="form-control" type="text" id="name" name="name" value="{{$service->title}}" required oninput="this.setCustomValidity('')" oninvalid="this.setCustomValidity('هذا الحقل مطلوب')" placeholder="{{__('home.title')}}">
+                                </div>
+
+
                                 <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
-                                    <label for="cars">{{__('user.category')}}</label>
+                                    <label for="cars">{{__('home.category')}}</label>
                                     <select style="width: 200px" name="category_id" class="js-example-basic-single">
                                         @foreach($categories as $category)
                                             @if(App::getlocale() == 'en')

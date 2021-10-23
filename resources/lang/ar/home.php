@@ -2,6 +2,7 @@
 return [
 
     //general
+    "title" => "العنوان",
     "thousand" => "ألف",
     "others" => "أخرين",
     "with" => "مع",

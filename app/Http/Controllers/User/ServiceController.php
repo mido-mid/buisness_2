@@ -88,6 +88,7 @@ class ServiceController extends Controller
         //
         $user = auth()->user();
         $rules = [
+            'title' => ['required','max:300','min:3','not_regex:/([<>]+)/'],
             'body' => ['required'],
             'price' => ['nullable','numeric'],
             'media' => 'nullable',
@@ -261,6 +262,7 @@ class ServiceController extends Controller
         $user = auth()->user();
 
         $rules = [
+            'title' => ['required','max:300','min:3','not_regex:/([<>]+)/'],
             'body' => ['required'],
             'price' => ['nullable','numeric'],
             'media' => 'nullable',
