@@ -398,14 +398,17 @@ function inspirationId($user, $enemy){
                          aria-hidden="true">
                         <div class="modal-dialog" style="margin-top: 22vh">
                             <div class="modal-content">
-                                <div class="modal-header d-flex justify-content-between">
-                                    <span></span>
-                                    <button type="button" id="success-modal-dismiss" class="close ml-0" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div class="modal-body" id="success-modal-message" >
-                                    post created successfully
+                                <a class="success-close" href="#" data-dismiss="modal">&times;</a>
+                                <div class="page-body">
+                                    <div class="head">
+                                        <h3 style="margin-top:5px;" id="success-modal-message">Lorem ipsum dolor sit amet</h3>
+                                    </div>
+                                    <h1 style="text-align:center;">
+                                        <div class="checkmark-circle">
+                                            <div class="background"></div>
+                                            <div class="checkmark draw"></div>
+                                        </div>
+                                    </h1>
                                 </div>
                             </div>
                         </div>
@@ -612,7 +615,7 @@ function inspirationId($user, $enemy){
                                                     @csrf
                                                     @method('delete')
                                                     <!-- ajax-->
-                                                        <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
+                                                        <li onclick="confirm('{{ __("home.confirm") }}') ? deletePostSubmit({{$post->id}}) : ''">
                                                             {{__('user.delete')}}</li>
                                                     </form>
                                                 @endif
@@ -623,7 +626,7 @@ function inspirationId($user, $enemy){
                                                     @csrf
                                                     @method('delete')
                                                     <!-- ajax-->
-                                                        <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
+                                                        <li onclick="confirm('{{ __("home.confirm") }}') ? deletePostSubmit({{$post->id}}) : ''">
                                                             {{__('user.delete')}}</li>
                                                     </form>
                                                 @endif
@@ -654,15 +657,19 @@ function inspirationId($user, $enemy){
                                                         @foreach($post->tags_info as $tag)
                                                             <div class="people-info d-flex align-items-center">
                                                                 @if($tag->personal_image != null)
-                                                                    <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
-                                                                         src="{{asset('media')}}/{{$tag->personal_image}}"
-                                                                         alt="User Profile Pic">
+                                                                    <a href="{{route('user.view.profile',$tag->id)}}">
+                                                                        <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
+                                                                             src="{{asset('media')}}/{{$tag->personal_image}}"
+                                                                             alt="User Profile Pic">
+                                                                    </a>
                                                                 @else
-                                                                    <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
-                                                                         src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                                                                         alt="User Profile Pic">
+                                                                    <a href="{{route('user.view.profile',$tag->id)}}">
+                                                                        <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
+                                                                             src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                                             alt="User Profile Pic">
+                                                                    </a>
                                                                 @endif
-                                                                <p class="mb-0 ml-3"><b>{{$tag->name}}</b></p>
+                                                                <p class="mb-0 ml-3"><b><a href="{{route('user.view.profile',$tag->id)}}">{{$tag->name}}</a></b></p>
                                                             </div>
                                                             @if($loop->last == false)
                                                                 <hr>
@@ -699,8 +706,8 @@ function inspirationId($user, $enemy){
 
                                                     <!-- Post Desc -->
                                                         <div class="post-desc d-flex justify-content-center mt-2">
-                                                      <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
-                                                                placeholder="{{__('home.text_area')}}" ></textarea>
+                                                  <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                            placeholder="{{__('home.text_area')}}" ></textarea>
                                                         </div>
                                                         <!-- Add Post Btn -->
                                                         <input type="hidden" name="model_id" value="{{$post->id}}">
@@ -857,36 +864,36 @@ function inspirationId($user, $enemy){
                                     @if($post->type == "share")
                                         <div class="post-container shared-post bg-white p-2">
                                             <div class="post-owner d-flex align-items-center">
-                                                @if($post->source == "page")
+                                                @if($post->shared_post->source == "page")
                                                     <div class="owner-img">
-                                                        <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->page->profile_image}}" class="rounded-circle" /></a>
+                                                        <a style="display: inline" href="{{route('profile',$post->shared_post->publisher->id)}}"><img src="/{{$post->shared_post->page->profile_image}}" class="rounded-circle" /></a>
                                                     </div>
                                                 @else
-                                                    @if($post->publisher->personal_image)
+                                                    @if($post->shared_post->publisher->personal_image)
                                                         <div class="owner-img">
-                                                            <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->publisher->personal_image}}" class="rounded-circle" /></a>
+                                                            <a style="display: inline" href="{{route('profile',$post->shared_post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->shared_post->publisher->personal_image}}" class="rounded-circle" /></a>
                                                         </div>
                                                     @else
                                                         <div class="owner-img">
-                                                            <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
+                                                            <a style="display: inline" href="{{route('profile',$post->shared_post->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
                                                         </div>
                                                     @endif
                                                 @endif
                                                 <div class="owner-name pl-3">
-                                                    @if($post->source == "page")
-                                                        <a href="{{route('main-page',$post->page_id)}}"><b>
-                                                                {{$post->page->name}}
+                                                    @if($post->shared_post->source == "page")
+                                                        <a href="{{route('main-page',$post->shared_post->page_id)}}"><b>
+                                                                {{$post->shared_post->page->name}}
                                                             </b></a>
                                                     @else
-                                                        <a href="{{route('profile',$post->publisher->id)}}"><b>
-                                                                @if($post->publisher->official == 1)
+                                                        <a href="{{route('profile',$post->shared_post->publisher->id)}}"><b>
+                                                                @if($post->shared_post->publisher->official == 1)
                                                                     <i class="fas fa-user-check" style="color: #ffc107"></i>
                                                                 @endif
-                                                                {{$post->publisher->name}}
+                                                                {{$post->shared_post->publisher->name}}
                                                             </b></a>
                                                     @endif
 
-                                                    @if($post->sponsored)
+                                                    @if($post->shared_post->sponsored)
                                                         <div style="font-size: small">
                                                             <span><i class="fas fa-ad"></i></span>
                                                             {{__('home.sponsored')}}
@@ -894,84 +901,26 @@ function inspirationId($user, $enemy){
 
                                                     @endif
 
-                                                    @if($post->tags != null )
-                                                        <a data-toggle="modal" data-target="#show-post-tags-modal-{{$post->id}}"><b>
+                                                    @if($post->shared_post->tags != null )
+                                                        <a data-toggle="modal" data-target="#show-post-tags-modal-{{$post->shared_post->id}}"><b>
                                                                 with
-                                                                @if($post->tagged == true)
-                                                                    {{__('home.you_and')}} {{count($post->tags_info) - 1}}
+                                                                @if($post->shared_post->tagged == true)
+                                                                    {{__('home.you_and')}} {{count($post->shared_post->tags_info) - 1}}
                                                                 @else
-                                                                    {{count($post->tags_info)}}
+                                                                    {{count($post->shared_post->tags_info)}}
                                                                 @endif
                                                                 {{__('home.others')}}
                                                             </b></a>
                                                     @endif
 
-                                                    @if($post->source == "group")
-                                                        <a href="{{route('main-group',$post->group_id)}}">
+                                                    @if($post->shared_post->source == "group")
+                                                        <a href="{{route('main-group',$post->shared_post->group_id)}}">
                                                             <Span><i class="fas fa-caret-right"></i></Span>
-                                                            {{$post->group->name}}
+                                                            {{$post->shared_post->group->name}}
                                                         </a>
                                                     @endif
 
-                                                    <span style="display: block">{{date('d/m/Y',strtotime($post->created_at))}}</span>
-                                                </div>
-                                                <!-- Post options -->
-                                                <div class="post-options post-options-{{$post->id}}">
-                                                    <ul class="options">
-                                                        @if($post->source == 'page')
-                                                            @if($post->isPageAdmin)
-                                                                <li data-toggle="modal" data-target="#advertise-post-modal-{{$post->id}}">{{__('home.advertise')}}</li>
-                                                            @endif
-                                                        @else
-                                                            @if($post->sponsored == false && $post->type == "post" && $post->publisherId == auth()->user()->id)
-                                                                <li data-toggle="modal" data-target="#advertise-post-modal-{{$post->id}}">{{__('home.advertise')}}</li>
-                                                            @endif
-                                                        @endif
-                                                        @if(!$post->saved)
-                                                        <!-- ajax -->
-                                                            <li><a id="save-post-{{$post->id}}" onclick="savePostSubmit({{$post->id}})">{{__('home.save_post')}}</a></li>
-                                                            <form id="save-post-form-{{$post->id}}" action="{{ route('savepost') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                @csrf
-                                                                <input type="hidden" name="post_id" value="{{$post->id}}">
-                                                                <input type="hidden" id="save-post-flag-{{$post->id}}" name="flag" value="0">
-                                                            </form>
-                                                        @else
-                                                            <li><a id="save-post-{{$post->id}}" onclick="savePostSubmit({{$post->id}})">{{__('home.saved')}}</a></li>
-                                                            <form id="save-post-form-{{$post->id}}" action="{{ route('savepost') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                @csrf
-                                                                <input type="hidden" name="post_id" value="{{$post->id}}">
-                                                                <input type="hidden" id="save-post-flag-{{$post->id}}" name="flag" value="1">
-                                                            </form>
-                                                        @endif
-
-                                                        @if($post->source == 'page')
-                                                            @if($post->isPageAdmin)
-                                                                <li data-toggle="modal" onclick="textAreaChange({{$post->id}})" data-target="#edit-post-modal-{{$post->id}}">{{__('user.edit')}}</li>
-                                                                <form action="{{ route('posts.destroy', $post->id) }}" id="delete-post-form-{{$post->id}}" method="post">
-                                                                @csrf
-                                                                @method('delete')
-                                                                <!-- ajax-->
-                                                                    <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
-                                                                        {{__('user.delete')}}</li>
-                                                                </form>
-                                                            @endif
-                                                        @else
-                                                            @if($post->publisherId == auth()->user()->id)
-                                                                <li data-toggle="modal" onclick="textAreaChange({{$post->id}})" data-target="#edit-post-modal-{{$post->id}}">{{__('user.edit')}}</li>
-                                                                <form action="{{ route('posts.destroy', $post->id) }}" id="delete-post-form-{{$post->id}}" method="post">
-                                                                @csrf
-                                                                @method('delete')
-                                                                <!-- ajax-->
-                                                                    <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
-                                                                        {{__('user.delete')}}</li>
-                                                                </form>
-                                                            @endif
-                                                        @endif
-                                                        <li data-toggle="modal" data-target="#report-post-modal-{{$post->id}}" class="last-li">{{__('home.report')}}</li>
-                                                    </ul>
-                                                </div>
-                                                <div class="post-option ml-auto pr-3" onclick="toggleOptions({{$post->id}});applySelect2();">
-                                                    <i class="fas fa-ellipsis-v"></i>
+                                                    <span style="display: block">{{date('d/m/Y',strtotime($post->shared_post->created_at))}}</span>
                                                 </div>
                                             </div>
 
@@ -1059,7 +1008,7 @@ function inspirationId($user, $enemy){
                                                                         @endif
 
                                                                         @if(count($post->shared_post->media) > 4)
-                                                                            <div class="more-media w-50" data-toggle="modal" data-target="#more-media-modal-{{$post->id}}">
+                                                                            <div class="more-media w-50" data-toggle="modal" data-target="#more-media-modal-{{$post->shared_post->id}}">
                                                                                 <p>+{{count($post->shared_post->media) - 3}}</p>
                                                                                 <div class="overlay"></div>
 
@@ -1082,7 +1031,7 @@ function inspirationId($user, $enemy){
                                                         @endif
                                                     </div>
                                                     <div class="post-more-media-modal">
-                                                        <div class="modal fade" id="more-media-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal fade" id="more-media-modal-{{$post->shared_post->id}}" tabindex="-1" aria-hidden="true">
                                                             <div class="modal-dialog" style="margin-top: 10vh">
                                                                 <div class="modal-content">
                                                                     <div class="modal-body">
@@ -1118,44 +1067,44 @@ function inspirationId($user, $enemy){
                                         <div class="likes">
                                             @if($post->liked)
                                                 <div class="reaction-container" id="reaction-container-{{$post->id}}">
-                                                <span class="reaction-btn">
-                                                        <span class="reaction-btn-emo like-btn-{{$post->user_react[0]->name_en}}" id="reaction-btn-emo-{{$post->id}}"></span>
-                                                        <span class="reaction-btn-text reaction-btn-text-{{$post->user_react[0]->name_en}} active" onclick="unlikeModelSubmit({{$post->id}},{{$post->user_react[0]->id}})" id="reaction-btn-text-{{$post->id}}">
-                                                            @if(App::getLocale() == 'ar')
-                                                                {{$post->user_react[0]->name_ar}}
-                                                            @else
-                                                                {{$post->user_react[0]->name_en}}
-                                                            @endif
-                                                                <form id="unlike-form-{{$post->id}}-{{$post->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                    @csrf
-                                                                    <input type="hidden" name="model_id" value="{{$post->id}}">
-                                                                    <input type="hidden" name="model_type" value="post">
-                                                                    <input type="hidden" name="reactId" value="{{$post->user_react[0]->id}}">
-                                                                   <input type="hidden" name="requestType" id="like-request-type-{{$post->id}}" value="delete">
-                                                                </form>
-                                                        </span>
-                                                        <ul class="emojies-box">
-                                                            @foreach($reacts as $react)
-                                                                <!-- Reaction buttons container-->
-                                                                    <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
-                                                                    <form id="like-form-{{$post->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                    @csrf
-                                                                    <input type="hidden" name="model_id" value="{{$post->id}}">
-                                                                    <input type="hidden" name="model_type" value="post">
-                                                                    <input type="hidden" name="reactId" value="{{$react->id}}">
-                                                                   <input type="hidden" name="requestType" id="like-request-type-{{$post->id}}" value="update">
-                                                                </form>
-                                                                @endforeach
-                                                        </ul>
-                                                      </span>
-                                                    <div class="like-stat">
-                                                    <span class="like-emo" id="like-emo-{{$post->id}}">
-                                                          <!-- like emotions container -->
-                                                          <span class="like-btn-like"></span>
-                                                            @if($post->user_react[0]->name_en != "like")
-                                                            <span class="like-btn-{{$post->user_react[0]->name_en}}"></span>
+                                            <span class="reaction-btn">
+                                                    <span class="reaction-btn-emo like-btn-{{$post->user_react[0]->name_en}}" id="reaction-btn-emo-{{$post->id}}"></span>
+                                                    <span class="reaction-btn-text reaction-btn-text-{{$post->user_react[0]->name_en}} active" onclick="unlikeModelSubmit({{$post->id}},{{$post->user_react[0]->id}})" id="reaction-btn-text-{{$post->id}}">
+                                                        @if(App::getLocale() == 'ar')
+                                                            {{$post->user_react[0]->name_ar}}
+                                                        @else
+                                                            {{$post->user_react[0]->name_en}}
                                                         @endif
-                                                        </span>
+                                                            <form id="unlike-form-{{$post->id}}-{{$post->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                @csrf
+                                                                <input type="hidden" name="model_id" value="{{$post->id}}">
+                                                                <input type="hidden" name="model_type" value="post">
+                                                                <input type="hidden" name="reactId" value="{{$post->user_react[0]->id}}">
+                                                               <input type="hidden" name="requestType" id="like-request-type-{{$post->id}}" value="delete">
+                                                            </form>
+                                                    </span>
+                                                    <ul class="emojies-box">
+                                                        @foreach($reacts as $react)
+                                                            <!-- Reaction buttons container-->
+                                                                <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
+                                                                <form id="like-form-{{$post->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                @csrf
+                                                                <input type="hidden" name="model_id" value="{{$post->id}}">
+                                                                <input type="hidden" name="model_type" value="post">
+                                                                <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                               <input type="hidden" name="requestType" id="like-request-type-{{$post->id}}" value="update">
+                                                            </form>
+                                                            @endforeach
+                                                    </ul>
+                                                  </span>
+                                                    <div class="like-stat">
+                                                <span class="like-emo" id="like-emo-{{$post->id}}">
+                                                      <!-- like emotions container -->
+                                                      <span class="like-btn-like"></span>
+                                                        @if($post->user_react[0]->name_en != "like")
+                                                        <span class="like-btn-{{$post->user_react[0]->name_en}}"></span>
+                                                    @endif
+                                                    </span>
                                                         <span class="like-details" id="like-details-{{$post->id}}" data-toggle="modal" data-target="#likes-modal-{{$post->id}}">{{__('home.you')}} @if($post->likes->count-1 != 0) {{__('home.and')}} {{$post->likes->count-1}} @if($post->likes->count-1 > 1000) {{__('home.thousand')}} @endif {{__('home.others')}} @endif</span>
                                                     </div>
                                                     @if($post->likes->count > 0)
@@ -1215,33 +1164,33 @@ function inspirationId($user, $enemy){
                                                 </div>
                                             @else
                                                 <div class="reaction-container" id="reaction-container-{{$post->id}}">
-                                                <span class="reaction-btn">
-                                                    <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$post->id}}" style="display: none"></span>
-                                                    <span class="reaction-btn-text" id="reaction-btn-text-{{$post->id}}">
-                                                        <div><i class="far fa-thumbs-up"></i>
-                                                            @if($post->likes->count > 0)
-                                                                <span data-toggle="modal" data-target="#likes-modal-{{$post->id}}">
-                                                                    {{$post->likes->count}}
-                                                                </span>
-                                                            @endif
-                                                        </div>
-                                                    </span>
-                                                    <ul class="emojies-box">
-                                                        @foreach($reacts as $react)
-                                                            <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
-                                                            <form id="like-form-{{$post->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                            @csrf
-                                                            <input type="hidden" name="model_id" value="{{$post->id}}">
-                                                            <input type="hidden" name="model_type" value="post">
-                                                            <input type="hidden" name="reactId" value="{{$react->id}}">
-                                                        </form>
-                                                        @endforeach
-                                                    </ul>
+                                            <span class="reaction-btn">
+                                                <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$post->id}}" style="display: none"></span>
+                                                <span class="reaction-btn-text" id="reaction-btn-text-{{$post->id}}">
+                                                    <div><i class="far fa-thumbs-up"></i>
+                                                        @if($post->likes->count > 0)
+                                                            <span data-toggle="modal" data-target="#likes-modal-{{$post->id}}">
+                                                                {{$post->likes->count}}
+                                                            </span>
+                                                        @endif
+                                                    </div>
                                                 </span>
+                                                <ul class="emojies-box">
+                                                    @foreach($reacts as $react)
+                                                        <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$post->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
+                                                        <form id="like-form-{{$post->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                        @csrf
+                                                        <input type="hidden" name="model_id" value="{{$post->id}}">
+                                                        <input type="hidden" name="model_type" value="post">
+                                                        <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                    </form>
+                                                    @endforeach
+                                                </ul>
+                                            </span>
                                                     <div class="like-stat" id="like-stat-{{$post->id}}" style="display: none">
-                                                    <span class="like-emo" id="like-emo-{{$post->id}}">
-                                                      <span class="like-btn-like"></span>
-                                                    </span>
+                                                <span class="like-emo" id="like-emo-{{$post->id}}">
+                                                  <span class="like-btn-like"></span>
+                                                </span>
                                                         <span class="like-details" id="like-details-{{$post->id}}" data-toggle="modal" data-target="#likes-modal-{{$post->id}}">@if($post->likes->count-1 > 0) {{__('home.and')}} {{$post->likes->count-1}} @if($post->likes->count-1 > 1000) {{__('home.thousand')}} @endif {{__('home.others')}} @endif</span>
                                                     </div>
                                                     @if($post->likes->count > 0)
@@ -1303,10 +1252,10 @@ function inspirationId($user, $enemy){
                                         </div>
                                         <div class="comments" onclick="toggleComments({{$post->id}})"><i class="far fa-comment ml-3"></i>
                                             <span id="comment-count-{{$post->id}}">
-                                                @if($post->comments->count > 0)
+                                            @if($post->comments->count > 0)
                                                     {{$post->comments->count}}
                                                 @endif
-                                            </span>
+                                        </span>
                                         </div>
                                         <div class="modal" id="share-post-modal-{{$post->id}}" tabindex="-1" aria-labelledby="exampleModalLabel"
                                              aria-hidden="true">
@@ -1356,8 +1305,8 @@ function inspirationId($user, $enemy){
                                                                 </select>
                                                             </div>
                                                             <div class="post-desc d-flex justify-content-center mt-2">
-                                                                <textarea class="w-75 p-2" name="body" id="textarea" cols="200" rows="4"
-                                                                          placeholder="{{__('home.text_area')}}"></textarea>
+                                                            <textarea class="w-75 p-2" name="body" id="textarea" cols="200" rows="4"
+                                                                      placeholder="{{__('home.text_area')}}"></textarea>
                                                                 <div id="menu" class="menu" role="listbox"></div>
                                                             </div>
                                                             <!-- Add Post Btn -->
@@ -1375,8 +1324,8 @@ function inspirationId($user, $enemy){
                                             <i data-toggle="modal" data-target="#share-post-modal-{{$post->id}}" class="fas fa-share ml-3"></i>
                                             @if($post->shares > 0)
                                                 <span data-toggle="modal" data-target="#shares-modal-{{$post->id}}">
-                                                {{$post->shares}}
-                                            </span>
+                                            {{$post->shares}}
+                                        </span>
                                             @endif
                                         </div>
                                     </div>
@@ -1458,48 +1407,48 @@ function inspirationId($user, $enemy){
                                                                         <div class="reaction-container" id="reaction-container-{{$comment->id}}">
                                                                             <!-- container div for reaction system -->
                                                                             <span class="reaction-btn">
-                                                                        <!-- Default like button -->
-                                                                        <span class="reaction-btn-emo like-btn-{{$comment->user_react[0]->name_en}}" id="reaction-btn-emo-{{$comment->id}}"></span>
+                                                                    <!-- Default like button -->
+                                                                    <span class="reaction-btn-emo like-btn-{{$comment->user_react[0]->name_en}}" id="reaction-btn-emo-{{$comment->id}}"></span>
                                                                                 <!-- Default like button emotion-->
-                                                                        <span class="reaction-btn-text reaction-btn-text-{{$comment->user_react[0]->name_en}} active" onclick="unlikeModelSubmit({{$comment->id}},{{$comment->user_react[0]->id}})" id="reaction-btn-text-{{$comment->id}}">
-                                                                            @if(App::getLocale() == 'ar')
-                                                                                {{$comment->user_react[0]->name_ar}}
-                                                                            @else
-                                                                                {{$comment->user_react[0]->name_en}}
-                                                                            @endif
-                                                                                <form id="unlike-form-{{$comment->id}}-{{$comment->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                                    @csrf
-                                                                                    <input type="hidden" name="model_id" value="{{$comment->id}}">
-                                                                                    <input type="hidden" name="model_type" value="comment">
-                                                                                    <input type="hidden" name="reactId" value="{{$comment->user_react[0]->id}}">
-                                                                                   <input type="hidden" name="requestType" id="like-request-type-{{$comment->id}}" value="delete">
-                                                                                </form>
-                                                                        </span>
+                                                                    <span class="reaction-btn-text reaction-btn-text-{{$comment->user_react[0]->name_en}} active" onclick="unlikeModelSubmit({{$comment->id}},{{$comment->user_react[0]->id}})" id="reaction-btn-text-{{$comment->id}}">
+                                                                        @if(App::getLocale() == 'ar')
+                                                                            {{$comment->user_react[0]->name_ar}}
+                                                                        @else
+                                                                            {{$comment->user_react[0]->name_en}}
+                                                                        @endif
+                                                                            <form id="unlike-form-{{$comment->id}}-{{$comment->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                @csrf
+                                                                                <input type="hidden" name="model_id" value="{{$comment->id}}">
+                                                                                <input type="hidden" name="model_type" value="comment">
+                                                                                <input type="hidden" name="reactId" value="{{$comment->user_react[0]->id}}">
+                                                                               <input type="hidden" name="requestType" id="like-request-type-{{$comment->id}}" value="delete">
+                                                                            </form>
+                                                                    </span>
                                                                                 <!-- Default like button text,(Like, wow, sad..) default:Like  -->
-                                                                        <ul class="emojies-box">
-                                                                            @foreach($reacts as $react)
-                                                                                <!-- Reaction buttons container-->
-                                                                                    <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$comment->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
-                                                                                    <form id="like-form-{{$comment->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                                    @csrf
-                                                                                    <input type="hidden" name="model_id" value="{{$comment->id}}">
-                                                                                    <input type="hidden" name="model_type" value="comment">
-                                                                                    <input type="hidden" name="reactId" value="{{$react->id}}">
-                                                                                   <input type="hidden" name="requestType" id="like-request-type-{{$comment->id}}" value="update">
-                                                                                </form>
-                                                                                @endforeach
-                                                                        </ul>
-                                                                      </span>
+                                                                    <ul class="emojies-box">
+                                                                        @foreach($reacts as $react)
+                                                                            <!-- Reaction buttons container-->
+                                                                                <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$comment->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
+                                                                                <form id="like-form-{{$comment->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                @csrf
+                                                                                <input type="hidden" name="model_id" value="{{$comment->id}}">
+                                                                                <input type="hidden" name="model_type" value="comment">
+                                                                                <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                               <input type="hidden" name="requestType" id="like-request-type-{{$comment->id}}" value="update">
+                                                                            </form>
+                                                                            @endforeach
+                                                                    </ul>
+                                                                  </span>
                                                                             <div class="like-stat">
                                                                                 <!-- Like statistic container-->
                                                                                 <span class="like-emo" id="like-emo-{{$comment->id}}">
-                                                                              <!-- like emotions container -->
-                                                                              <span class="like-btn-like"></span>
-                                                                                @if($comment->user_react[0]->name_en != "like")
+                                                                          <!-- like emotions container -->
+                                                                          <span class="like-btn-like"></span>
+                                                                            @if($comment->user_react[0]->name_en != "like")
                                                                                         <span class="like-btn-{{$comment->user_react[0]->name_en}}"></span>
                                                                                 @endif
                                                                                 <!-- given emotions like, wow, sad (default:Like) -->
-                                                                            </span>
+                                                                        </span>
                                                                                 <span class="like-details" id="like-details-{{$comment->id}}" data-toggle="modal" data-target="#likes-modal-{{$comment->id}}">{{__('home.you')}} @if($comment->likes->count-1 != 0) {{__('home.and')}} {{$comment->likes->count-1}} @if($comment->likes->count-1 > 1000) {{__('home.thousand')}} @endif {{__('home.others')}} @endif</span>
                                                                             </div>
                                                                             @if($comment->likes->count > 0)
@@ -1561,38 +1510,38 @@ function inspirationId($user, $enemy){
                                                                         <div class="reaction-container" id="reaction-container-{{$comment->id}}">
                                                                             <!-- container div for reaction system -->
                                                                             <span class="reaction-btn">
-                                                                            <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$comment->id}}" style="display: none"></span>
+                                                                        <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$comment->id}}" style="display: none"></span>
                                                                                 <!-- Default like button emotion-->
-                                                                            <span class="reaction-btn-text" id="reaction-btn-text-{{$comment->id}}">
-                                                                                <div><i class="far fa-thumbs-up"></i>
-                                                                                    @if($comment->likes->count > 0)
-                                                                                        <span data-toggle="modal" data-target="#likes-modal-{{$comment->id}}">
-                                                                                            {{$comment->likes->count}}
-                                                                                        </span>
-                                                                                    @endif
-                                                                                </div>
-                                                                            </span>
-                                                                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
-                                                                            <ul class="emojies-box">
-                                                                                @foreach($reacts as $react)
-                                                                                    <!-- Reaction buttons container-->
-                                                                                        <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$comment->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
-                                                                                        <form id="like-form-{{$comment->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                                        @csrf
-                                                                                        <input type="hidden" name="model_id" value="{{$comment->id}}">
-                                                                                        <input type="hidden" name="model_type" value="comment">
-                                                                                        <input type="hidden" name="reactId" value="{{$react->id}}">
-                                                                                    </form>
-                                                                                    @endforeach
-                                                                            </ul>
+                                                                        <span class="reaction-btn-text" id="reaction-btn-text-{{$comment->id}}">
+                                                                            <div><i class="far fa-thumbs-up"></i>
+                                                                                @if($comment->likes->count > 0)
+                                                                                    <span data-toggle="modal" data-target="#likes-modal-{{$comment->id}}">
+                                                                                        {{$comment->likes->count}}
+                                                                                    </span>
+                                                                                @endif
+                                                                            </div>
                                                                         </span>
+                                                                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
+                                                                        <ul class="emojies-box">
+                                                                            @foreach($reacts as $react)
+                                                                                <!-- Reaction buttons container-->
+                                                                                    <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$comment->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
+                                                                                    <form id="like-form-{{$comment->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                    @csrf
+                                                                                    <input type="hidden" name="model_id" value="{{$comment->id}}">
+                                                                                    <input type="hidden" name="model_type" value="comment">
+                                                                                    <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                                </form>
+                                                                                @endforeach
+                                                                        </ul>
+                                                                    </span>
                                                                             <div class="like-stat" id="like-stat-{{$comment->id}}" style="display: none">
                                                                                 <!-- Like statistic container-->
                                                                                 <span class="like-emo" id="like-emo-{{$comment->id}}">
-                                                                              <!-- like emotions container -->
-                                                                              <span class="like-btn-like"></span>
+                                                                          <!-- like emotions container -->
+                                                                          <span class="like-btn-like"></span>
                                                                                     <!-- given emotions like, wow, sad (default:Like) -->
-                                                                            </span>
+                                                                        </span>
                                                                                 <span class="like-details" id="like-details-{{$comment->id}}" data-toggle="modal" data-target="#likes-modal-{{$comment->id}}">@if($comment->likes->count-1 > 0) {{__('home.and')}} {{$comment->likes->count-1}} @if($comment->likes->count-1 > 1000) {{__('home.thousand')}} @endif {{__('home.others')}} @endif</span>
                                                                             </div>
                                                                             @if($comment->likes->count > 0)
@@ -1692,48 +1641,48 @@ function inspirationId($user, $enemy){
                                                                                                         <div class="reaction-container" id="reaction-container-{{$reply->id}}">
                                                                                                             <!-- container div for reaction system -->
                                                                                                             <span class="reaction-btn">
-                                                                                                            <!-- Default like button -->
-                                                                                                            <span class="reaction-btn-emo like-btn-{{$reply->user_react[0]->name_en}}" id="reaction-btn-emo-{{$reply->id}}"></span>
+                                                                                                        <!-- Default like button -->
+                                                                                                        <span class="reaction-btn-emo like-btn-{{$reply->user_react[0]->name_en}}" id="reaction-btn-emo-{{$reply->id}}"></span>
                                                                                                                 <!-- Default like button emotion-->
-                                                                                                            <span class="reaction-btn-text reaction-btn-text-{{$reply->user_react[0]->name_en}} active" onclick="unlikeModelSubmit({{$reply->id}},{{$reply->user_react[0]->id}})" id="reaction-btn-text-{{$reply->id}}">
-                                                                                                                @if(App::getLocale() == 'ar')
-                                                                                                                    {{$reply->user_react[0]->name_ar}}
-                                                                                                                @else
-                                                                                                                    {{$reply->user_react[0]->name_en}}
-                                                                                                                @endif
-                                                                                                                <form id="unlike-form-{{$reply->id}}-{{$reply->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                        <span class="reaction-btn-text reaction-btn-text-{{$reply->user_react[0]->name_en}} active" onclick="unlikeModelSubmit({{$reply->id}},{{$reply->user_react[0]->id}})" id="reaction-btn-text-{{$reply->id}}">
+                                                                                                            @if(App::getLocale() == 'ar')
+                                                                                                                {{$reply->user_react[0]->name_ar}}
+                                                                                                            @else
+                                                                                                                {{$reply->user_react[0]->name_en}}
+                                                                                                            @endif
+                                                                                                            <form id="unlike-form-{{$reply->id}}-{{$reply->user_react[0]->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                                @csrf
+                                                                                                                <input type="hidden" name="model_id" value="{{$reply->id}}">
+                                                                                                                <input type="hidden" name="model_type" value="comment">
+                                                                                                                <input type="hidden" name="reactId" value="{{$reply->user_react[0]->id}}">
+                                                                                                               <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="delete">
+                                                                                                            </form>
+                                                                                                        </span>
+                                                                                                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
+                                                                                                        <ul class="emojies-box">
+                                                                                                            @foreach($reacts as $react)
+                                                                                                                <!-- Reaction buttons container-->
+                                                                                                                    <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
+                                                                                                                    <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
                                                                                                                     @csrf
                                                                                                                     <input type="hidden" name="model_id" value="{{$reply->id}}">
                                                                                                                     <input type="hidden" name="model_type" value="comment">
-                                                                                                                    <input type="hidden" name="reactId" value="{{$reply->user_react[0]->id}}">
-                                                                                                                   <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="delete">
+                                                                                                                    <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                                                                    <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="update">
                                                                                                                 </form>
-                                                                                                            </span>
-                                                                                                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
-                                                                                                            <ul class="emojies-box">
-                                                                                                                @foreach($reacts as $react)
-                                                                                                                    <!-- Reaction buttons container-->
-                                                                                                                        <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
-                                                                                                                        <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                                                                        @csrf
-                                                                                                                        <input type="hidden" name="model_id" value="{{$reply->id}}">
-                                                                                                                        <input type="hidden" name="model_type" value="comment">
-                                                                                                                        <input type="hidden" name="reactId" value="{{$react->id}}">
-                                                                                                                        <input type="hidden" name="requestType" id="like-request-type-{{$reply->id}}" value="update">
-                                                                                                                    </form>
-                                                                                                                    @endforeach
-                                                                                                            </ul>
-                                                                                                        </span>
+                                                                                                                @endforeach
+                                                                                                        </ul>
+                                                                                                    </span>
                                                                                                             <div class="like-stat">
                                                                                                                 <!-- Like statistic container-->
                                                                                                                 <span class="like-emo" id="like-emo-{{$reply->id}}">
-                                                                                                              <!-- like emotions container -->
-                                                                                                                <span class="like-btn-like"></span>
-                                                                                                                @if($reply->user_react[0]->name_en != "like")
+                                                                                                          <!-- like emotions container -->
+                                                                                                            <span class="like-btn-like"></span>
+                                                                                                            @if($reply->user_react[0]->name_en != "like")
                                                                                                                         <span class="like-btn-{{$reply->user_react[0]->name_en}}"></span>
                                                                                                                 @endif
                                                                                                                 <!-- given emotions like, wow, sad (default:Like) -->
-                                                                                                            </span>
+                                                                                                        </span>
                                                                                                                 <span class="like-details" id="like-details-{{$reply->id}}" data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">{{__('home.you')}} @if($reply->likes->count-1 != 0) {{__('home.and')}} {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) {{__('home.thousnad')}} @endif {{__('home.others')}} @endif</span>
                                                                                                             </div>
                                                                                                             @if($reply->likes->count > 0)
@@ -1795,38 +1744,38 @@ function inspirationId($user, $enemy){
                                                                                                         <div class="reaction-container" id="reaction-container-{{$reply->id}}">
                                                                                                             <!-- container div for reaction system -->
                                                                                                             <span class="reaction-btn">
-                                                                                                        <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$reply->id}}" style="display: none"></span>
+                                                                                                    <span class="reaction-btn-emo like-btn-default" id="reaction-btn-emo-{{$reply->id}}" style="display: none"></span>
                                                                                                                 <!-- Default like button emotion-->
-                                                                                                        <span class="reaction-btn-text" id="reaction-btn-text-{{$reply->id}}">
-                                                                                                            <div><i class="far fa-thumbs-up"></i>
-                                                                                                                @if($reply->likes->count > 0)
-                                                                                                                    <span data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">
-                                                                                                                        {{$reply->likes->count}}
-                                                                                                                    </span>
-                                                                                                                @endif
-                                                                                                            </div>
-                                                                                                        </span>
-                                                                                                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
-                                                                                                        <ul class="emojies-box">
-                                                                                                            @foreach($reacts as $react)
-                                                                                                                <!-- Reaction buttons container-->
-                                                                                                                    <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
-                                                                                                                    <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                                                                                    @csrf
-                                                                                                                    <input type="hidden" name="model_id" value="{{$reply->id}}">
-                                                                                                                    <input type="hidden" name="model_type" value="comment">
-                                                                                                                    <input type="hidden" name="reactId" value="{{$react->id}}">
-                                                                                                                </form>
-                                                                                                                @endforeach
-                                                                                                        </ul>
+                                                                                                    <span class="reaction-btn-text" id="reaction-btn-text-{{$reply->id}}">
+                                                                                                        <div><i class="far fa-thumbs-up"></i>
+                                                                                                            @if($reply->likes->count > 0)
+                                                                                                                <span data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">
+                                                                                                                    {{$reply->likes->count}}
+                                                                                                                </span>
+                                                                                                            @endif
+                                                                                                        </div>
                                                                                                     </span>
+                                                                                                                <!-- Default like button text,(Like, wow, sad..) default:Like  -->
+                                                                                                    <ul class="emojies-box">
+                                                                                                        @foreach($reacts as $react)
+                                                                                                            <!-- Reaction buttons container-->
+                                                                                                                <li class="emoji emo-{{$react->name_en}}" id="react-{{$react->id}}" onclick="likeModelSubmit({{$reply->id}},{{$react->id}})" data-reaction="{{$react->name_en}}"></li>
+                                                                                                                <form id="like-form-{{$reply->id}}-{{$react->id}}" action="{{ route('likes.store') }}" method="POST" enctype="multipart/form-data" style="display: none;">
+                                                                                                                @csrf
+                                                                                                                <input type="hidden" name="model_id" value="{{$reply->id}}">
+                                                                                                                <input type="hidden" name="model_type" value="comment">
+                                                                                                                <input type="hidden" name="reactId" value="{{$react->id}}">
+                                                                                                            </form>
+                                                                                                            @endforeach
+                                                                                                    </ul>
+                                                                                                </span>
                                                                                                             <div class="like-stat" id="like-stat-{{$reply->id}}" style="display: none">
                                                                                                                 <!-- Like statistic container-->
                                                                                                                 <span class="like-emo" id="like-emo-{{$reply->id}}">
-                                                                                                              <!-- like emotions container -->
-                                                                                                              <span class="like-btn-like"></span>
+                                                                                                          <!-- like emotions container -->
+                                                                                                          <span class="like-btn-like"></span>
                                                                                                                     <!-- given emotions like, wow, sad (default:Like) -->
-                                                                                                            </span>
+                                                                                                        </span>
                                                                                                                 <span class="like-details" id="like-details-{{$reply->id}}" data-toggle="modal" data-target="#likes-modal-{{$reply->id}}">@if($reply->likes->count-1 > 0) {{__('home.and')}} {{$reply->likes->count-1}} @if($reply->likes->count-1 > 1000) {{__('home.thousand')}} @endif {{__('home.others')}} @endif</span>
                                                                                                             </div>
                                                                                                             @if($reply->likes->count > 0)
@@ -1895,7 +1844,7 @@ function inspirationId($user, $enemy){
                                                                                                     {{__('home.report')}}</li>
                                                                                                 @if($reply->publisher->id == auth()->user()->id)
                                                                                                     <li data-toggle="modal" data-target="#edit-reply-modal-{{$reply->id}}">{{__('user.edit')}}</li>
-                                                                                                    <li onclick="confirm('{{ __("Are you sure you want to delete this reply ?") }}') ? deleteCommentSubmit({{$reply->id}},{{$post->id}}) : ''" >{{__('user.delete')}}</li>
+                                                                                                    <li onclick="confirm('{{ __("home.confirm") }}') ? deleteCommentSubmit({{$reply->id}},{{$post->id}}) : ''" >{{__('user.delete')}}</li>
                                                                                                     <form action="{{ route('comments.destroy', $reply->id) }}" id="delete-comment-form-{{$reply->id}}" method="POST">
                                                                                                     @csrf
                                                                                                     @method('delete')
@@ -1929,8 +1878,8 @@ function inspirationId($user, $enemy){
 
                                                                                                                     <!-- Post Desc -->
                                                                                                                         <div class="post-desc d-flex justify-content-center mt-2">
-                                                                                                                      <textarea onfocus="mentionAdd('text-edit-{{$reply->id}}','menu-edit-reply-{{$reply->id}}')" id="text-edit-{{$reply->id}}" class="w-75" name="body" cols="200" rows="4"
-                                                                                                                                placeholder="{{__('home.text_area')}}" >@if($reply->mentions != null){{$reply->edit}}@else{{$reply->body}}@endif</textarea>
+                                                                                                                  <textarea onfocus="mentionAdd('text-edit-{{$reply->id}}','menu-edit-reply-{{$reply->id}}')" id="text-edit-{{$reply->id}}" class="w-75" name="body" cols="200" rows="4"
+                                                                                                                            placeholder="{{__('home.text_area')}}" >@if($reply->mentions != null){{$reply->edit}}@else{{$reply->body}}@endif</textarea>
                                                                                                                             <div id="menu-edit-reply-{{$reply->id}}" class="menu" role="listbox"></div>
                                                                                                                         </div>
 
@@ -1977,8 +1926,8 @@ function inspirationId($user, $enemy){
 
                                                                                                                     <!-- Post Desc -->
                                                                                                                         <div class="post-desc d-flex justify-content-center mt-2">
-                                                                                                                      <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
-                                                                                                                                placeholder="{{__('home.text_area')}}" ></textarea>
+                                                                                                                  <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                                                                                            placeholder="{{__('home.text_area')}}" ></textarea>
                                                                                                                         </div>
                                                                                                                         <!-- Add Post Btn -->
                                                                                                                         <input type="hidden" name="model_id" value="{{$reply->id}}">
@@ -2036,7 +1985,7 @@ function inspirationId($user, $enemy){
                                                                     {{__('home.report')}}</li>
                                                                 @if($comment->publisher->id == auth()->user()->id)
                                                                     <li data-toggle="modal" data-target="#edit-comment-modal-{{$comment->id}}">{{__('user.edit')}}</li>
-                                                                    <li onclick="confirm('{{ __("Are you sure you want to delete this comment ?") }}') ? deleteCommentSubmit({{$comment->id}},{{$post->id}}) : ''" >{{__('user.delete')}}</li>
+                                                                    <li onclick="confirm('{{ __("home.confirm") }}') ? deleteCommentSubmit({{$comment->id}},{{$post->id}}) : ''" >{{__('user.delete')}}</li>
                                                                     <form action="{{ route('comments.destroy', $comment->id) }}" id="delete-comment-form-{{$comment->id}}" method="POST">
                                                                     @csrf
                                                                     @method('delete')
@@ -2070,8 +2019,8 @@ function inspirationId($user, $enemy){
 
                                                                                     <!-- Post Desc -->
                                                                                         <div class="post-desc d-flex justify-content-center mt-2">
-                                                                                          <textarea onfocus="mentionAdd('text-edit-{{$comment->id}}','menu-edit-comment-{{$comment->id}}')" id="text-edit-{{$comment->id}}" class="w-75" name="body" cols="200" rows="4"
-                                                                                                    placeholder="{{__('home.text_area')}}" >@if($comment->mentions != null){{$comment->edit}}@else{{$comment->body}}@endif</textarea>
+                                                                                      <textarea onfocus="mentionAdd('text-edit-{{$comment->id}}','menu-edit-comment-{{$comment->id}}')" id="text-edit-{{$comment->id}}" class="w-75" name="body" cols="200" rows="4"
+                                                                                                placeholder="{{__('home.text_area')}}" >@if($comment->mentions != null){{$comment->edit}}@else{{$comment->body}}@endif</textarea>
                                                                                             <div id="menu-edit-comment-{{$comment->id}}" class="menu" role="listbox"></div>
                                                                                         </div>
 
@@ -2118,8 +2067,8 @@ function inspirationId($user, $enemy){
 
                                                                                     <!-- Post Desc -->
                                                                                         <div class="post-desc d-flex justify-content-center mt-2">
-                                                                                          <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
-                                                                                                    placeholder="{{__('home.text_area')}}" ></textarea>
+                                                                                      <textarea class="w-75" name="body" id="post-text" cols="200" rows="4"
+                                                                                                placeholder="{{__('home.text_area')}}" ></textarea>
                                                                                         </div>
                                                                                         <!-- Add Post Btn -->
                                                                                         <input type="hidden" name="model_id" value="{{$comment->id}}">
@@ -2349,7 +2298,7 @@ function inspirationId($user, $enemy){
                                                             </div>
                                                             <!-- Select Service Category -->
                                                             <div class="post-category d-flex justify-content-between align-items-center m-auto w-75">
-                                                                <label for="cars">{{__('home.choose_category')}}</label>
+                                                                <label for="cars">{{__('home.category')}}</label>
                                                                 <select class="js-example-basic-single" name="category_id">
                                                                     @foreach($categories as $category)
                                                                         @if(App::getlocale() == 'en')
@@ -2372,8 +2321,8 @@ function inspirationId($user, $enemy){
 
                                                             <!-- Post Desc -->
                                                             <div class="post-desc d-flex justify-content-center mt-2">
-                                                          <textarea onfocus="mentionAdd('textarea-edit-{{$post->id}}','menu-edit-{{$post->id}}')" class="w-75" name="body" id="textarea-edit-{{$post->id}}" cols="200" rows="4" placeholder="{{__('home.text_area')}}"
-                                                          >@if($post->mentions != null) {{$post->edit}}@else{{$post->body}}@endif</textarea>
+                                                      <textarea onfocus="mentionAdd('textarea-edit-{{$post->id}}','menu-edit-{{$post->id}}')" class="w-75" name="body" id="textarea-edit-{{$post->id}}" cols="200" rows="4" placeholder="{{__('home.text_area')}}"
+                                                      >@if($post->mentions != null) {{$post->edit}}@else{{$post->body}}@endif</textarea>
                                                                 <div id="menu-edit-{{$post->id}}" class="menu" role="listbox"></div>
                                                             </div
 

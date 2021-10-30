@@ -40,10 +40,10 @@ return [
     "dashboard" => "Dashboard",
 
     //general
-    "search" => "search",
+    "search" => "Search",
     "edit" => "Edit",
     "delete" => "Delete",
-    "add" => "add",
+    "add" => "Add",
 
     //service
     "delete_service" => "service deleted successfully",

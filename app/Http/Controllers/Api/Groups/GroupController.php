@@ -1,249 +1,233 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers\Api\Groups;
 
-use App\Country;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\GeneralTrait;
-use App\Models\Comment;
-use App\Models\Group;
-use App\Models\Page;
-use App\Models\Post;
-use App\Models\Report;
+use App\models\Comment;
+use App\models\Group;
+use App\models\Page;
+use App\models\Post;
+use App\models\Report;
 use App\User;
 use Carbon\Carbon;
-use GuzzleHttp\Client;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\View;
 
-class MainController extends Controller
+class GroupController extends Controller
 {
-
+    #region Check
+    public $valid_token;
+    public $user_verified;
+    public function __construct(){
+        if(auth('api')->user()){
+            $this->valid_token =1;
+            $this->user = auth('api')->user();
+            $this->user_verified = $this->user['email_verified_at'];
+        }else{
+            $this->valid_token =0;
+        }
+    }
+    public function unValidToken($state){
+        if($state == 0){
+            return $this->returnError(404, 'Token is invalid, User is not authenticated');
+        }
+    }
+    public function unVerified($state){
+        if($state == null){
+            return $this->returnError(404, 'User is not verified check your email');
+        }
+    }
+    #endregion
     use GeneralTrait;
-
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request, $take = null, $start = null)
+    public function index(Request $request)
     {
 
-//        $countries_allowed = ['Egypt','Saudi Arabia','Iraq','Algeria','Syria','Tunisia','Yemen',
-//            'Qatar','United Arab Emirates','Morocco','Jordan','Oman','Bahrain','Lebanon','Sudan',
-//            'Libya','Palestinian Territory','Kuwait'];
-//
-//        $url = 'https://countriesnow.space/api/v0.1/countries';
-//        $response = file_get_contents($url);
-//        $newsData = json_decode($response);
-//        $records = $newsData->data;
-//        //0 20
-//        for($i=0;$i<count($records);$i++){
-//            $country = $records[$i]->country;
-//            if(in_array($country, $countries_allowed)) {
-//                if(DB::table('countries')->where('name',$country)->doesntExist()) {
-//                    $cities = $records[$i]->cities;
-//                    $oneCountry = Country::create([
-//                        'name' => $country,
-//                    ]);
-//                    foreach ($cities as $city) {
-//                        DB::table('cities')->insert([
-//                            'name' => $city,
-//                            'country_id' => $oneCountry->id
-//                        ]);
-//                    }
-//                }
-//            }
-//        }
+        if ($this->valid_token == 0) {
+            return $this->unValidToken($this->valid_token);
+        } else {
+            if (!$this->user_verified) {
+                return $this->unVerified($this->user_verified);
+            }
+            $user =$this->user;
 
-        $user = auth()->user();
+            $friends_posts = [];
+            $expected_ids = [];
+            $user_groups_ids = [];
+            $user_pages_ids = [];
+            $friends_info = [];
+            $limit = 5;
+            $offset = 0;
 
-        $friends_posts = [];
-        $expected_ids = [];
-        $user_groups_ids = [];
-        $user_pages_ids = [];
-        $friends_info = [];
-        $limit = 5;
-        $offset = 0;
-
-
-        if ($request->ajax()) {
-            $limit = $take;
-            $offset = $start;
-        }
-
-        $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
+            $user_interests = DB::select(DB::raw('select categories.id from categories,user_categories
                         where user_categories.categoryId = categories.id
                         AND user_categories.userId =' . $user->id . ' and categories.type = "post"'));
 
-        $user_interests_array = [];
+            $user_interests_array = [];
 
-        foreach ($user_interests as $interest) {
-            array_push($user_interests_array, $interest->id);
-        }
-
-
-        $user_sponsored_posts = $this->getSponsoredPosts($user_interests_array,$limit,$offset);
+            foreach ($user_interests as $interest) {
+                array_push($user_interests_array, $interest->id);
+            }
 
 
-        // friends posts he follows and are public and in groups you are in and in pages you liked
-        $friends = DB::table('friendships')->where(function ($q) use ($user) {
-            $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
-        })->where('stateId', 2)->get();
+            $user_sponsored_posts = $this->getSponsoredPosts($user_interests_array, $limit, $offset);
 
-        $friends_ids = [];
 
-        foreach ($friends as $friend2) {
-            $friend2_id = $friend2->receiverId == $user->id ? $friend2->senderId : $friend2->receiverId;
-            array_push($friends_ids, $friend2_id);
-        }
+            // friends posts he follows and are public and in groups you are in and in pages you liked
+            $friends = DB::table('friendships')->where(function ($q) use ($user) {
+                $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+            })->where('stateId', 2)->get();
 
-        array_push($friends_ids, $user->id);
+            $friends_ids = [];
 
-        $user_groups = DB::select(DB::raw('select groups.*,group_members.state from groups,group_members
+            foreach ($friends as $friend2) {
+                $friend2_id = $friend2->receiverId == $user->id ? $friend2->senderId : $friend2->receiverId;
+                array_push($friends_ids, $friend2_id);
+            }
+
+            array_push($friends_ids, $user->id);
+
+            $user_groups = DB::select(DB::raw('select groups.*,group_members.state from groups,group_members
                         where group_members.group_id = groups.id
                         AND group_members.user_id = ' . $user->id));
 
-        $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
+            $user_pages = DB::select(DB::raw('select pages.* from pages,page_members
                         where page_members.page_id = pages.id
                         AND page_members.user_id = ' . $user->id));
 
-        $user_follows = DB::select(DB::raw('select users.* from users,following
+            $user_follows = DB::select(DB::raw('select users.* from users,following
                         where following.followingId = users.id
                         AND following.followerId = ' . $user->id));
 
-        //his posts, shares , friends posts who are followed
-        $user_posts = DB::table('posts')->where('publisherId', $user->id)->where('postTypeId', 2)->where('stateId', 2)
-            ->whereNull(['page_id', 'group_id'])
-            ->limit($limit)
-            ->offset($offset)
-            ->orderBy('created_at', 'desc')->get()->toArray();
+            //his posts, shares , friends posts who are followed
+            $user_posts = DB::table('posts')->where('publisherId', $user->id)->where('postTypeId', 2)->where('stateId', 2)
+                ->whereNull(['page_id', 'group_id'])
+                ->limit($limit)
+                ->offset($offset)
+                ->orderBy('created_at', 'desc')->get()->toArray();
 
-        foreach ($friends as $friend) {
-            $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
-            if (($key = array_search($friend_id, $friends_ids)) !== false) {
-                unset($friends_ids[$key]);
-            }
+            foreach ($friends as $friend) {
+                $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
+                if (($key = array_search($friend_id, $friends_ids)) !== false) {
+                    unset($friends_ids[$key]);
+                }
 
-            $friend_followed = DB::table('following')->where('followerId', $user->id)->where('followingId', $friend_id)->exists();
+                $friend_followed = DB::table('following')->where('followerId', $user->id)->where('followingId', $friend_id)->exists();
 
-            if ($friend_followed) {
-                $friend_posts = DB::table('posts')->where('publisherId', $friend_id)->where('postTypeId', 2)
-                    ->where('stateId', 2)->where('privacyId', 1)
-                    ->limit($limit)
-                    ->offset($offset)
-                    ->orderBy('created_at', 'desc')->get();
-                foreach ($friend_posts as $post) {
-                    $post->sponsored = false;
-                    if ($post->page_id == null and $post->group_id == null) {
-                        $post->reported = DB::table('reports')->where('user_id', $user->id)
-                            ->where('model_id', $post->id)->where('model_type', 'post')->exists();
+                if ($friend_followed) {
+                    $friend_posts = DB::table('posts')->where('publisherId', $friend_id)->where('postTypeId', 2)
+                        ->where('stateId', 2)->where('privacyId', 1)
+                        ->limit($limit)
+                        ->offset($offset)
+                        ->orderBy('created_at', 'desc')->get();
+                    foreach ($friend_posts as $post) {
+                        $post->sponsored = false;
+                        if ($post->page_id == null and $post->group_id == null) {
+                            $post->reported = DB::table('reports')->where('user_id', $user->id)
+                                ->where('model_id', $post->id)->where('model_type', 'post')->exists();
 
-                        $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$post->publisherId)->exists();
+                            $isblocked = DB::table('blocks')->where('senderId', auth()->user()->id)->where('receiverId', $post->publisherId)->exists();
 
-                        if ($post->reported == false && $isblocked == false) {
-                            foreach ($user_sponsored_posts as $sponsored) {
-                                if ($sponsored->id == $post->id) {
-                                    $post->sponsored = true;
+                            if ($post->reported == false && $isblocked == false) {
+                                foreach ($user_sponsored_posts as $sponsored) {
+                                    if ($sponsored->id == $post->id) {
+                                        $post->sponsored = true;
+                                    }
                                 }
-                            }
-                            if ($post->sponsored == false) {
-                                array_push($friends_posts, $post);
+                                if ($post->sponsored == false) {
+                                    array_push($friends_posts, $post);
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            $friends_of_friend = DB::table('friendships')->where(function ($q) use ($friend_id) {
-                $q->where('senderId', $friend_id)->orWhere('receiverId', $friend_id);
-            })->where('stateId', 2)->whereNotIn('receiverId', $friends_ids)->whereNotIn('senderId', $friends_ids)->get();
+                $friends_of_friend = DB::table('friendships')->where(function ($q) use ($friend_id) {
+                    $q->where('senderId', $friend_id)->orWhere('receiverId', $friend_id);
+                })->where('stateId', 2)->whereNotIn('receiverId', $friends_ids)->whereNotIn('senderId', $friends_ids)->get();
 
 
-            array_push($friends_ids, $friend_id);
+                array_push($friends_ids, $friend_id);
 
-            foreach ($friends_of_friend as $user_friend) {
-                $friend_of_friend_id = $user_friend->receiverId == $friend_id ? $user_friend->senderId : $user_friend->receiverId;
-                $friend_request = DB::table('friendships')->where(function ($q) use ($user) {
-                    $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
-                })->where(function ($q) use ($friend_of_friend_id) {
-                    $q->where('senderId', $friend_of_friend_id)->orWhere('receiverId', $friend_of_friend_id);
-                })->whereIn('stateId', [2,3])->exists();
+                foreach ($friends_of_friend as $user_friend) {
+                    $friend_of_friend_id = $user_friend->receiverId == $friend_id ? $user_friend->senderId : $user_friend->receiverId;
+                    $friend_request = DB::table('friendships')->where(function ($q) use ($user) {
+                        $q->where('senderId', $user->id)->orWhere('receiverId', $user->id);
+                    })->where(function ($q) use ($friend_of_friend_id) {
+                        $q->where('senderId', $friend_of_friend_id)->orWhere('receiverId', $friend_of_friend_id);
+                    })->whereIn('stateId', [2, 3])->exists();
 
-                $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$friend_of_friend_id)->exists();
+                    $isblocked = DB::table('blocks')->where('senderId', $this->user->id)->where('receiverId', $friend_of_friend_id)->exists();
 
-                if ($friend_request == false && $isblocked == false) {
-                    array_push($expected_ids, $friend_of_friend_id);
+                    if ($friend_request == false && $isblocked == false) {
+                        array_push($expected_ids, $friend_of_friend_id);
+                    }
                 }
+
+                $friend_info = DB::table('users')->select('id', 'name', 'cover_image', 'personal_image')->where('id', $friend_id)->first();
+
+                array_push($friends_info, $friend_info);
+
             }
 
-            $friend_info = DB::table('users')->select('id', 'name', 'cover_image', 'personal_image')->where('id', $friend_id)->first();
 
-            array_push($friends_info, $friend_info);
-
-        }
-
-
-        foreach ($user_groups as $group) {
-            array_push($user_groups_ids, $group->id);
-        }
-
-        foreach ($user_pages as $page) {
-            array_push($user_pages_ids, $page->id);
-        }
-
-        $expected_users = $this->getExpectedFriends($user,$expected_ids);
-
-        $posts = $this->getPosts($limit, $offset, $user, $user_follows, $friends_posts, $user_pages, $user_groups, $user_posts, $user_sponsored_posts);
-
-        $stories = $this->getStories($user,5,0);
-
-        $expected_posts = $this->getExpectedPosts($user, $user_interests_array);
-
-        $expected_groups = $this->getExpectedGroups($user_interests_array, $user_groups_ids);
-
-        $expected_pages = $this->getExpectedPages($user_interests_array, $user_pages_ids);
-
-        $privacy = DB::table('privacy_type')->get();
-
-        $categories = DB::table('categories')->where('type', 'post')->get();
-
-        $times = DB::table('sponsored_time')->get();
-
-        $reaches = DB::table('sponsored_reach')->get();
-
-        $ages = DB::table('sponsored_ages')->get();
-
-        $reacts = DB::table('reacts')->get();
-
-        $cities = DB::table('cities')->get();
-
-        $countries = DB::table('countries')->get();
-
-        $another_comments = 'exist';
-
-
-        if ($request->ajax()) {
-
-            if (count($posts) > 0) {
-
-                $view = view('includes.partialpost', compact('posts', 'privacy', 'categories', 'times', 'ages', 'reaches', 'reacts', 'friends_info', 'cities', 'countries', 'another_comments'));
-
-                $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
-
-                return $sections['post'];
-            } else {
-                return response()->json([
-                    'msg' => 'end'
-                ]);
+            foreach ($user_groups as $group) {
+                array_push($user_groups_ids, $group->id);
             }
+
+            foreach ($user_pages as $page) {
+                array_push($user_pages_ids, $page->id);
+            }
+
+            $expected_users = $this->getExpectedFriends($user, $expected_ids);
+
+            $posts = $this->getPosts($limit, $offset, $user, $user_follows, $friends_posts, $user_pages, $user_groups, $user_posts, $user_sponsored_posts);
+
+            $stories = $this->getStories($user, 5, 0);
+
+            $expected_posts = $this->getExpectedPosts($user, $user_interests_array);
+
+            $expected_groups = $this->getExpectedGroups($user_interests_array, $user_groups_ids);
+
+            $expected_pages = $this->getExpectedPages($user_interests_array, $user_pages_ids);
+
+            $privacy = DB::table('privacy_type')->get();
+
+            $categories = DB::table('categories')->where('type', 'post')->get();
+
+            $times = DB::table('sponsored_time')->get();
+
+            $reaches = DB::table('sponsored_reach')->get();
+
+            $ages = DB::table('sponsored_ages')->get();
+
+            $reacts = DB::table('reacts')->get();
+
+            $cities = DB::table('cities')->get();
+
+            $countries = DB::table('countries')->get();
+
+            $another_comments = 'exist';
+
+            // Sponsor 'times', 'ages', 'reaches',
+            //posts
+            //stories
+            //friends_info,
+            //cities
+            //$countries
+            switch ($request->type){
+                case 'posts':
+                    return $this->returnData(['posts'], [$posts]);
+                case 'stories':
+                    return $this->returnData(['stories'], [$stories]);
+                case 'cities':
+                    return $this->returnData(['cities'], [$cities]);
+                case 'countries':
+                    return $this->returnData(['countries'], [$countries]);
+            }
+
         }
-
-
-        return view('home', compact('posts', 'stories', 'expected_users', 'expected_groups', 'expected_pages', 'expected_posts', 'privacy', 'categories', 'times', 'ages', 'reaches', 'reacts', 'friends_info', 'cities', 'countries', 'another_comments'));
     }
 
     private function getPosts($limit, $offset, $user, $user_follows, $friends_posts, $user_pages, $user_groups, $user_posts, $user_sponsored_posts)
@@ -331,7 +315,7 @@ class MainController extends Controller
                         $post->reported = DB::table('reports')->where('user_id', $user->id)
                             ->where('model_id', $post->id)->where('model_type', 'post')->exists();
 
-                        $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$post->publisherId)->exists();
+                        $isblocked = DB::table('blocks')->where('senderId', $this->user->id)->where('receiverId', $post->publisherId)->exists();
 
                         if ($post->reported == false && $isblocked == false) {
                             foreach ($user_sponsored_posts as $sponsored) {
@@ -370,9 +354,9 @@ class MainController extends Controller
                 $post->edit = $post->body;
                 $mentions = explode(',', $post->mentions);
                 foreach ($mentions as $mention) {
-                    $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                    $mention_id = DB::table('users')->select('id')->where('user_name', $mention)->first();
                     $post->body = str_replace('@' . $mention,
-                        '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
+                        '<a href="profile/' . $mention_id->id . '" style="color: #ffc107">' . $mention . '</a>',
                         $post->body);
                 }
             }
@@ -385,7 +369,8 @@ class MainController extends Controller
             $total_comments_count = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->count();
             $likes = DB::table('likes')->where('model_id', $post->id)->where('model_type', 'post')->get();
             $shares = DB::table('posts')->where('post_id', $post->id)->get()->toArray();
-            $post->comments_count = count($comments);
+            $post->comments_count = DB::table('comments')->where('model_id', $post->id)->where('model_type', 'post')->whereNull('comment_id')
+                ->count();
 
             $post->comments = $comments;
             $post->likes = $likes;
@@ -397,8 +382,8 @@ class MainController extends Controller
 
                 $stat = '_stat';
 
-                foreach ($reacts as $react){
-                    ${$react->name_en.$stat} = [];
+                foreach ($reacts as $react) {
+                    ${$react->name_en . $stat} = [];
                 }
 
                 foreach ($likes as $like) {
@@ -416,25 +401,25 @@ class MainController extends Controller
 
                 $post->reacts_stat = [];
 
-                foreach ($reacts as $react){
-                    array_push($post->reacts_stat,${$react->name_en.$stat});
+                foreach ($reacts as $react) {
+                    array_push($post->reacts_stat, ${$react->name_en . $stat});
                 }
             }
 
             if ($post->page_id != null) {
-                $post->source = "page";
+                $post->source = 'page';
                 $page = DB::table('pages')->where('id', $post->page_id)->first();
                 $post->isPageAdmin = DB::table('page_members')->where('page_id', $post->page_id)
-                    ->where('user_id',auth()->user()->id)
-                    ->where('isAdmin',1)
+                    ->where('user_id', $this->user->id)
+                    ->where('isAdmin', 1)
                     ->first();
                 $post->page = $page;
             } elseif ($post->group_id != null) {
-                $post->source = "group";
+                $post->source = 'group';
                 $group = DB::table('groups')->where('id', $post->group_id)->first();
                 $post->group = $group;
             } else {
-                $post->source = "normal post";
+                $post->source = 'normal post';
             }
 
             if ($post->tags != null) {
@@ -458,9 +443,8 @@ class MainController extends Controller
                     $shared_post->edit = $shared_post->body;
                     $mentions = explode(',', $shared_post->mentions);
                     foreach ($mentions as $mention) {
-                        $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
                         $shared_post->body = str_replace('@' . $mention,
-                            '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
+                            '<span style="color: #ffc107">' . $mention . '</span>',
                             $shared_post->body);
                     }
                 }
@@ -468,19 +452,15 @@ class MainController extends Controller
                 $shared_post->publisher = User::find($shared_post->publisherId);
                 $shared_post->media = DB::table('media')->where('model_id', $shared_post->id)->where('model_type', 'post')->get();
                 if ($shared_post->page_id != null) {
-                    $shared_post->source = "page";
+                    $shared_post->source = 'page';
                     $page = DB::table('pages')->where('id', $shared_post->page_id)->first();
-                    $shared_post->isPageAdmin = DB::table('page_members')->where('page_id', $shared_post->page_id)
-                        ->where('user_id',auth()->user()->id)
-                        ->where('isAdmin',1)
-                        ->first();
                     $shared_post->page = $page;
                 } elseif ($shared_post->group_id != null) {
-                    $shared_post->source = "group";
+                    $shared_post->source = 'group';
                     $group = DB::table('groups')->where('id', $shared_post->group_id)->first();
                     $shared_post->group = $group;
                 } else {
-                    $shared_post->source = "normal post";
+                    $shared_post->source = 'normal post';
                 }
 
                 if ($shared_post->tags != null) {
@@ -510,7 +490,7 @@ class MainController extends Controller
             $post->shares = count($shares);
             $post->share_details = [];
 
-            if ($post->shares > 0 && $post->type == "post") {
+            if ($post->shares > 0 && $post->type == 'post') {
                 foreach ($shares as $share) {
                     $share->publisher = User::find($share->publisherId);
                     array_push($post->share_details, $share);
@@ -539,9 +519,9 @@ class MainController extends Controller
                             $comment->edit = $comment->body;
                             $mentions = explode(',', $comment->mentions);
                             foreach ($mentions as $mention) {
-                                $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                                $mention_id = DB::table('users')->select('id')->where('user_name', $mention)->first();
                                 $comment->body = str_replace('@' . $mention,
-                                    '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
+                                    '<a href="profile/' . $mention_id->id . '" style="color: #ffc107">' . $mention . '</a>',
                                     $comment->body);
                             }
                         }
@@ -562,8 +542,8 @@ class MainController extends Controller
 
                             $stat = '_stat';
 
-                            foreach ($reacts as $react){
-                                ${$react->name_en.$stat} = [];
+                            foreach ($reacts as $react) {
+                                ${$react->name_en . $stat} = [];
                             }
                             foreach ($comment->likes as $like) {
                                 $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
@@ -580,8 +560,8 @@ class MainController extends Controller
 
                             $comment->reacts_stat = [];
 
-                            foreach ($reacts as $react){
-                                array_push($comment->reacts_stat,${$react->name_en.$stat});
+                            foreach ($reacts as $react) {
+                                array_push($comment->reacts_stat, ${$react->name_en . $stat});
                             }
                         }
 
@@ -597,9 +577,9 @@ class MainController extends Controller
                                         $reply->edit = $reply->body;
                                         $mentions = explode(',', $reply->mentions);
                                         foreach ($mentions as $mention) {
-                                            $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                                            $mention_id = DB::table('users')->select('id')->where('user_name', $mention)->first();
                                             $reply->body = str_replace('@' . $mention,
-                                                '<a href="'.route('user.view.profile',$mention_id->id).'" style="color: #ffc107">' . $mention . '</a>',
+                                                '<a href="profile/' . $mention_id->id . '" style="color: #ffc107">' . $mention . '</a>',
                                                 $reply->body);
                                         }
                                     }
@@ -618,8 +598,8 @@ class MainController extends Controller
 
                                         $stat = '_stat';
 
-                                        foreach ($reacts as $react){
-                                            ${$react->name_en.$stat} = [];
+                                        foreach ($reacts as $react) {
+                                            ${$react->name_en . $stat} = [];
                                         }
                                         foreach ($reply->likes as $like) {
                                             $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
@@ -636,8 +616,8 @@ class MainController extends Controller
 
                                         $reply->reacts_stat = [];
 
-                                        foreach ($reacts as $react){
-                                            array_push($reply->reacts_stat,${$react->name_en.$stat});
+                                        foreach ($reacts as $react) {
+                                            array_push($reply->reacts_stat, ${$react->name_en . $stat});
                                         }
                                     }
                                 }
@@ -651,7 +631,7 @@ class MainController extends Controller
         return $posts;
     }
 
-    private function getStories($user,$limit,$offset,$ajax_request = false)
+    private function getStories($user, $limit, $offset, $ajax_request = false)
     {
 
         $friends_stories = [];
@@ -666,20 +646,20 @@ class MainController extends Controller
         foreach ($friends as $friend) {
             $friend_id = $friend->receiverId == $user->id ? $friend->senderId : $friend->receiverId;
 
-            $friend_stories = DB::table('stories')->where('publisherId', $friend_id)->where('privacyId', 1)->orderBy('created_at','desc')->get();
+            $friend_stories = DB::table('stories')->where('publisherId', $friend_id)->where('privacyId', 1)->get();
 
-            $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$friend_id)->exists();
+            $isblocked = DB::table('blocks')->where('senderId', $this->user->id)->where('receiverId', $friend_id)->exists();
 
             if (count($friend_stories) > 0) {
-                if($isblocked == false){
+                if ($isblocked == false) {
                     $friend_stories->publisher = User::find($friend_id);
                     array_push($friends_stories, $friend_stories);
                 }
             }
         }
 
-        if($ajax_request == false){
-            $user_stories = DB::table('stories')->where('publisherId', $user->id)->orderBy('created_at','desc')->get();
+        if ($ajax_request == false) {
+            $user_stories = DB::table('stories')->where('publisherId', $user->id)->get();
 
             $auth_user_stories = [];
 
@@ -689,13 +669,12 @@ class MainController extends Controller
             }
 
             $stories = array_merge($auth_user_stories, $friends_stories);
-        }
-        else{
+        } else {
             $stories = $friends_stories;
         }
 
 
-        if (count($stories)){
+        if (count($stories)) {
             foreach ($stories as $story) {
                 foreach ($story as $inner_story) {
                     $inner_story->viewers = DB::select(DB::raw('select users.* from users,stories_views
@@ -717,23 +696,22 @@ class MainController extends Controller
         $expected_people = array_unique($expected_ids);
 
         if (count($expected_people) == 0) {
-            $expected_people = DB::table('users')->where('country_id', auth()->user()->country)->where('id', '!=', auth()->user()->id)->get();
+            $expected_people = DB::table('users')->where('country_id', $this->user->country)->where('id', '!=', $this->user->id)->get();
             foreach ($expected_people as $expected_user) {
                 $expected_user_id = $expected_user->id;
                 $friendship = DB::table('friendships')->where(function ($q) use ($expected_user_id) {
                     $q->where('senderId', $expected_user_id)->orWhere('receiverId', $expected_user_id);
                 })->where(function ($q) {
-                    $q->where('senderId', auth()->user()->id)->orWhere('receiverId', auth()->user()->id);
-                })->whereIn('stateId', [2,3])->first();
+                    $q->where('senderId', $this->user->id)->orWhere('receiverId', $this->user->id);
+                })->whereIn('stateId', [2, 3])->first();
 
-                $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$expected_user_id)->exists();
+                $isblocked = DB::table('blocks')->where('senderId', $this->user->id)->where('receiverId', $expected_user_id)->exists();
                 if ($friendship == null && $isblocked == false) {
                     $expected_user->followers = DB::table('following')->where('followingId', $expected_user_id)->count();
                     array_push($expected_friends, $expected_user);
                 }
             }
-        }
-        else {
+        } else {
 
             foreach ($expected_people as $expected_user) {
                 $expected_user_id = $expected_user;
@@ -761,23 +739,22 @@ class MainController extends Controller
         return $expected_users;
     }
 
-    public function getSponsoredPosts($user_interests,$limit = null ,$offset = null)
+    public function getSponsoredPosts($user_interests, $limit = null, $offset = null)
     {
         $user_sponsored_posts = [];
 
-        if($limit == null){
+        if ($limit == null) {
             $all_sponsored_posts = DB::select(DB::raw('select categories.id as sponsor_category,sponsored.gender,sponsored.created_at as sponsored_at,sponsored_time.duration,posts.*,sponsored_reach.reach,countries.id as country_id,cities.id as city_id,sponsored_ages.from,sponsored_ages.to from
                                         posts,sponsored,sponsored_reach,sponsored_ages,countries,cities,sponsored_time,categories
                                         where sponsored.postId = posts.id and sponsored.reachId = sponsored_reach.id
                                         and sponsored.age_id = sponsored_ages.id and sponsored.country_id = countries.id
                                         and sponsored.city_id = cities.id and sponsored.timeId = sponsored_time.id and sponsored.category_id = categories.id ORDER BY posts.created_at DESC'));
-        }
-        else{
+        } else {
             $all_sponsored_posts = DB::select(DB::raw('select categories.id as sponsor_category,sponsored.gender,sponsored.created_at as sponsored_at,sponsored_time.duration,posts.*,sponsored_reach.reach,countries.id as country_id,cities.id as city_id,sponsored_ages.from,sponsored_ages.to from
                                         posts,sponsored,sponsored_reach,sponsored_ages,countries,cities,sponsored_time,categories
                                         where sponsored.postId = posts.id and sponsored.reachId = sponsored_reach.id
                                         and sponsored.age_id = sponsored_ages.id and sponsored.country_id = countries.id
-                                        and sponsored.city_id = cities.id and sponsored.timeId = sponsored_time.id and sponsored.category_id = categories.id ORDER BY posts.created_at DESC limit '.$limit.' offset '.$offset));
+                                        and sponsored.city_id = cities.id and sponsored.timeId = sponsored_time.id and sponsored.category_id = categories.id ORDER BY posts.created_at DESC limit ' . $limit . ' offset ' . $offset));
         }
 
         foreach ($all_sponsored_posts as $post) {
@@ -787,8 +764,8 @@ class MainController extends Controller
                 ->where('gender', $post->gender)
                 ->limit($post->reach)->pluck('id')->toArray();
 
-            if (in_array(auth()->user()->id, $post_users) != false && Carbon::parse($post->sponsored_at)->addDays($post->duration) >= Carbon::today() && in_array($post->sponsor_category,$user_interests)) {
-                $post->reported = DB::table('reports')->where('user_id', auth()->user()->id)
+            if (in_array($this->user->id, $post_users) != false && Carbon::parse($post->sponsored_at)->addDays($post->duration) >= Carbon::today() && in_array($post->sponsor_category, $user_interests)) {
+                $post->reported = DB::table('reports')->where('user_id', $this->user->id)
                     ->where('model_id', $post->id)->where('model_type', 'post')->exists();
                 if ($post->reported == false) {
                     $post->sponsored = true;
@@ -807,19 +784,19 @@ class MainController extends Controller
         $expected_posts = DB::table('posts')->whereIn('categoryId', $user_interests_array)->where('publisherId', '!=', $user->id)->where('privacyId', 1)->where('postTypeId', 2)->whereNull(['post_id', 'page_id', 'group_id'])->limit(3)->get();
         $allowed_expected_posts = [];
         foreach ($expected_posts as $post) {
-            $post->reported = DB::table('reports')->where('user_id', auth()->user()->id)
+            $post->reported = DB::table('reports')->where('user_id', $this->user->id)
                 ->where('model_id', $post->id)->where('model_type', 'post')->exists();
 
-            $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$post->publisherId)->exists();
+            $isblocked = DB::table('blocks')->where('senderId', $this->user->id)->where('receiverId', $post->publisherId)->exists();
 
             if ($post->reported == false && $isblocked == false) {
                 if ($post->mentions != null) {
                     $post->edit = $post->body;
                     $mentions = explode(',', $post->mentions);
                     foreach ($mentions as $mention) {
-                        $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                        $mention_id = DB::table('users')->select('id')->where('user_name', $mention)->first();
                         $post->body = str_replace('@' . $mention,
-                            '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                            '<a href="profile/' . $mention_id->id . '" style="color: #ffc107">' . $mention . '</a>',
                             $post->body);
                     }
                 }
@@ -843,7 +820,7 @@ class MainController extends Controller
             $group->members = $group_members_count;
         }
 
-        if(count($expected_groups) == 0){
+        if (count($expected_groups) == 0) {
             $expected_groups = Group::whereNotIn('id', $user_groups_ids)->limit(3)->get();
         }
 
@@ -863,7 +840,7 @@ class MainController extends Controller
             $page->members = $page_likes_count;
         }
 
-        if(count($expected_pages) == 0){
+        if (count($expected_pages) == 0) {
             $expected_pages = Page::whereNotIn('id', $user_pages_ids)->limit(3)->get();
         }
 
@@ -876,12 +853,8 @@ class MainController extends Controller
         $user = auth()->user();
 
         $rules = [
-            'body' => ['nullable'],
+            'body' => ['required'],
         ];
-
-//        $messages = [
-//            'body.required' => trans('error.body_required',''),
-//        ];
 
         $validator = Validator::make($rules, $rules);
 
@@ -892,7 +865,7 @@ class MainController extends Controller
         $report = Report::create([
             'body' => $request->body,
             'user_id' => $user->id,
-            'state' => "pending",
+            'state' => 'pending',
             'model_id' => $request->model_id,
             'model_type' => $request->model_type,
         ]);
@@ -951,9 +924,9 @@ class MainController extends Controller
                         $comment->edit = $comment->body;
                         $mentions = explode(',', $comment->mentions);
                         foreach ($mentions as $mention) {
-                            $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                            $mention_id = DB::table('users')->select('id')->where('user_name', $mention)->first();
                             $comment->body = str_replace('@' . $mention,
-                                '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                                '<a href="profile/' . $mention_id->id . '" style="color: #ffc107">' . $mention . '</a>',
                                 $comment->body);
                         }
                     }
@@ -974,8 +947,8 @@ class MainController extends Controller
 
                         $stat = '_stat';
 
-                        foreach ($reacts as $react){
-                            ${$react->name_en.$stat} = [];
+                        foreach ($reacts as $react) {
+                            ${$react->name_en . $stat} = [];
                         }
                         foreach ($comment->likes as $like) {
                             $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
@@ -992,8 +965,8 @@ class MainController extends Controller
 
                         $comment->reacts_stat = [];
 
-                        foreach ($reacts as $react){
-                            array_push($comment->reacts_stat,${$react->name_en.$stat});
+                        foreach ($reacts as $react) {
+                            array_push($comment->reacts_stat, ${$react->name_en . $stat});
                         }
                     }
 
@@ -1009,9 +982,9 @@ class MainController extends Controller
                                     $reply->edit = $reply->body;
                                     $mentions = explode(',', $reply->mentions);
                                     foreach ($mentions as $mention) {
-                                        $mention_id = DB::table('users')->select('id')->where('user_name',$mention)->first();
+                                        $mention_id = DB::table('users')->select('id')->where('user_name', $mention)->first();
                                         $reply->body = str_replace('@' . $mention,
-                                            '<a href="profile/'.$mention_id->id.'" style="color: #ffc107">' . $mention . '</a>',
+                                            '<a href="profile/' . $mention_id->id . '" style="color: #ffc107">' . $mention . '</a>',
                                             $reply->body);
                                     }
                                 }
@@ -1030,8 +1003,8 @@ class MainController extends Controller
 
                                     $stat = '_stat';
 
-                                    foreach ($reacts as $react){
-                                        ${$react->name_en.$stat} = [];
+                                    foreach ($reacts as $react) {
+                                        ${$react->name_en . $stat} = [];
                                     }
                                     foreach ($reply->likes as $like) {
                                         $reactname = DB::select(DB::raw('select reacts.name_en from likes,reacts
@@ -1048,8 +1021,8 @@ class MainController extends Controller
 
                                     $reply->reacts_stat = [];
 
-                                    foreach ($reacts as $react){
-                                        array_push($reply->reacts_stat,${$react->name_en.$stat});
+                                    foreach ($reacts as $react) {
+                                        array_push($reply->reacts_stat, ${$react->name_en . $stat});
                                     }
                                 }
                             }
@@ -1079,19 +1052,19 @@ class MainController extends Controller
             return $sections['comment'];
         } else {
             return response()->json([
-                'msg' => "end"
+                'msg' => 'end'
             ]);
         }
     }
 
-    public function loadStories(Request $request,$limit,$offset)
+    public function loadStories(Request $request, $limit, $offset)
     {
 
         $user = auth()->user();
 
-        $stories = $this->getStories($user,$limit,$offset,true);
+        $stories = $this->getStories($user, $limit, $offset, true);
 
-        $another_stories = $this->getStories($user,$limit,$offset+5);
+        $another_stories = $this->getStories($user, $limit, $offset + 5);
 
 
         if (count($another_stories) > 0) {
@@ -1101,8 +1074,7 @@ class MainController extends Controller
             $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
             return $sections['home_stories'];
-        }
-        else{
+        } else {
             return response()->json([
                 'msg' => 'end'
             ]);
@@ -1110,12 +1082,12 @@ class MainController extends Controller
 
     }
 
-    public function search(Request $request,$type,$search_param)
+    public function search(Request $request, $type, $search_param)
     {
         $auth_user = auth()->user();
-        if($search_param != "null") {
+        if ($search_param != 'null') {
 
-            if($type == 'groups'){
+            if ($type == 'groups') {
 
                 $groups = DB::select(DB::raw('
                                 select * from groups where groups.name LIKE "%' . $search_param . '%"'));
@@ -1128,37 +1100,33 @@ class MainController extends Controller
 //                    $joined_group = DB::select(DB::raw('select stateId from group_members
 //                        where group_members.group_id =' . $group->id . ' and group_members.user_id = ' . $user->id))[0]->stateId;
 
-                    $joined_group = DB::table('group_members')->select('state')->where('user_id',$auth_user->id)
-                        ->where('group_id',$group->id)->first();
+                    $joined_group = DB::table('group_members')->select('state')->where('user_id', $auth_user->id)
+                        ->where('group_id', $group->id)->first();
 
-                    if($joined_group){
+                    if ($joined_group) {
 //                        if ($joined_group->state == 0){
 //                            $group->joined = 'request rejected';
 //                            $group->flag = 0;
 //                        }
-                        if ($joined_group->state == 1){
-                            if($joined_group->isAdmin == 1){
+                        if ($joined_group->state == 1) {
+                            if ($joined_group->isAdmin == 1) {
                                 $group->joined = trans('groups.delet_group');
                                 $group->state = 'delete group';
-                            }
-                            else{
+                            } else {
                                 $group->joined = trans('groups.leave_group');
                                 $group->state = 'leave group';
                                 $group->flag = 1;
                             }
-                        }
-                        elseif($joined_group->state == 2){
+                        } elseif ($joined_group->state == 2) {
                             $group->joined = trans('groups.left_request');
                             $group->state = 'cancel request';
                             $group->flag = 1;
-                        }
-                        else{
+                        } else {
                             $group->joined = trans('groups.confirm_invite');
                             $group->state = 'accept invitation';
                             $group->flag = 0;
                         }
-                    }
-                    else{
+                    } else {
                         $group->joined = trans('groups.join');
                         $group->state = 'join';
                         $group->flag = 0;
@@ -1172,8 +1140,7 @@ class MainController extends Controller
                 $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
                 return $sections['groups'];
-            }
-            elseif ($type == 'pages'){
+            } elseif ($type == 'pages') {
                 $pages = DB::select(DB::raw('
                                 select * from pages where pages.name LIKE "%' . $search_param . '%"'));
 
@@ -1183,25 +1150,23 @@ class MainController extends Controller
                     ))[0]->count;
 
 
-                    $liked_page = DB::table('page_members')->where('user_id',$auth_user->id)
-                        ->where('page_id',$page->id)->first();
+                    $liked_page = DB::table('page_members')->where('user_id', $auth_user->id)
+                        ->where('page_id', $page->id)->first();
 
-                        if ($liked_page != null){
-                            if($liked_page->isAdmin == 1){
-                                $page->liked = trans('pages.delet_page');
-                                $page->state = 'delete page';
-                            }
-                            else{
-                                $page->liked = trans('pages.dislike');
-                                $page->state = 'unlike';
-                                $page->flag = 1;
-                            }
+                    if ($liked_page != null) {
+                        if ($liked_page->isAdmin == 1) {
+                            $page->liked = trans('pages.delet_page');
+                            $page->state = 'delete page';
+                        } else {
+                            $page->liked = trans('pages.dislike');
+                            $page->state = 'unlike';
+                            $page->flag = 1;
                         }
-                        else{
-                            $page->liked = trans('pages.like');
-                            $page->state = 'like';
-                            $page->flag = 0;
-                        }
+                    } else {
+                        $page->liked = trans('pages.like');
+                        $page->state = 'like';
+                        $page->flag = 0;
+                    }
 
                     $page->members = $page_likes_count;
                 }
@@ -1211,19 +1176,18 @@ class MainController extends Controller
                 $sections = $view->renderSections(); // returns an associative array of 'content', 'pageHeading' etc
 
                 return $sections['pages'];
-            }
-            else{
+            } else {
                 $users = DB::select(DB::raw('
-                                select * from users where users.name LIKE "%' . $search_param . '%" AND users.id != '.auth()->user()->id));
+                                select * from users where users.name LIKE "%' . $search_param . '%" AND users.id != ' . auth()->user()->id));
 
-                foreach ($users as $user){
+                foreach ($users as $user) {
                     $isfriend = DB::table('friendships')->where(function ($q) use ($user) {
                         $q->where('senderId', auth()->user()->id)->Where('receiverId', $user->id);
                     })->orwhere(function ($q) use ($user) {
                         $q->where('senderId', $user->id)->Where('receiverId', auth()->user()->id);
                     })->first();
 
-                    $isblocked = DB::table('blocks')->where('senderId',auth()->user()->id)->where('receiverId',$user->id)->exists();
+                    $isblocked = DB::table('blocks')->where('senderId', auth()->user()->id)->where('receiverId', $user->id)->exists();
 
                     if ($isfriend) {
                         $auth_user_status = $isfriend->receiverId == auth()->user()->id ? 'receiver' : 'sender';
@@ -1262,11 +1226,10 @@ class MainController extends Controller
                         $user->receiver = $user->id;
                     }
 
-                    if($isblocked == false) {
+                    if ($isblocked == false) {
                         $user->block = trans('home.block');
                         $user->block_type = 'addBlockRequest';
-                    }
-                    else{
+                    } else {
                         $user->block = trans('home.remove_block');
                         $user->block_type = 'removeBlockRequest';
                     }
@@ -1278,9 +1241,8 @@ class MainController extends Controller
 
                 return $sections['users'];
             }
-        }
-        else {
-            $home = $this->index($request,5,0);
+        } else {
+            $home = $this->index($request, 5, 0);
             return $home;
         }
     }

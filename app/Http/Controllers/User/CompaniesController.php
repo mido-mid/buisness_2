@@ -19,7 +19,7 @@ class CompaniesController extends Controller
     {
         //
         $companies = DB::select(DB::raw('
-                                select * from packaging_companies where packaging_companies.stateId = 4 and
+                                select * from packaging_companies where packaging_companies.stateId = 1 and
                                 packaging_companies.country_id = "' . auth()->user()->country_id . '"'));
 
         foreach ($companies as $company) {
@@ -108,7 +108,7 @@ class CompaniesController extends Controller
             $lang = App::getlocale();
 
             $companies = DB::select(DB::raw('
-                                select * from packaging_companies where packaging_companies.stateId = 4 and
+                                select * from packaging_companies where packaging_companies.stateId = 1 and
                                 packaging_companies.name_' . $lang . ' LIKE "%' . $search_param . '%"'));
 
             foreach ($companies as $company) {
@@ -122,7 +122,7 @@ class CompaniesController extends Controller
         }
         else {
             $companies = DB::select(DB::raw('
-                                    select * from packaging_companies where packaging_companies.stateId = 4 and
+                                    select * from packaging_companies where packaging_companies.stateId = 1 and
                                     packaging_companies.country_id = "' . auth()->user()->country_id . '"'));
 
             foreach ($companies as $company) {

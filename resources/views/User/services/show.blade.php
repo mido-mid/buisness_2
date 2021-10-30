@@ -121,7 +121,7 @@
             </div>
         </div>
         <div class="services-controller m-3 text-center">
-            <a class="btn btn-light rounded-5 filter-button @if($category_id == null) ez-active @endif" href="{{route('services')}}"> All </a>
+            <a class="btn btn-light rounded-5 filter-button @if($category_id == null) ez-active @endif" href="{{route('services')}}"> {{__('home.all')}} </a>
             @foreach($categories as $category)
                 <a class="btn btn-light rounded-5 filter-button @if($category_id == $category->id) ez-active @endif" href="{{route('services',$category->id)}}">
                     @if(App::getlocale() == 'en')
@@ -131,7 +131,7 @@
                     @endif
                 </a>
             @endforeach
-            <button data-toggle="modal" data-target="#add-service-modal" onclick="applySelect2();" class="btn btn-warning add-service">Add Service</button>
+            <button data-toggle="modal" data-target="#add-service-modal" onclick="applySelect2();" class="btn btn-warning add-service">{{__('user.add')}}</button>
         </div>
         <div class="services-container d-flex flex-wrap mt-3" id="all-services">
             @if(count($services) > 0)

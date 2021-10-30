@@ -192,15 +192,19 @@
                                             @foreach($post->tags_info as $tag)
                                                 <div class="people-info d-flex align-items-center">
                                                     @if($tag->personal_image != null)
-                                                        <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
-                                                             src="{{asset('media')}}/{{$tag->personal_image}}"
-                                                             alt="User Profile Pic">
+                                                        <a href="{{route('user.view.profile',$tag->id)}}">
+                                                            <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
+                                                                 src="{{asset('media')}}/{{$tag->personal_image}}"
+                                                                 alt="User Profile Pic">
+                                                        </a>
                                                     @else
-                                                        <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
-                                                             src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
-                                                             alt="User Profile Pic">
+                                                        <a href="{{route('user.view.profile',$tag->id)}}">
+                                                            <img style="width: 45px; height: 45px" class="profile-figure rounded-circle"
+                                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
+                                                                 alt="User Profile Pic">
+                                                        </a>
                                                     @endif
-                                                    <p class="mb-0 ml-3"><b>{{$tag->name}}</b></p>
+                                                    <p class="mb-0 ml-3"><b><a href="{{route('user.view.profile',$tag->id)}}">{{$tag->name}}</a></b></p>
                                                 </div>
                                                 @if($loop->last == false)
                                                     <hr>
@@ -395,36 +399,36 @@
                         @if($post->type == "share")
                             <div class="post-container shared-post bg-white p-2">
                                 <div class="post-owner d-flex align-items-center">
-                                    @if($post->source == "page")
+                                    @if($post->shared_post->source == "page")
                                         <div class="owner-img">
-                                            <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="/{{$post->page->profile_image}}" class="rounded-circle" /></a>
+                                            <a style="display: inline" href="{{route('profile',$post->shared_post->publisher->id)}}"><img src="/{{$post->shared_post->page->profile_image}}" class="rounded-circle" /></a>
                                         </div>
                                     @else
-                                        @if($post->publisher->personal_image)
+                                        @if($post->shared_post->publisher->personal_image)
                                             <div class="owner-img">
-                                                <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->publisher->personal_image}}" class="rounded-circle" /></a>
+                                                <a style="display: inline" href="{{route('profile',$post->shared_post->publisher->id)}}"><img src="{{asset('media')}}/{{$post->shared_post->publisher->personal_image}}" class="rounded-circle" /></a>
                                             </div>
                                         @else
                                             <div class="owner-img">
-                                                <a style="display: inline" href="{{route('profile',$post->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
+                                                <a style="display: inline" href="{{route('profile',$post->shared_post->publisher->id)}}"><img src="{{asset('media')}}/img.jpg" class="rounded-circle" /></a>
                                             </div>
                                         @endif
                                     @endif
                                     <div class="owner-name pl-3">
-                                        @if($post->source == "page")
-                                            <a href="{{route('main-page',$post->page_id)}}"><b>
-                                                    {{$post->page->name}}
+                                        @if($post->shared_post->source == "page")
+                                            <a href="{{route('main-page',$post->shared_post->page_id)}}"><b>
+                                                    {{$post->shared_post->page->name}}
                                                 </b></a>
                                         @else
-                                            <a href="{{route('profile',$post->publisher->id)}}"><b>
-                                                    @if($post->publisher->official == 1)
+                                            <a href="{{route('profile',$post->shared_post->publisher->id)}}"><b>
+                                                    @if($post->shared_post->publisher->official == 1)
                                                         <i class="fas fa-user-check" style="color: #ffc107"></i>
                                                     @endif
-                                                    {{$post->publisher->name}}
+                                                    {{$post->shared_post->publisher->name}}
                                                 </b></a>
                                         @endif
 
-                                        @if($post->sponsored)
+                                        @if($post->shared_post->sponsored)
                                             <div style="font-size: small">
                                                 <span><i class="fas fa-ad"></i></span>
                                                 {{__('home.sponsored')}}
@@ -432,84 +436,26 @@
 
                                         @endif
 
-                                        @if($post->tags != null )
-                                            <a data-toggle="modal" data-target="#show-post-tags-modal-{{$post->id}}"><b>
+                                        @if($post->shared_post->tags != null )
+                                            <a data-toggle="modal" data-target="#show-post-tags-modal-{{$post->shared_post->id}}"><b>
                                                     with
-                                                    @if($post->tagged == true)
-                                                        {{__('home.you_and')}} {{count($post->tags_info) - 1}}
+                                                    @if($post->shared_post->tagged == true)
+                                                        {{__('home.you_and')}} {{count($post->shared_post->tags_info) - 1}}
                                                     @else
-                                                        {{count($post->tags_info)}}
+                                                        {{count($post->shared_post->tags_info)}}
                                                     @endif
                                                     {{__('home.others')}}
                                                 </b></a>
                                         @endif
 
-                                        @if($post->source == "group")
-                                            <a href="{{route('main-group',$post->group_id)}}">
+                                        @if($post->shared_post->source == "group")
+                                            <a href="{{route('main-group',$post->shared_post->group_id)}}">
                                                 <Span><i class="fas fa-caret-right"></i></Span>
-                                                {{$post->group->name}}
+                                                {{$post->shared_post->group->name}}
                                             </a>
                                         @endif
 
-                                        <span style="display: block">{{date('d/m/Y',strtotime($post->created_at))}}</span>
-                                    </div>
-                                    <!-- Post options -->
-                                    <div class="post-options post-options-{{$post->id}}">
-                                        <ul class="options">
-                                            @if($post->source == 'page')
-                                                @if($post->isPageAdmin)
-                                                    <li data-toggle="modal" data-target="#advertise-post-modal-{{$post->id}}">{{__('home.advertise')}}</li>
-                                                @endif
-                                            @else
-                                                @if($post->sponsored == false && $post->type == "post" && $post->publisherId == auth()->user()->id)
-                                                    <li data-toggle="modal" data-target="#advertise-post-modal-{{$post->id}}">{{__('home.advertise')}}</li>
-                                                @endif
-                                            @endif
-                                            @if(!$post->saved)
-                                            <!-- ajax -->
-                                                <li><a id="save-post-{{$post->id}}" onclick="savePostSubmit({{$post->id}})">{{__('home.save_post')}}</a></li>
-                                                <form id="save-post-form-{{$post->id}}" action="{{ route('savepost') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                    @csrf
-                                                    <input type="hidden" name="post_id" value="{{$post->id}}">
-                                                    <input type="hidden" id="save-post-flag-{{$post->id}}" name="flag" value="0">
-                                                </form>
-                                            @else
-                                                <li><a id="save-post-{{$post->id}}" onclick="savePostSubmit({{$post->id}})">{{__('home.saved')}}</a></li>
-                                                <form id="save-post-form-{{$post->id}}" action="{{ route('savepost') }}" method="POST" enctype="multipart/form-data" style="display: none;">
-                                                    @csrf
-                                                    <input type="hidden" name="post_id" value="{{$post->id}}">
-                                                    <input type="hidden" id="save-post-flag-{{$post->id}}" name="flag" value="1">
-                                                </form>
-                                            @endif
-
-                                            @if($post->source == 'page')
-                                                @if($post->isPageAdmin)
-                                                    <li data-toggle="modal" onclick="textAreaChange({{$post->id}})" data-target="#edit-post-modal-{{$post->id}}">{{__('user.edit')}}</li>
-                                                    <form action="{{ route('posts.destroy', $post->id) }}" id="delete-post-form-{{$post->id}}" method="post">
-                                                    @csrf
-                                                    @method('delete')
-                                                    <!-- ajax-->
-                                                        <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
-                                                            {{__('user.delete')}}</li>
-                                                    </form>
-                                                @endif
-                                            @else
-                                                @if($post->publisherId == auth()->user()->id)
-                                                    <li data-toggle="modal" onclick="textAreaChange({{$post->id}})" data-target="#edit-post-modal-{{$post->id}}">{{__('user.edit')}}</li>
-                                                    <form action="{{ route('posts.destroy', $post->id) }}" id="delete-post-form-{{$post->id}}" method="post">
-                                                    @csrf
-                                                    @method('delete')
-                                                    <!-- ajax-->
-                                                        <li onclick="confirm('{{ __("Are you sure you want to delete this post ?") }}') ? deletePostSubmit({{$post->id}}) : ''">
-                                                            {{__('user.delete')}}</li>
-                                                    </form>
-                                                @endif
-                                            @endif
-                                            <li data-toggle="modal" data-target="#report-post-modal-{{$post->id}}" class="last-li">{{__('home.report')}}</li>
-                                        </ul>
-                                    </div>
-                                    <div class="post-option ml-auto pr-3" onclick="toggleOptions({{$post->id}});applySelect2();">
-                                        <i class="fas fa-ellipsis-v"></i>
+                                        <span style="display: block">{{date('d/m/Y',strtotime($post->shared_post->created_at))}}</span>
                                     </div>
                                 </div>
 
@@ -597,7 +543,7 @@
                                                             @endif
 
                                                             @if(count($post->shared_post->media) > 4)
-                                                                <div class="more-media w-50" data-toggle="modal" data-target="#more-media-modal-{{$post->id}}">
+                                                                <div class="more-media w-50" data-toggle="modal" data-target="#more-media-modal-{{$post->shared_post->id}}">
                                                                     <p>+{{count($post->shared_post->media) - 3}}</p>
                                                                     <div class="overlay"></div>
 
@@ -620,7 +566,7 @@
                                             @endif
                                         </div>
                                         <div class="post-more-media-modal">
-                                            <div class="modal fade" id="more-media-modal-{{$post->id}}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal fade" id="more-media-modal-{{$post->shared_post->id}}" tabindex="-1" aria-hidden="true">
                                                 <div class="modal-dialog" style="margin-top: 10vh">
                                                     <div class="modal-content">
                                                         <div class="modal-body">

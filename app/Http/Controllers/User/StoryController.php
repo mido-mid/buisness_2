@@ -115,7 +115,7 @@ class StoryController extends Controller
             ]);
         }
 
-        $user_stories = DB::table('stories')->where('publisherId',$user->id)->get();
+        $user_stories = DB::table('stories')->where('publisherId',$user->id)->orderBy('created_at','desc')->get();
 
         $user_stories->publisher = User::find($user->id);
 
