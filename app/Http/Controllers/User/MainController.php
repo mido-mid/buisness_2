@@ -464,7 +464,7 @@ class MainController extends Controller
                             $shared_post->body);
                     }
                 }
-                $post->media = DB::table('media')->where('model_id', $post->id)->where('model_type', 'post')->get();
+                $post->media =
                 $shared_post->publisher = User::find($shared_post->publisherId);
                 $shared_post->media = DB::table('media')->where('model_id', $shared_post->id)->where('model_type', 'post')->get();
                 if ($shared_post->page_id != null) {
@@ -780,12 +780,16 @@ class MainController extends Controller
                                         and sponsored.city_id = cities.id and sponsored.timeId = sponsored_time.id and sponsored.category_id = categories.id ORDER BY posts.created_at DESC limit '.$limit.' offset '.$offset));
         }
 
+        //if there is city and country
+
         foreach ($all_sponsored_posts as $post) {
             $post_users = DB::table('users')->whereBetween('age', [$post->from, $post->to])
                 ->where('country_id', $post->country_id)
                 ->where('city_id', $post->city_id)
                 ->where('gender', $post->gender)
                 ->limit($post->reach)->pluck('id')->toArray();
+
+            //if there is categories
 
             if (in_array(auth()->user()->id, $post_users) != false && Carbon::parse($post->sponsored_at)->addDays($post->duration) >= Carbon::today() && in_array($post->sponsor_category,$user_interests)) {
                 $post->reported = DB::table('reports')->where('user_id', auth()->user()->id)
@@ -795,6 +799,7 @@ class MainController extends Controller
                     array_push($user_sponsored_posts, $post);
                 }
             }
+            //else
         }
 
         return $user_sponsored_posts;

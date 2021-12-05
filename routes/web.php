@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath','mention',"web"]], function () {
 
     Route::get('/', function () {
@@ -20,6 +21,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     })->name('welcome');
 
     Auth::routes(['verify' => true]);
+
+    Route::get('login/google', 'Auth\LoginController@redirectToProvider')->name('gmail.login');
+    Route::get('login/google/callback', 'Auth\LoginController@handleProviderCallback')->name('gmail.callback');
 
     Route::get('getcities/{country_id}', 'User\ServiceController@getCities');
 
