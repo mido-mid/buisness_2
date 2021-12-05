@@ -464,7 +464,7 @@ class MainController extends Controller
                             $shared_post->body);
                     }
                 }
-                $post->media =
+                $post->media = DB::table('media')->where('model_id', $post->id)->where('model_type', 'post')->get();
                 $shared_post->publisher = User::find($shared_post->publisherId);
                 $shared_post->media = DB::table('media')->where('model_id', $shared_post->id)->where('model_type', 'post')->get();
                 if ($shared_post->page_id != null) {
