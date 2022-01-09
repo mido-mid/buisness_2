@@ -81,6 +81,7 @@
                                                 src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80"
                                                 alt="My Profile Pic" />
                         <span>{{ \Str::limit(auth()->user()->name, 10) }}</span></a>
+                        <input type="hidden" id="userid" name="userid" value="{{ Auth::user()->id }}">
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="{{route('home')}}"><i class="fas fa-home"></i>{{__('user.home')}}</a>
@@ -103,7 +104,7 @@
                 </li>
                 <li class="nav-item" style="display: flex; align-items: center">
                     <a class="nav-link active" href="#"><i class="fas fa-comment-dots"></i>{{__('user.messages')}}</a>
-                    <span class="badge bg-warning text-dark">3</span>
+                    <span class="badge bg-warning text-dark">2</span>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="{{route('saved_posts')}}}"><i class="fas fa-bookmark"></i>{{__('user.saved_posts')}}</a>
@@ -164,15 +165,15 @@
                 justify-content: space-between;
                 align-items: center;
               ">
-                        <a href="#"><i class="fas fa-bell p"></i>{{__('user.notifications')}}</a><span class="badge bg-warning text-dark">2</span>
+                        <a href="{{route('notifications')}}"><i class="fas fa-bell p"></i>{{__('user.notifications')}}</a><span id="notificationCtr" class="badge bg-warning text-dark">0</span>
                     </li>
                     <li style="
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
               ">
-                        <a href="#"><i class="fas fa-comment-dots p"></i>{{__('user.messages')}}</a>
-                        <span class="badge bg-warning text-dark">3</span>
+                        <a href="{{route('chatroom')}}"><i class="fas fa-comment-dots p"></i>{{__('user.messages')}}</a>
+                        <span id="unReadMessagesCounter" class="badge bg-warning text-dark">0</span>
                     </li>
                     <li>
                         <a href="{{route('saved_posts')}}"><i class="fas fa-bookmark p"></i>{{__('user.saved_posts')}}</a>
@@ -189,10 +190,27 @@
 
         </section>
     </section>
-
-    <script src="{{ asset('assets') }}/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('assets') }}/libs/jquery/jquery.min.js"></script>
+    <script src="{{ asset('assets') }}/libs/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
+    <script>
+        firebase.initializeApp({
+            apiKey: "AIzaSyDTRo5vhomZQPaeVCd9SzrULh7Hyxyzm-k",
+            authDomain: "businesschatting-13411.firebaseapp.com",
+            projectId: "businesschatting-13411",
+            storageBucket: "businesschatting-13411.appspot.com",
+            messagingSenderId: "447727332307",
+            appId: "1:447727332307:web:20b3f63b74d79eb4c6dd26",
+            measurementId: "G-2JX8Q4KHK9"
+        });
+  
+        var db = firebase.firestore();
+        const messaging = firebase.messaging();
+    </script>
+    <script src="{{ asset('js/notification.js')}}"></script>
     <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('js/index.js') }}"></script>
     <script src="{{ asset('js/vue.js') }}"></script>

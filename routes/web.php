@@ -135,7 +135,16 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::post('list/inspiration', 'ProfileController@inspirationList')->name('redeny.user.list.inspiration');
         Route::get('profile/view/{user_id}/{component}', 'ProfileController@viewComponent')->name('redeny.view.component');
 
-
+        //chat routes
+        Route::get('chatroom','User\ChatController@getAllChatRooms')->name('chatroom');
+        Route::post('sendMessage/{docId}','User\ChatController@sendMessage')->name('sendMessage');
+        Route::any('setAllMessagesRead/{docId}','User\ChatController@setAllMessagesRead')->name('setAllMessagesRead');
+        Route::any('setMessagesRead/{docId}/{messageId}','User\ChatController@setMessagesRead')->name('setMessagesRead');
+        //notifications routes
+        Route::post('savetoken/','User\NotificationsController@savetoken')->name('save-token');
+        Route::any('fireNotification/{model_id}/{type}','User\NotificationsController@fireNotification')->name('fireNotification');
+        Route::get('notifications/','User\NotificationsController@index')->name('notifications');
+        Route::any('deletenotifications/','User\NotificationsController@deleteNotifications')->name('deletenotifications');
     });
 
 
