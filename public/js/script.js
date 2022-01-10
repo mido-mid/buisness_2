@@ -291,6 +291,7 @@ let reportPostSubmit = (id) => {
 
 let addCommentSubmit = (id) => {
 
+    let type = "comment";
     $.ajax({
         url: $('#add-comment-form-' + id).attr('action'),
         type: 'POST',
@@ -320,6 +321,7 @@ let addCommentSubmit = (id) => {
                 $('#comment-count-' + id).text("1");
             }
             div.innerHTML = div.innerHTML + data;
+            pushNotification(id,type);
         },
         error: function (data) {
             var errormsg = $.parseJSON(data.responseText);
@@ -430,6 +432,7 @@ let reportCommentSubmit = (id) => {
 
 let addReplySubmit = (id,post_id) => {
 
+    let type = "reply";
     $.ajax({
         url: $('#add-reply-form-' + id).attr('action'),
         type: 'POST',
@@ -460,6 +463,7 @@ let addReplySubmit = (id,post_id) => {
                 $('#comment-count-' + post_id).text("1");
             }
             div.innerHTML = div.innerHTML + data;
+            pushNotification(id,type);
         },
         error: function (data) {
             var errormsg = $.parseJSON(data.responseText);
@@ -506,6 +510,7 @@ let editReplySubmit = (id) => {
 
 let sharePostSubmit = (id,lang) => {
 
+    let type = "share";
     $.ajax({
         url: $('#share-post-form-' + id).attr('action'),
         type: 'POST',
@@ -520,6 +525,7 @@ let sharePostSubmit = (id,lang) => {
             $('#success-modal').modal('show');
             $('#success-modal-message').text(text);
             div.innerHTML = data + div.innerHTML;
+            pushNotification(id,type);
         },
         error: function (data) {
             console.log(data.responseText)
@@ -534,6 +540,7 @@ let likeModelSubmit = (model_id,react_id) => {
 
     // Here we are getting the reaction which is tapped by using the data-reaction attribute defined in main page
     var data_reaction = $("#react-" + react_id).attr("data-reaction");
+    let type = "react";
     // Sending Ajax request in handler page to perform the database operations
     $.ajax({
         type: "POST",
@@ -546,6 +553,7 @@ let likeModelSubmit = (model_id,react_id) => {
             var div = document.getElementById('reaction-container-' + model_id);
             div.innerHTML = response;
             console.log(response);
+            pushNotification(model_id,type);
         },
         error: function (data) {
             var errormsg = $.parseJSON(data.responseText);
@@ -1345,6 +1353,54 @@ let mentionAdd = (text_area_id,menu_id) => {
         replaceFn,
         menuItemFn
     )
+}
+
+messaging.onMessage(function(payload) {
+    const noteTitle = payload.notification.title;
+    const noteOptions = {
+        body: payload.notification.body,
+        icon: payload.notification.icon,
+        click_action: payload.notification.click_action,
+    };
+     new Notification(noteTitle, noteOptions);
+});
+
+function pushNotification(model_id,type){
+    messaging
+    .requestPermission()
+    .then(function () {
+        return messaging.getToken()
+    })
+    .then(function(token) {
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.ajax({
+            url: 'savetoken/',
+            type: 'POST',
+            data: {
+                token: token
+            },
+            dataType: 'JSON',
+            success: function (response) {
+                if(response.code == 0){
+                    $.ajax({
+                        url: `fireNotification/${model_id}/${type}`,
+                        type: 'POST',
+                        data: {
+                            token: token
+                        },
+                        dataType: 'JSON',
+                    });
+                }
+            },
+        });
+    }).catch(function (err) {
+        console.log('User Chat Token Error'+ err);
+    });
+    
 }
 
 
