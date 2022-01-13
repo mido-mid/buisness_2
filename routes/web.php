@@ -145,6 +145,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::any('fireNotification/{model_id}/{type}','User\NotificationsController@fireNotification')->name('fireNotification');
         Route::get('notifications/','User\NotificationsController@index')->name('notifications');
         Route::any('deletenotifications/','User\NotificationsController@deleteNotifications')->name('deletenotifications');
+        Route::get('home#reaction-container-{model_id}', 'User\MainController@index')->name('openNotification');
     });
 
 
