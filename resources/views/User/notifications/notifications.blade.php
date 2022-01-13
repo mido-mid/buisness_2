@@ -22,9 +22,8 @@
                             <img class="rounded-circle" src="https://bootdey.com/img/Content/avatar/avatar3.png" alt="" />
                         </div>
                         <div class="font-weight-bold mr-3">
-                            <div style="cursor: pointer;" onclick="redirect({{$notification['targetId']}})" class="text-truncate">{{$notification['title']}}</div>
-                            <div style="cursor: pointer;" onclick="redirect({{$notification['targetId']}})" class="small">{{$notification['body']}}</div>
-                            <input type="hidden" id="targetId" name="targetId" value="{{$notification['targetId']}}">
+                            <div style="cursor: pointer;" onclick="window.location='{{ route('openNotification', ['model_id'=>$notification['targetId'] ]) }}'" class="text-truncate">{{$notification['title']}}</div>
+                            <div style="cursor: pointer;" onclick="window.location='{{ route('openNotification', ['model_id'=>$notification['targetId'] ]) }}'" class="small">{{$notification['body']}}</div>
                         </div>
                         <span class="ml-auto mb-auto">
                             <br />
@@ -38,11 +37,4 @@
     </div>
 </div>
 <script src="{{ asset('js/timeSet.js')}}"></script>
-<script>
-function redirect(targetId)
-{
-        console.log(targetId);
-        window.open(`/home#reaction-container-${targetId}`,"_self");
-}
-</script>
 @endsection
