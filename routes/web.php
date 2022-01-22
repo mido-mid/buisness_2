@@ -137,7 +137,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
         //chat routes
         Route::get('chatroom','User\ChatController@getAllChatRooms')->name('chatroom');
-        Route::post('sendMessage/{docId}','User\ChatController@sendMessage')->name('sendMessage');
+        Route::get('getChatRoomCollection/{docId}','User\ChatController@getChatRoomCollection')->name('getChatRoomCollection');
+        Route::any('sendMessage/{docId}','User\ChatController@sendMessage')->name('sendMessage');
         Route::any('setAllMessagesRead/{docId}','User\ChatController@setAllMessagesRead')->name('setAllMessagesRead');
         Route::any('setMessagesRead/{docId}/{messageId}','User\ChatController@setMessagesRead')->name('setMessagesRead');
         //notifications routes

@@ -1,6 +1,23 @@
+function getChatRoomCollection(room){
+    $.ajax({
+        url:`getChatRoomCollection/${room['docId']}`,
+        method:'get',
+        data: '',
+        processData:false,
+        dataType:'json',
+        contentType:false,
+        beforeSend:function(){
+        },
+        success:function(data){
+            printChat(room,data);
+        }
+    });
+}
 function printChat(room,chats) {
+
     if(document.querySelector(".chat-history"))
     {
+        //console.log(chats);
         console.log("in if");
         document.getElementById("unique-chat").removeChild(document.querySelector(".chat-header"));
         document.getElementById("unique-chat").removeChild(document.querySelector(".chat-history"));
@@ -44,12 +61,37 @@ function printChat(room,chats) {
         document.getElementById("unique-chat").insertBefore(divChatHistory,document.getElementById("unique-form"));
         document.getElementById("unique-chat").insertAdjacentElement("afterbegin",div);
         document.getElementById("unique-form").appendChild(divChatInput);
+        room['lastMessage'] = room['lastMessage'].replace(/-/g, " ");
         for(let chat of chats)
     {
-        chat['createAt']= formatMessageTime(chat['createAt']);
-        chat['message'] =chat['message'].replace(/-/g, " ");
-        if(chat['receiverId'] == room['senderId'])
+        if(chat['message'] != room['lastMessage'])
         {
+            chat['createAt']= formatMessageTime(chat['createAt']);
+            //chat['message'] =chat['message'].replace(/-/g, " ");
+            if(chat['receiverId'] == room['senderId'])
+            {
+                let message = `<div class="message-data text-right">
+                                    <span class="message-data-time">${chat['createAt']}</span>
+                                </div>
+                <div class="message other-message float-right">${chat['message']}</div>`;
+                let li = document.createElement("li");
+                li.classList.add("clearfix");
+                li.innerHTML = message;
+                document.querySelector("#chatMessages").appendChild(li);
+            }else if (chat['clientId'] == room['senderId'])
+            {
+                let message = `<div class="message-data">
+                                        <span class="message-data-time">${chat['createAt']}</span>
+                                    </div>
+                                    <div class="message my-message">${chat['message']}</div> `;
+                let li = document.createElement("li");
+                li.classList.add("clearfix");
+                li.innerHTML = message;
+                document.querySelector("#chatMessages").appendChild(li);
+            }
+        }else if(chat['receiverId'] == room['senderId'])
+        {
+            chat['createAt']= formatMessageTime(chat['createAt']);
             let message = `<div class="message-data text-right">
                                 <span class="message-data-time">${chat['createAt']}</span>
                             </div>
@@ -58,18 +100,10 @@ function printChat(room,chats) {
             li.classList.add("clearfix");
             li.innerHTML = message;
             document.querySelector("#chatMessages").appendChild(li);
-        }else if (chat['clientId'] == room['senderId'])
-        {
-            let message = `<div class="message-data">
-                                    <span class="message-data-time">${chat['createAt']}</span>
-                                </div>
-                                <div class="message my-message">${chat['message']}</div> `;
-            let li = document.createElement("li");
-            li.classList.add("clearfix");
-            li.innerHTML = message;
-            document.querySelector("#chatMessages").appendChild(li);
         }
     }
+    printSentMessage(room);
+    setAllMessagesRead();
     }else{
         console.log("in else");
         let div = document.createElement("div");
@@ -111,12 +145,14 @@ function printChat(room,chats) {
         document.getElementById("unique-chat").insertBefore(divChatHistory,document.getElementById("unique-form"));
         document.getElementById("unique-chat").insertAdjacentElement("afterbegin",div);
         document.getElementById("unique-form").appendChild(divChatInput);
+        room['lastMessage'] = room['lastMessage'].replace(/-/g, " ");
         for(let chat of chats)
     {
         if(chat['message'] != room['lastMessage'])
         {
+            
             chat['createAt']= formatMessageTime(chat['createAt']);
-            chat['message'] =chat['message'].replace(/-/g, " ");
+            //chat['message'] =chat['message'].replace(/-/g, " ");
             if(chat['receiverId'] == room['senderId'])
             {
                 let message = `<div class="message-data text-right">
@@ -138,8 +174,21 @@ function printChat(room,chats) {
                 li.innerHTML = message;
                 document.querySelector("#chatMessages").appendChild(li);
             }
+        }else if(chat['receiverId'] == room['senderId'])
+        {
+            chat['createAt']= formatMessageTime(chat['createAt']);
+            let message = `<div class="message-data text-right">
+                                <span class="message-data-time">${chat['createAt']}</span>
+                            </div>
+            <div class="message other-message float-right">${chat['message']}</div>`;
+            let li = document.createElement("li");
+            li.classList.add("clearfix");
+            li.innerHTML = message;
+            document.querySelector("#chatMessages").appendChild(li);
         }
     }
+    printSentMessage(room);
+    setAllMessagesRead();
     }
 }
 
@@ -150,25 +199,24 @@ let form = document.getElementById("unique-form");
 
 form.addEventListener("submit",function(e){
     let docid = document.getElementById("docid").value;
+    let messageData = document.getElementById("messageInput").value ;
     e.preventDefault();
+    printMessage(messageData);
     $.ajax({
      url:`sendMessage/${docid}`,
      method:'post',
-     data:new FormData(form),
+     data: new FormData(form),
      processData:false,
      dataType:'json',
      contentType:false,
      beforeSend:function(){
+        $(form)[0].reset();
      },
      success:function(data){
-          if(data.code == 0){
-        $(form)[0].reset();
-          }else{
-              alert("error");
-          }
      }
  });
 });
+
 
 function searchChats() {
     // Declare variables
@@ -188,6 +236,21 @@ function searchChats() {
         li[i].style.display = "none";
       }
     }
+  }
+
+
+  function printMessage(messageData) {
+      let messageTime = new Date();
+      messageTime = formatMessageTime(messageTime);
+      console.log("in JS");
+      let message = `<div class="message-data text-right">
+                                    <span class="message-data-time">${messageTime}</span>
+                                </div>
+                <div class="message other-message float-right">${messageData}</div>`;
+                let li = document.createElement("li");
+                li.classList.add("clearfix");
+                li.innerHTML = message;
+                document.querySelector("#chatMessages").appendChild(li);
   }
 
 

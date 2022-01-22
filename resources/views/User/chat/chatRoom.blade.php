@@ -18,11 +18,12 @@
                 <ul id="myUL" class="list-unstyled chat-list mt-2 mb-0">
                 @foreach($rooms as $room)
                 
-                    <li  onclick = printChat({{json_encode($room)}},{{json_encode($chats)}}),printSentMessage({{json_encode($room)}}),setAllMessagesRead() class="clearfix">
+                    <li  onclick = getChatRoomCollection({{json_encode($room)}}) class="clearfix">
                         <img src={{$room['senderImage']}} alt="avatar">
                         <div class="about">
                             <div class="name"><a>{{$room['senderName']}}</a></div>
-                            <div id = "lastmessage" class="status"><i class="fa fa-circle offline"></i><?=str_replace('-', ' ',  $room['lastMessage'])?></div>                                            
+                            <div  class="status"><i id="status{{$room['senderId']}}" class="fa fa-circle offline"></i><span id = "lastmessage{{$room['senderId']}}" ><?=str_replace('-', ' ',  $room['lastMessage'])?></span></div>    
+                            <input type="hidden" id="senderId" name="senderId" value="{{$room['senderId']}}">                                        
                         </div>
                     </li>
                 @endforeach
@@ -43,6 +44,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"></script>
     <script src="{{ asset('js/firebase.js')}}"></script>
     <script src="{{ asset('js/chat.js')}}"></script>
+    <script src="{{ asset('js/onlineStatus.js')}}"></script>
     <script src="{{ asset('js/vanillaEmojiPicker.js')}}"></script>
     <Script>
         new EmojiPicker({

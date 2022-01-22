@@ -54,13 +54,6 @@ class ChatController extends Controller
                   $chatRooms['senderName']=$document->data()[$chatRooms['senderId']]['name'];
                   $chatRooms['senderImage']=$document->data()[$chatRooms['senderId']]['image'];
                   $chatRooms['lastMessage'] = str_replace(" ", "-",$document->data()['lastMessage']);
-                  $documentsCollections = $databaseinstance ->document($chatRooms['docId'])->collection('chatCollection')->orderBy('createAt', 'asc')-> documents();
-                  foreach($documentsCollections as $chatCollection)
-                  {
-                    $chatRoomsCollections = $chatCollection->data();
-                    $chatRoomsCollections['message'] = str_replace(" ", "-",$chatCollection->data()['message']);
-                    $chats[] = $chatRoomsCollections;
-                  }
                   $rooms[] = $chatRooms ;
               }
           }
@@ -69,9 +62,31 @@ class ChatController extends Controller
       // return view('adminsError');
    //}
    
-   return view('User.chat.chatRoom')->with('rooms',$rooms)->with('chats',$chats);
+   return view('User.chat.chatRoom')->with('rooms',$rooms);
    }
+
+    //----------------------------------------Method-End-Begin------------------------------------//
+
+   public function getChatRoomCollection($docid)
+   {
+    $chats= collect ();
+    $databaseinstance = app('firebase.firestore')->database()->collection('Thread')->document($docid)->collection('chatCollection');
+    $documents = $databaseinstance ->orderBy('createAt', 'asc')-> documents();
+    //try {
+     foreach($documents as $document)
+     {
+      if ($document->exists())
+      {
+        $chatRoomsCollections = $document->data();
+        //$chatRoomsCollections['message'] = str_replace(" ", "-",$document->data()['message']);
+        $chats[] = $chatRoomsCollections;
+      }
+     }
+     return response()->json($chats);
+   }
+
    //----------------------------------------Method-End-Begin------------------------------------//
+
    public function sendMessage(Request $request,$docid)
    {
     $chatRoomId = explode("-",$docid);
@@ -101,6 +116,14 @@ class ChatController extends Controller
         'receiverId' => $clientId,
         'seen' => false,
     ];
+
+    $documentsCollections = $databaseinstance ->collection('chatCollection')->where('last', '=', true)->documents();
+    foreach($documentsCollections as $chatCollection)
+    {
+        $documentsCollectionsSetter = $databaseinstance->collection('chatCollection')->document($chatCollection->id())->update([
+            ['path' => 'last','value' => false], // set message seen true
+            ]);
+    }
 
     $databaseCountCollectionInstanceOfSender = $databaseinstance->collection('unreadCountCollection')->document($senderId);
     $databaseCountCollectionInstanceOfSender ->update([
@@ -171,12 +194,13 @@ class ChatController extends Controller
 
    public function setMessagesRead($docid,$messageId)
    {
-    $this->setUnReadCounter($docid);
     $databaseinstance = app('firebase.firestore')->database()->collection('Thread');
     $documentsCollections = $databaseinstance ->document($docid)->collection('chatCollection')->document($messageId);
     $document = $documentsCollections -> snapshot();
     if(Auth::User()->id == $document->data()['receiverId'])
      {
+        $this->setAllMessagesRead($docid);
+        $this->setUnReadCounter($docid);
         $documentsCollections ->update([
                 ['path' => 'seen','value' => true], // set message seen true
                 ]);
