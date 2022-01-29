@@ -149,5 +149,4 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         Route::get('home#reaction-container-{model_id}', 'User\MainController@index')->name('openNotification');
     });
 
-
 });
